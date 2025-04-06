@@ -6917,6 +6917,7 @@ __metadata:
     react: "npm:18.3.1"
     react-dom: "npm:18.3.1"
     react-native: "npm:0.76.9"
+    react-native-ble-plx: "npm:^3.5.0"
     react-native-gesture-handler: "npm:~2.20.2"
     react-native-reanimated: "npm:~3.16.1"
     react-native-safe-area-context: "npm:4.12.0"
@@ -8589,6 +8590,16 @@ __metadata:
   version: 16.13.1
   resolution: "react-is@npm:16.13.1"
   checksum: 10c0/33977da7a5f1a287936a0c85639fec6ca74f4f15ef1e59a6bc20338fc73dc69555381e211f7a3529b8150a1f71e4225525b41b60b52965bda53ce7d47377ada1
+  languageName: node
+  linkType: hard
+
+"react-native-ble-plx@npm:^3.5.0":
+  version: 3.5.0
+  resolution: "react-native-ble-plx@npm:3.5.0"
+  peerDependencies:
+    react: "*"
+    react-native: "*"
+  checksum: 10c0/89981a6e802d5a3b8d25c123ce50addece87049287856f2dcf49a608b08f13df6ddf2410469e6a8e37bcd8acf6ded12be4c200b7454e650e8238b2cb22d08b21
   languageName: node
   linkType: hard
 
