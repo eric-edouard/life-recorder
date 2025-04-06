@@ -10,7 +10,8 @@
 		"newArchEnabled": true,
 		"ios": {
 			"supportsTablet": true,
-			"bundleIdentifier": "com.eamilhat.life-recorder"
+			"bundleIdentifier": "com.eamilhat.life-recorder",
+			"appleTeamId": "6A3W99PM43"
 		},
 		"android": {
 			"adaptiveIcon": {
@@ -21,7 +22,10 @@
 				"android.permission.RECORD_AUDIO",
 				"android.permission.MODIFY_AUDIO_SETTINGS",
 				"android.permission.ACCESS_COARSE_LOCATION",
-				"android.permission.ACCESS_FINE_LOCATION"
+				"android.permission.ACCESS_FINE_LOCATION",
+				"android.permission.BLUETOOTH",
+				"android.permission.BLUETOOTH_ADMIN",
+				"android.permission.BLUETOOTH_CONNECT"
 			]
 		},
 		"web": {
