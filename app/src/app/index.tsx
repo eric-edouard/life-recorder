@@ -12,11 +12,17 @@ import {
 	ScrollView,
 	StyleSheet,
 	Text,
-	TextInput,
 	TouchableOpacity,
 	View,
 } from "react-native";
 import { BleManager, State, type Subscription } from "react-native-ble-plx";
+
+import AudioStats from "@/src/components/AudioStats";
+import BatteryIndicator from "@/src/components/BatteryIndicator";
+import DeviceList from "@/src/components/DeviceList";
+// Import components
+import StatusBanner from "@/src/components/StatusBanner";
+import TranscriptionPanel from "@/src/components/TranscriptionPanel";
 
 export default function Home() {
 	const [devices, setDevices] = useState<OmiDevice[]>([]);
@@ -546,39 +552,68 @@ export default function Home() {
 		}
 	};
 
+	// Handle transcription toggling
+	const handleToggleTranscription = (enabled: boolean) => {
+		setEnableTranscription(enabled);
+
+		// If disabling, close any active connections
+		if (!enabled && websocketRef.current) {
+			websocketRef.current.close();
+			websocketRef.current = null;
+
+			if (processingIntervalRef.current) {
+				clearInterval(processingIntervalRef.current);
+				processingIntervalRef.current = null;
+			}
+		}
+	};
+
+	// Start or stop transcription
+	const handleTranscriptionControl = () => {
+		if (isTranscribing.current) {
+			// Stop transcription
+			if (websocketRef.current) {
+				websocketRef.current.close();
+				websocketRef.current = null;
+			}
+
+			if (processingIntervalRef.current) {
+				clearInterval(processingIntervalRef.current);
+				processingIntervalRef.current = null;
+			}
+
+			isTranscribing.current = false;
+		} else {
+			// Start transcription
+			if (!deepgramApiKey) {
+				Alert.alert(
+					"API Key Required",
+					"Please enter your Deepgram API key to start transcription",
+				);
+				return;
+			}
+
+			if (!isListeningAudio) {
+				Alert.alert("Audio Required", "Please start the audio listener first");
+				return;
+			}
+
+			initializeWebSocketTranscription();
+			setTranscription(""); // Clear previous transcription
+		}
+	};
+
 	return (
 		<SafeAreaView style={styles.container}>
 			<ScrollView contentContainerStyle={styles.content}>
 				<Text style={styles.title}>Omi SDK Example</Text>
 
 				{/* Bluetooth Status Banner */}
-				{bluetoothState !== State.PoweredOn && (
-					<View style={styles.statusBanner}>
-						<Text style={styles.statusText}>
-							{bluetoothState === State.PoweredOff
-								? "Bluetooth is turned off. Please enable Bluetooth to use this app."
-								: bluetoothState === State.Unauthorized
-									? "Bluetooth permission not granted. Please allow Bluetooth access in settings."
-									: "Bluetooth is not available or initializing..."}
-						</Text>
-						<TouchableOpacity
-							style={styles.statusButton}
-							onPress={() => {
-								if (bluetoothState === State.PoweredOff) {
-									Linking.openSettings();
-								} else if (bluetoothState === State.Unauthorized) {
-									requestBluetoothPermission();
-								}
-							}}
-						>
-							<Text style={styles.statusButtonText}>
-								{bluetoothState === State.PoweredOff
-									? "Open Settings"
-									: "Request Permission"}
-							</Text>
-						</TouchableOpacity>
-					</View>
-				)}
+				<StatusBanner
+					bluetoothState={bluetoothState}
+					onRequestPermission={requestBluetoothPermission}
+					onOpenSettings={() => Linking.openSettings()}
+				/>
 
 				<View style={styles.section}>
 					<Text style={styles.sectionTitle}>Bluetooth Connection</Text>
@@ -592,47 +627,15 @@ export default function Home() {
 					</TouchableOpacity>
 				</View>
 
+				{/* Device List */}
 				{devices.length > 0 && (
-					<View style={styles.section}>
-						<Text style={styles.sectionTitle}>Found Devices</Text>
-						<View style={styles.deviceList}>
-							{devices.map((device) => (
-								<View key={device.id} style={styles.deviceItem}>
-									<View>
-										<Text style={styles.deviceName}>{device.name}</Text>
-										<Text style={styles.deviceInfo}>
-											RSSI: {device.rssi} dBm
-										</Text>
-									</View>
-									{connected &&
-									omiConnection.connectedDeviceId === device.id ? (
-										<TouchableOpacity
-											style={[
-												styles.button,
-												styles.smallButton,
-												styles.buttonDanger,
-											]}
-											onPress={disconnectFromDevice}
-										>
-											<Text style={styles.buttonText}>Disconnect</Text>
-										</TouchableOpacity>
-									) : (
-										<TouchableOpacity
-											style={[
-												styles.button,
-												styles.smallButton,
-												connected ? styles.buttonDisabled : null,
-											]}
-											onPress={() => connectToDevice(device.id)}
-											disabled={connected}
-										>
-											<Text style={styles.buttonText}>Connect</Text>
-										</TouchableOpacity>
-									)}
-								</View>
-							))}
-						</View>
-					</View>
+					<DeviceList
+						devices={devices}
+						connected={connected}
+						connectedDeviceId={omiConnection.connectedDeviceId}
+						onConnect={connectToDevice}
+						onDisconnect={disconnectFromDevice}
+					/>
 				)}
 
 				{connected && (
@@ -656,20 +659,8 @@ export default function Home() {
 							<Text style={styles.buttonText}>Get Battery Level</Text>
 						</TouchableOpacity>
 
-						{batteryLevel >= 0 && (
-							<View style={styles.batteryContainer}>
-								<Text style={styles.batteryTitle}>Battery Level:</Text>
-								<View style={styles.batteryLevelContainer}>
-									<View
-										style={[
-											styles.batteryLevelBar,
-											{ width: `${batteryLevel}%` },
-										]}
-									/>
-									<Text style={styles.batteryLevelText}>{batteryLevel}%</Text>
-								</View>
-							</View>
-						)}
+						{/* Battery Indicator */}
+						<BatteryIndicator batteryLevel={batteryLevel} />
 
 						<View style={styles.audioControls}>
 							<TouchableOpacity
@@ -689,132 +680,24 @@ export default function Home() {
 								</Text>
 							</TouchableOpacity>
 
-							{isListeningAudio && (
-								<View style={styles.audioStatsContainer}>
-									<Text style={styles.audioStatsTitle}>
-										Audio Packets Received:
-									</Text>
-									<Text style={styles.audioStatsValue}>
-										{audioPacketsReceived}
-									</Text>
-								</View>
-							)}
+							{/* Audio Stats */}
+							<AudioStats
+								audioPacketsReceived={audioPacketsReceived}
+								showIf={isListeningAudio}
+							/>
 
-							<View style={styles.transcriptionContainer}>
-								<Text style={styles.sectionSubtitle}>
-									Deepgram Transcription
-								</Text>
-
-								<View style={styles.checkboxContainer}>
-									<TouchableOpacity
-										style={[
-											styles.checkbox,
-											enableTranscription && styles.checkboxChecked,
-										]}
-										onPress={() => {
-											const newValue = !enableTranscription;
-											setEnableTranscription(newValue);
-
-											// If disabling, close any active connections
-											if (!newValue && websocketRef.current) {
-												websocketRef.current.close();
-												websocketRef.current = null;
-
-												if (processingIntervalRef.current) {
-													clearInterval(processingIntervalRef.current);
-													processingIntervalRef.current = null;
-												}
-											}
-										}}
-									>
-										{enableTranscription && (
-											<Text style={styles.checkmark}>✓</Text>
-										)}
-									</TouchableOpacity>
-									<Text style={styles.checkboxLabel}>Enable Transcription</Text>
-								</View>
-
-								{enableTranscription && (
-									<View style={styles.inputContainer}>
-										<Text style={styles.inputLabel}>API Key:</Text>
-										<TextInput
-											style={styles.apiKeyInput}
-											value={deepgramApiKey}
-											onChangeText={(text) => {
-												setDeepgramApiKey(text);
-											}}
-											placeholder="Enter Deepgram API Key"
-											secureTextEntry={true}
-										/>
-									</View>
-								)}
-
-								{enableTranscription && (
-									<>
-										<TouchableOpacity
-											style={[
-												styles.button,
-												isTranscribing.current ? styles.buttonWarning : null,
-												{ marginTop: 15, marginBottom: 15 },
-											]}
-											onPress={() => {
-												if (isTranscribing.current) {
-													// Stop transcription
-													if (websocketRef.current) {
-														websocketRef.current.close();
-														websocketRef.current = null;
-													}
-
-													if (processingIntervalRef.current) {
-														clearInterval(processingIntervalRef.current);
-														processingIntervalRef.current = null;
-													}
-
-													isTranscribing.current = false;
-												} else {
-													// Start transcription
-													if (!deepgramApiKey) {
-														Alert.alert(
-															"API Key Required",
-															"Please enter your Deepgram API key to start transcription",
-														);
-														return;
-													}
-
-													if (!isListeningAudio) {
-														Alert.alert(
-															"Audio Required",
-															"Please start the audio listener first",
-														);
-														return;
-													}
-
-													initializeWebSocketTranscription();
-													setTranscription(""); // Clear previous transcription
-												}
-											}}
-											disabled={!isListeningAudio}
-										>
-											<Text style={styles.buttonText}>
-												{isTranscribing.current
-													? "Stop Transcription"
-													: "Start Transcription"}
-											</Text>
-										</TouchableOpacity>
-
-										{transcription && (
-											<View style={styles.transcriptionTextContainer}>
-												<Text style={styles.transcriptionTitle}>
-													Transcription:
-												</Text>
-												<Text style={styles.transcriptionText}>
-													{transcription}
-												</Text>
-											</View>
-										)}
-									</>
-								)}
-							</View>
+							{/* Transcription Panel */}
+							<TranscriptionPanel
+								enableTranscription={enableTranscription}
+								onToggleTranscription={handleToggleTranscription}
+								deepgramApiKey={deepgramApiKey}
+								onApiKeyChange={setDeepgramApiKey}
+								isListeningAudio={isListeningAudio}
+								isTranscribing={isTranscribing.current}
+								onStartTranscription={handleTranscriptionControl}
+								onStopTranscription={handleTranscriptionControl}
+								transcription={transcription}
+							/>
 						</View>
 					</View>
 				)}
@@ -827,33 +710,6 @@ const styles = StyleSheet.create({
 	container: {
 		flex: 1,
 		backgroundColor: "#f5f5f5",
-	},
-	statusBanner: {
-		backgroundColor: "#FF9500",
-		padding: 12,
-		borderRadius: 8,
-		marginBottom: 15,
-		flexDirection: "row",
-		justifyContent: "space-between",
-		alignItems: "center",
-	},
-	statusText: {
-		color: "white",
-		fontSize: 14,
-		fontWeight: "500",
-		flex: 1,
-		marginRight: 10,
-	},
-	statusButton: {
-		backgroundColor: "rgba(255, 255, 255, 0.3)",
-		paddingVertical: 6,
-		paddingHorizontal: 12,
-		borderRadius: 6,
-	},
-	statusButtonText: {
-		color: "white",
-		fontWeight: "600",
-		fontSize: 12,
 	},
 	content: {
 		padding: 20,
@@ -896,63 +752,13 @@ const styles = StyleSheet.create({
 		shadowOpacity: 0.1,
 		shadowRadius: 2,
 	},
-	smallButton: {
-		paddingVertical: 8,
-		paddingHorizontal: 12,
-	},
 	buttonWarning: {
 		backgroundColor: "#FF9500",
-	},
-	buttonDanger: {
-		backgroundColor: "#FF3B30",
-	},
-	buttonDisabled: {
-		backgroundColor: "#A0A0A0",
-		opacity: 0.7,
 	},
 	buttonText: {
 		color: "white",
 		fontSize: 16,
 		fontWeight: "600",
-	},
-	responseContainer: {
-		marginTop: 15,
-		padding: 12,
-		backgroundColor: "#f0f0f0",
-		borderRadius: 8,
-		borderLeftWidth: 4,
-		borderLeftColor: "#007AFF",
-	},
-	responseTitle: {
-		fontSize: 14,
-		fontWeight: "600",
-		marginBottom: 5,
-		color: "#555",
-	},
-	responseText: {
-		fontSize: 14,
-		color: "#333",
-	},
-	deviceList: {
-		marginTop: 5,
-	},
-	deviceItem: {
-		flexDirection: "row",
-		justifyContent: "space-between",
-		alignItems: "center",
-		paddingVertical: 10,
-		borderBottomWidth: 1,
-		borderBottomColor: "#eee",
-	},
-	deviceName: {
-		fontSize: 16,
-		fontWeight: "500",
-		color: "#333",
-	},
-	deviceInfo: {
-		fontSize: 12,
-		color: "#666",
-		marginTop: 2,
 	},
 	codecContainer: {
 		marginTop: 15,
@@ -974,142 +780,5 @@ const styles = StyleSheet.create({
 	},
 	audioControls: {
 		marginTop: 10,
-	},
-	audioStatsContainer: {
-		marginTop: 15,
-		padding: 12,
-		backgroundColor: "#f0f0f0",
-		borderRadius: 8,
-		alignItems: "center",
-		borderLeftWidth: 4,
-		borderLeftColor: "#FF9500",
-	},
-	audioStatsTitle: {
-		fontSize: 14,
-		fontWeight: "500",
-		color: "#555",
-	},
-	audioStatsValue: {
-		fontSize: 18,
-		fontWeight: "bold",
-		color: "#FF9500",
-		marginTop: 5,
-	},
-	batteryContainer: {
-		marginTop: 15,
-		padding: 12,
-		backgroundColor: "#f0f0f0",
-		borderRadius: 8,
-		alignItems: "center",
-		borderLeftWidth: 4,
-		borderLeftColor: "#4CD964",
-	},
-	batteryTitle: {
-		fontSize: 14,
-		fontWeight: "500",
-		color: "#555",
-	},
-	batteryLevelContainer: {
-		width: "100%",
-		height: 24,
-		backgroundColor: "#e0e0e0",
-		borderRadius: 12,
-		marginTop: 8,
-		overflow: "hidden",
-		position: "relative",
-	},
-	batteryLevelBar: {
-		height: "100%",
-		backgroundColor: "#4CD964",
-		borderRadius: 12,
-		position: "absolute",
-		left: 0,
-		top: 0,
-	},
-	batteryLevelText: {
-		position: "absolute",
-		width: "100%",
-		textAlign: "center",
-		lineHeight: 24,
-		fontSize: 12,
-		fontWeight: "bold",
-		color: "#333",
-	},
-	transcriptionContainer: {
-		marginTop: 20,
-		padding: 15,
-		backgroundColor: "#f8f8f8",
-		borderRadius: 8,
-		borderWidth: 1,
-		borderColor: "#e0e0e0",
-	},
-	sectionSubtitle: {
-		fontSize: 16,
-		fontWeight: "600",
-		marginBottom: 12,
-		color: "#333",
-	},
-	inputContainer: {
-		marginBottom: 12,
-	},
-	inputLabel: {
-		fontSize: 14,
-		fontWeight: "500",
-		marginBottom: 6,
-		color: "#555",
-	},
-	apiKeyInput: {
-		backgroundColor: "white",
-		borderWidth: 1,
-		borderColor: "#ddd",
-		borderRadius: 6,
-		padding: 10,
-		fontSize: 14,
-	},
-	checkboxContainer: {
-		flexDirection: "row",
-		alignItems: "center",
-		marginBottom: 15,
-	},
-	checkbox: {
-		width: 22,
-		height: 22,
-		borderWidth: 1,
-		borderColor: "#007AFF",
-		borderRadius: 4,
-		justifyContent: "center",
-		alignItems: "center",
-		marginRight: 10,
-	},
-	checkboxChecked: {
-		backgroundColor: "#007AFF",
-	},
-	checkmark: {
-		color: "white",
-		fontSize: 14,
-		fontWeight: "bold",
-	},
-	checkboxLabel: {
-		fontSize: 14,
-		color: "#333",
-	},
-	transcriptionTextContainer: {
-		marginTop: 12,
-		padding: 10,
-		backgroundColor: "white",
-		borderRadius: 6,
-		borderLeftWidth: 3,
-		borderLeftColor: "#007AFF",
-	},
-	transcriptionTitle: {
-		fontSize: 14,
-		fontWeight: "500",
-		marginBottom: 6,
-		color: "#555",
-	},
-	transcriptionText: {
-		fontSize: 14,
-		color: "#333",
-		lineHeight: 20,
 	},
 });
