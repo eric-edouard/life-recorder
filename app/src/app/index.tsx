@@ -24,6 +24,9 @@ import DeviceList from "@/src/components/DeviceList";
 import StatusBanner from "@/src/components/StatusBanner";
 import TranscriptionPanel from "@/src/components/TranscriptionPanel";
 
+// Target device ID to auto-connect
+const TARGET_DEVICE_ID = "D65CD59F-3E9A-4BF0-016E-141BB478E1B8";
+
 export default function Home() {
 	const [devices, setDevices] = useState<OmiDevice[]>([]);
 	const [scanning, setScanning] = useState(false);
@@ -76,6 +79,78 @@ export default function Home() {
 			}
 		};
 	}, []);
+
+	// Effect for auto-scanning and connecting to target device
+	useEffect(() => {
+		// Only proceed if Bluetooth is on and permission is granted
+		if (bluetoothState === State.PoweredOn && permissionGranted) {
+			// Auto-start scan
+			console.log("Auto-starting scan for devices");
+
+			// Start scanning without clearing existing devices
+			setScanning(true);
+
+			// Set up auto-connect logic
+			const autoConnectTimeout = setTimeout(() => {
+				// Check if the target device is found
+				const targetDevice = devices.find(
+					(device) => device.id === TARGET_DEVICE_ID,
+				);
+
+				if (targetDevice) {
+					console.log(
+						"Target device found, auto-connecting:",
+						TARGET_DEVICE_ID,
+					);
+					connectToDevice(TARGET_DEVICE_ID);
+				} else {
+					console.log("Target device not found in scan results");
+				}
+
+				// Stop scanning after attempt
+				if (stopScanRef.current) {
+					stopScanRef.current();
+					stopScanRef.current = null;
+					setScanning(false);
+				}
+			}, 10000); // Give 10 seconds to find the device
+
+			// Start the scan
+			stopScanRef.current = omiConnection.scanForDevices(
+				(device) => {
+					setDevices((prev) => {
+						// Check if device already exists
+						if (prev.some((d) => d.id === device.id)) {
+							return prev;
+						}
+
+						// If this is our target device, connect immediately
+						if (device.id === TARGET_DEVICE_ID) {
+							console.log(
+								"Target device found during scan, connecting immediately",
+							);
+							// Clear the timeout since we found it
+							clearTimeout(autoConnectTimeout);
+							// Connect in the next tick to avoid state issues
+							setTimeout(() => connectToDevice(TARGET_DEVICE_ID), 0);
+						}
+
+						return [...prev, device];
+					});
+				},
+				15000, // 15 seconds timeout
+			);
+
+			return () => {
+				// Clean up timeout if component unmounts
+				clearTimeout(autoConnectTimeout);
+				if (stopScanRef.current) {
+					stopScanRef.current();
+					stopScanRef.current = null;
+				}
+			};
+		}
+	}, [bluetoothState, permissionGranted]);
 
 	const requestBluetoothPermission = async () => {
 		try {
@@ -606,7 +681,7 @@ export default function Home() {
 	return (
 		<SafeAreaView style={styles.container}>
 			<ScrollView contentContainerStyle={styles.content}>
-				<Text style={styles.title}>Omi SDK Example</Text>
+				<Text style={styles.title}>Life Logger</Text>
 
 				{/* Bluetooth Status Banner */}
 				<StatusBanner
