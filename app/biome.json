@@ -23,7 +23,7 @@
 			"style": {
 				"noNonNullAssertion": "warn",
 				"useImportType": {
-					"fix": "none",
+					"fix": "safe",
 					"level": "warn"
 				}
 			},
