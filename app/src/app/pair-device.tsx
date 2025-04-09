@@ -19,7 +19,6 @@ const TARGET_DEVICE_ID = "D65CD59F-3E9A-4BF0-016E-141BB478E1B8";
 export default function PairDevice() {
 	const connectedDeviceId = use$(deviceConnectionManager.connectedToDevice$);
 	const devices = use$(deviceConnectionManager.devices$);
-	const scanning = use$(deviceConnectionManager.scanning$);
 	const bluetoothState = use$(deviceConnectionManager.bluetoothState$);
 
 	useEffect(() => {
