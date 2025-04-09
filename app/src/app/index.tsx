@@ -1,4 +1,4 @@
-import type { BleAudioCodec } from "@/src/services/OmiConnection/types";
+import type { BleAudioCodec } from "@/src/services/OmiDeviceManager/types";
 import React, { useRef, useState } from "react";
 import {
 	Alert,
@@ -19,14 +19,14 @@ import ConnectionPill from "@/src/components/ConnectionPill";
 // Import components
 import StatusBanner from "@/src/components/StatusBanner";
 import TranscriptionPanel from "@/src/components/TranscriptionPanel";
-import { deviceConnectionManager } from "@/src/services/DeviceConnectionManager";
+import { omiDeviceManager } from "@/src/services/OmiDeviceManager/OmiDeviceManager";
 import { use$ } from "@legendapp/state/react";
 import { router } from "expo-router";
 
 export default function Home() {
 	const [codec, setCodec] = useState<BleAudioCodec | null>(null);
-	const connectedDeviceId = use$(deviceConnectionManager.connectedToDevice$);
-	const bluetoothState = use$(deviceConnectionManager.bluetoothState$);
+	const connectedDeviceId = use$(omiDeviceManager.connectedDeviceId$);
+	const bluetoothState = use$(omiDeviceManager.bluetoothState$);
 	const [isListeningAudio, setIsListeningAudio] = useState<boolean>(false);
 	const [audioPacketsReceived, setAudioPacketsReceived] = useState<number>(0);
 	const [batteryLevel, setBatteryLevel] = useState<number>(-1);
@@ -47,10 +47,7 @@ export default function Home() {
 
 	const startAudioListener = async () => {
 		try {
-			if (
-				!connectedDeviceId ||
-				!deviceConnectionManager.omiConnection.isConnected()
-			) {
+			if (!connectedDeviceId || !omiDeviceManager.isConnected()) {
 				Alert.alert("Not Connected", "Please connect to a device first");
 				return;
 			}
@@ -69,18 +66,17 @@ export default function Home() {
 				}
 			}, 500); // Update UI every 500ms
 
-			const subscription =
-				await deviceConnectionManager.omiConnection.startAudioBytesListener(
-					(bytes) => {
-						// Increment local counter instead of updating state directly
-						packetCounter++;
+			const subscription = await omiDeviceManager.startAudioBytesListener(
+				(bytes) => {
+					// Increment local counter instead of updating state directly
+					packetCounter++;
 
-						// If transcription is enabled and active, add to buffer for WebSocket
-						if (bytes.length > 0 && isTranscribing.current) {
-							audioBufferRef.current.push(new Uint8Array(bytes));
-						}
-					},
-				);
+					// If transcription is enabled and active, add to buffer for WebSocket
+					if (bytes.length > 0 && isTranscribing.current) {
+						audioBufferRef.current.push(new Uint8Array(bytes));
+					}
+				},
+			);
 
 			// Store interval reference for cleanup
 			updateIntervalRef.current = updateInterval;
@@ -273,7 +269,7 @@ export default function Home() {
 			}
 
 			if (audioSubscriptionRef.current) {
-				await deviceConnectionManager.omiConnection.stopAudioBytesListener(
+				await omiDeviceManager.stopAudioBytesListener(
 					audioSubscriptionRef.current,
 				);
 				audioSubscriptionRef.current = null;
@@ -302,17 +298,13 @@ export default function Home() {
 
 	const getAudioCodec = async () => {
 		try {
-			if (
-				!connectedDeviceId ||
-				!deviceConnectionManager.omiConnection.isConnected()
-			) {
+			if (!connectedDeviceId || !omiDeviceManager.isConnected()) {
 				Alert.alert("Not Connected", "Please connect to a device first");
 				return;
 			}
 
 			try {
-				const codecValue =
-					await deviceConnectionManager.omiConnection.getAudioCodec();
+				const codecValue = await omiDeviceManager.getAudioCodec();
 				setCodec(codecValue);
 			} catch (error) {
 				console.error("Get codec error:", error);
@@ -327,17 +319,13 @@ export default function Home() {
 
 	const getBatteryLevel = async () => {
 		try {
-			if (
-				!connectedDeviceId ||
-				!deviceConnectionManager.omiConnection.isConnected()
-			) {
+			if (!connectedDeviceId || !omiDeviceManager.isConnected()) {
 				Alert.alert("Not Connected", "Please connect to a device first");
 				return;
 			}
 
 			try {
-				const level =
-					await deviceConnectionManager.omiConnection.getBatteryLevel();
+				const level = await omiDeviceManager.getBatteryLevel();
 				setBatteryLevel(level);
 			} catch (error) {
 				console.error("Get battery level error:", error);
@@ -413,9 +401,7 @@ export default function Home() {
 				{/* Bluetooth Status Banner */}
 				<StatusBanner
 					bluetoothState={bluetoothState}
-					onRequestPermission={
-						deviceConnectionManager.requestBluetoothPermission
-					}
+					onRequestPermission={omiDeviceManager.requestBluetoothPermission}
 					onOpenSettings={() => Linking.openSettings()}
 				/>
 

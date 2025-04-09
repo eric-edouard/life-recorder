@@ -1,4 +1,4 @@
-import type { OmiDevice } from "@/src/services/OmiConnection/types";
+import type { OmiDevice } from "@/src/services/OmiDeviceManager/types";
 import React from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 

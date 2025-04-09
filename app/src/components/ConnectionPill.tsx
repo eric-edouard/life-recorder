@@ -1,7 +1,7 @@
-import { deviceConnectionManager } from "@/src/services/DeviceConnectionManager";
+import { omiDeviceManager } from "@/src/services/OmiDeviceManager/OmiDeviceManager";
 import { use$ } from "@legendapp/state/react";
 import type React from "react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { Animated, StyleSheet, Text, TouchableOpacity } from "react-native";
 import { State } from "react-native-ble-plx";
 
@@ -11,12 +11,12 @@ type ConnectionPillProps = {
 
 const ConnectionPill: React.FC<ConnectionPillProps> = ({ onPress }) => {
 	const blinkAnim = useRef(new Animated.Value(1)).current;
-	const [isConnecting, setIsConnecting] = useState(false);
 
-	// Get state directly from deviceConnectionManager
-	const bluetoothState = use$(deviceConnectionManager.bluetoothState$);
-	const connectedDeviceId = use$(deviceConnectionManager.connectedToDevice$);
-	const scanning = use$(deviceConnectionManager.scanning$);
+	// Get state directly from omiDeviceManager
+	const bluetoothState = use$(omiDeviceManager.bluetoothState$);
+	const connectedDeviceId = use$(omiDeviceManager.connectedDeviceId$);
+	const scanning = use$(omiDeviceManager.scanning$);
+	const isConnecting = use$(omiDeviceManager.isConnecting$);
 
 	// Start blinking animation when scanning or connecting
 	useEffect(() => {
@@ -54,23 +54,6 @@ const ConnectionPill: React.FC<ConnectionPillProps> = ({ onPress }) => {
 			}
 		};
 	}, [scanning, isConnecting, blinkAnim]);
-
-	// Subscribe to connection attempts
-	useEffect(() => {
-		const originalConnect = deviceConnectionManager.connectToDevice;
-		deviceConnectionManager.connectToDevice = async (deviceId: string) => {
-			try {
-				setIsConnecting(true);
-				await originalConnect.call(deviceConnectionManager, deviceId);
-			} finally {
-				setIsConnecting(false);
-			}
-		};
-
-		return () => {
-			deviceConnectionManager.connectToDevice = originalConnect;
-		};
-	}, []);
 
 	const getStatusInfo = () => {
 		// Bluetooth is off

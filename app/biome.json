@@ -29,6 +29,9 @@
 			},
 			"correctness": {
 				"useExhaustiveDependencies": "off"
+			},
+			"complexity": {
+				"noUselessFragments": "off"
 			}
 		}
 	},
