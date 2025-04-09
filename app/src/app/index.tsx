@@ -40,6 +40,7 @@ export default function Home() {
 	// Transcription processing state
 	const websocketRef = useRef<WebSocket | null>(null);
 	const isTranscribing = useRef<boolean>(false);
+	const allAudioData = useRef<Uint8Array[]>([]);
 	const audioBufferRef = useRef<Uint8Array[]>([]);
 	const processingIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -70,6 +71,7 @@ export default function Home() {
 				(bytes) => {
 					// Increment local counter instead of updating state directly
 					packetCounter++;
+					allAudioData.current.push(new Uint8Array(bytes));
 
 					// If transcription is enabled and active, add to buffer for WebSocket
 					if (bytes.length > 0 && isTranscribing.current) {
