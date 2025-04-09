@@ -13,9 +13,6 @@ import StatusBanner from "@/src/components/StatusBanner";
 import { deviceConnectionManager } from "@/src/services/DeviceConnectionManager";
 import { use$ } from "@legendapp/state/react";
 
-// Target device ID to auto-connect
-const TARGET_DEVICE_ID = "D65CD59F-3E9A-4BF0-016E-141BB478E1B8";
-
 export default function PairDevice() {
 	const connectedDeviceId = use$(deviceConnectionManager.connectedToDevice$);
 	const devices = use$(deviceConnectionManager.devices$);

@@ -23,9 +23,6 @@ import { deviceConnectionManager } from "@/src/services/DeviceConnectionManager"
 import { use$ } from "@legendapp/state/react";
 import { router } from "expo-router";
 
-// Target device ID to auto-connect
-const TARGET_DEVICE_ID = "D65CD59F-3E9A-4BF0-016E-141BB478E1B8";
-
 export default function Home() {
 	const [codec, setCodec] = useState<BleAudioCodec | null>(null);
 	const connectedDeviceId = use$(deviceConnectionManager.connectedToDevice$);
