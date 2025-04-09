@@ -2143,6 +2143,20 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@legendapp/state@npm:^3.0.0-beta.30":
+  version: 3.0.0-beta.30
+  resolution: "@legendapp/state@npm:3.0.0-beta.30"
+  dependencies:
+    use-sync-external-store: "npm:^1.2.2"
+  peerDependencies:
+    expo-sqlite: ^15.0.0
+  peerDependenciesMeta:
+    expo-sqlite:
+      optional: true
+  checksum: 10c0/f6227417956cf349c08c4bc630713081ccf4c1ecf8e12dc78e52f1306e2e7f158f674c8d461dc88668a4d4da33966b4ca935a2548de447e05aa5fbec8c3118fd
+  languageName: node
+  linkType: hard
+
 "@nodelib/fs.scandir@npm:2.1.5":
   version: 2.1.5
   resolution: "@nodelib/fs.scandir@npm:2.1.5"
@@ -7922,6 +7936,7 @@ __metadata:
     "@babel/core": "npm:^7.25.2"
     "@biomejs/biome": "npm:1.9.4"
     "@expo/vector-icons": "npm:^14.0.2"
+    "@legendapp/state": "npm:^3.0.0-beta.30"
     "@react-navigation/bottom-tabs": "npm:^7.2.0"
     "@react-navigation/native": "npm:^7.0.14"
     "@rn-primitives/alert-dialog": "npm:^1.1.0"
@@ -7968,6 +7983,7 @@ __metadata:
     react-native: "npm:0.76.9"
     react-native-ble-plx: "npm:^3.5.0"
     react-native-gesture-handler: "npm:~2.20.2"
+    react-native-mmkv: "npm:^3.2.0"
     react-native-reanimated: "npm:3.16.2"
     react-native-safe-area-context: "npm:4.12.0"
     react-native-screens: "npm:~4.4.0"
@@ -9958,6 +9974,16 @@ __metadata:
     react: "*"
     react-native: "*"
   checksum: 10c0/b7a37437f439b1e27a4d980de01994aa71b9091dc3ed00c21172d5505fb11978cd5ed3a43f97c89d502a3a08cf26e5cea6435b8d6e93d3557a92dd43563f7021
+  languageName: node
+  linkType: hard
+
+"react-native-mmkv@npm:^3.2.0":
+  version: 3.2.0
+  resolution: "react-native-mmkv@npm:3.2.0"
+  peerDependencies:
+    react: "*"
+    react-native: "*"
+  checksum: 10c0/41abc5b46d61de7bf0f6af0ed66fab19a391d3fdc30b011cc49ba4dce65ab7c7b1c53eda768bc71f718543e89c7d46848dab2cd537b2af39afd624a8b4f0fec4
   languageName: node
   linkType: hard
 
