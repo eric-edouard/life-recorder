@@ -21,8 +21,7 @@ const DeviceList = ({
 
 	return (
 		<View style={styles.section}>
-			<Text style={styles.sectionTitle}>Found Devices</Text>
-			<View style={styles.deviceList}>
+			<View>
 				{devices.map((device) => (
 					<View key={device.id} style={styles.deviceItem}>
 						<View>
@@ -67,15 +66,7 @@ const styles = StyleSheet.create({
 		shadowOpacity: 0.1,
 		shadowRadius: 3,
 		elevation: 2,
-	},
-	sectionTitle: {
-		fontSize: 18,
-		fontWeight: "600",
-		marginBottom: 15,
-		color: "#333",
-	},
-	deviceList: {
-		marginTop: 5,
+		marginTop: 24,
 	},
 	deviceItem: {
 		flexDirection: "row",
