@@ -28,6 +28,10 @@ export default function RootLayout() {
 	return (
 		<Stack>
 			<Stack.Screen name="index" options={{ headerShown: false }} />
+			<Stack.Screen
+				name="pair-device"
+				options={{ title: "Pair Device", headerBackTitle: "Home" }}
+			/>
 			<Stack.Screen name="+not-found" />
 		</Stack>
 	);

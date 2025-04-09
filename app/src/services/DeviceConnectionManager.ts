@@ -1,16 +1,17 @@
 import { OmiConnection } from "@/src/services/OmiConnection/OmiConnection";
 import type { OmiDevice } from "@/src/services/OmiConnection/types";
-import { observable } from "@legendapp/state";
+import { storage } from "@/src/services/storage";
+import { observable, observe, when } from "@legendapp/state";
 import { Alert, Linking, Platform } from "react-native";
 import { BleManager, State, type Subscription } from "react-native-ble-plx";
 
 export class DeviceConnectionManager {
 	// Observable state
-	public devices$ = observable<OmiDevice[]>([]);
-	public scanning$ = observable(false);
-	public connected$ = observable(false);
 	public bluetoothState$ = observable(State.Unknown);
 	public permissionGranted$ = observable(false);
+	public scanning$ = observable(false);
+	public devices$ = observable<OmiDevice[]>([]);
+	public connectedToDevice$ = observable<string | null>(null);
 
 	// Connection objects
 	public omiConnection: OmiConnection;
@@ -19,24 +20,42 @@ export class DeviceConnectionManager {
 	private stopScanCallback: () => void = () => {};
 
 	constructor() {
-		console.log(">>>>>>> bluetoothState$", this.bluetoothState$.peek());
+		console.log("DEVICE CONNECTION MANAGER: constructor");
 		this.omiConnection = new OmiConnection();
 		this.bleManager = new BleManager();
 
 		this.bleSubscription = this.bleManager.onStateChange((state) => {
-			console.log("Bluetooth state:", state);
 			this.bluetoothState$.set(state);
-
-			console.log(">>>>>>> bluetoothState$", this.bluetoothState$);
-
 			if (state === State.PoweredOn) {
 				// Bluetooth is on, now we can request permission
 				this.requestBluetoothPermission();
 			}
 		}, true);
+
+		when(
+			() =>
+				this.permissionGranted$.get() === true &&
+				this.bluetoothState$.get() === State.PoweredOn,
+			() => setTimeout(() => this.startScan(), 0),
+		);
+
+		observe(this.permissionGranted$, (permissionGranted) => {
+			console.log(
+				"DEVICE CONNECTION MANAGER: permissionGranted value",
+				permissionGranted.value,
+			);
+		});
+
+		observe(this.bluetoothState$, (bluetoothState) => {
+			console.log(
+				"DEVICE CONNECTION MANAGER: bluetoothState value",
+				bluetoothState.value,
+			);
+		});
 	}
 
-	requestBluetoothPermission = () => {
+	requestBluetoothPermission: () => boolean = () => {
+		console.log("DEVICE CONNECTION MANAGER: requestBluetoothPermission");
 		try {
 			if (Platform.OS === "ios") {
 				this.bleManager.startDeviceScan(null, null, (error) => {
@@ -59,6 +78,7 @@ export class DeviceConnectionManager {
 					}
 					// Stop scanning immediately after permission check
 					this.bleManager.stopDeviceScan();
+					return true;
 				});
 			} else if (Platform.OS === "android") {
 				// On Android, we need to check for location and bluetooth permissions
@@ -84,21 +104,24 @@ export class DeviceConnectionManager {
 						}
 						// Stop scanning immediately after permission check
 						this.bleManager.stopDeviceScan();
+						return true;
 					});
 				} catch (error) {
 					console.error("Error requesting permissions:", error);
 					this.permissionGranted$.set(false);
 				}
 			}
+			return false;
 		} catch (error) {
 			console.error("Error in requestBluetoothPermission:", error);
 			this.permissionGranted$.set(false);
+			return false;
 		}
 	};
 
 	startScan = () => {
-		console.log(">>>>>>> startScan", this.bluetoothState$);
-
+		console.log("DEVICE CONNECTION MANAGER: startScan");
+		const deviceId = storage.get("connectedDeviceId");
 		// Check if Bluetooth is on and permission is granted
 		if (this.bluetoothState$.peek() !== State.PoweredOn) {
 			Alert.alert(
@@ -113,6 +136,9 @@ export class DeviceConnectionManager {
 		}
 
 		if (!this.permissionGranted$.peek()) {
+			console.warn(
+				"DEVICE CONNECTION MANAGER: startScan: permissionGranted is false",
+			);
 			this.requestBluetoothPermission();
 			return;
 		}
@@ -127,6 +153,9 @@ export class DeviceConnectionManager {
 					if (prev.some((d) => d.id === device.id)) {
 						return prev;
 					}
+					if (deviceId && device.id === deviceId) {
+						this.connectToDevice(device.id);
+					}
 					return [...prev, device];
 				});
 			},
@@ -140,6 +169,7 @@ export class DeviceConnectionManager {
 	};
 
 	stopScan = () => {
+		console.log("DEVICE CONNECTION MANAGER: stopScan");
 		this.scanning$.set(false);
 		if (this.stopScanCallback) {
 			this.stopScanCallback();
@@ -148,22 +178,20 @@ export class DeviceConnectionManager {
 	};
 
 	connectToDevice = async (deviceId: string) => {
+		console.log("DEVICE CONNECTION MANAGER: connectToDevice ", deviceId);
 		try {
 			// First check if we're already connected to a device
-			if (this.connected$.peek()) {
+			if (this.connectedToDevice$.peek()) {
 				// Disconnect from the current device first
 				await this.disconnectFromDevice();
 			}
-
-			// Set connecting state
-			this.connected$.set(false);
 
 			const success = await this.omiConnection.connect(
 				deviceId,
 				(id, state) => {
 					console.log(`Device ${id} connection state: ${state}`);
 					const isConnected = state === "connected";
-					this.connected$.set(isConnected);
+					this.connectedToDevice$.set(isConnected ? deviceId : null);
 				},
 			);
 
@@ -173,24 +201,29 @@ export class DeviceConnectionManager {
 			}
 
 			if (success) {
-				this.connected$.set(true);
+				// Set connecting state
+				this.connectedToDevice$.set(deviceId);
+				storage.set("connectedDeviceId", deviceId);
 			} else {
-				this.connected$.set(false);
+				this.connectedToDevice$.set(null);
 				Alert.alert("Connection Failed", "Could not connect to device");
 			}
 		} catch (error) {
 			console.error("Connection error:", error);
-			this.connected$.set(false);
+			this.connectedToDevice$.set(null);
 			Alert.alert("Connection Error", String(error));
 		}
 	};
 
 	disconnectFromDevice = async () => {
+		console.log("DEVICE CONNECTION MANAGER: disconnectFromDevice");
 		await this.omiConnection.disconnect();
-		this.connected$.set(false);
+		this.connectedToDevice$.set(null);
+		storage.set("connectedDeviceId", null);
 	};
 
 	destroy = () => {
+		console.log("DEVICE CONNECTION MANAGER: destroy");
 		this.bleSubscription.remove();
 		this.bleManager.destroy();
 	};

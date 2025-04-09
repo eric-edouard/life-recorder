@@ -15,23 +15,21 @@ import type { Subscription } from "react-native-ble-plx";
 
 import AudioStats from "@/src/components/AudioStats";
 import BatteryIndicator from "@/src/components/BatteryIndicator";
-import DeviceList from "@/src/components/DeviceList";
+import ConnectionPill from "@/src/components/ConnectionPill";
 // Import components
 import StatusBanner from "@/src/components/StatusBanner";
 import TranscriptionPanel from "@/src/components/TranscriptionPanel";
 import { deviceConnectionManager } from "@/src/services/DeviceConnectionManager";
 import { use$ } from "@legendapp/state/react";
+import { router } from "expo-router";
 
 // Target device ID to auto-connect
 const TARGET_DEVICE_ID = "D65CD59F-3E9A-4BF0-016E-141BB478E1B8";
 
 export default function Home() {
 	const [codec, setCodec] = useState<BleAudioCodec | null>(null);
-	const connected = use$(deviceConnectionManager.connected$);
-	const devices = use$(deviceConnectionManager.devices$);
-	const scanning = use$(deviceConnectionManager.scanning$);
+	const connectedDeviceId = use$(deviceConnectionManager.connectedToDevice$);
 	const bluetoothState = use$(deviceConnectionManager.bluetoothState$);
-	const permissionGranted = use$(deviceConnectionManager.permissionGranted$);
 	const [isListeningAudio, setIsListeningAudio] = useState<boolean>(false);
 	const [audioPacketsReceived, setAudioPacketsReceived] = useState<number>(0);
 	const [batteryLevel, setBatteryLevel] = useState<number>(-1);
@@ -52,7 +50,10 @@ export default function Home() {
 
 	const startAudioListener = async () => {
 		try {
-			if (!connected || !deviceConnectionManager.omiConnection.isConnected()) {
+			if (
+				!connectedDeviceId ||
+				!deviceConnectionManager.omiConnection.isConnected()
+			) {
 				Alert.alert("Not Connected", "Please connect to a device first");
 				return;
 			}
@@ -304,7 +305,10 @@ export default function Home() {
 
 	const getAudioCodec = async () => {
 		try {
-			if (!connected || !deviceConnectionManager.omiConnection.isConnected()) {
+			if (
+				!connectedDeviceId ||
+				!deviceConnectionManager.omiConnection.isConnected()
+			) {
 				Alert.alert("Not Connected", "Please connect to a device first");
 				return;
 			}
@@ -326,7 +330,10 @@ export default function Home() {
 
 	const getBatteryLevel = async () => {
 		try {
-			if (!connected || !deviceConnectionManager.omiConnection.isConnected()) {
+			if (
+				!connectedDeviceId ||
+				!deviceConnectionManager.omiConnection.isConnected()
+			) {
 				Alert.alert("Not Connected", "Please connect to a device first");
 				return;
 			}
@@ -401,6 +408,11 @@ export default function Home() {
 			<ScrollView contentContainerStyle={styles.content}>
 				<Text style={styles.title}>Life Logger</Text>
 
+				{/* Connection Pill */}
+				<View style={styles.pillContainer}>
+					<ConnectionPill onPress={() => router.push("/pair-device")} />
+				</View>
+
 				{/* Bluetooth Status Banner */}
 				<StatusBanner
 					bluetoothState={bluetoothState}
@@ -410,36 +422,7 @@ export default function Home() {
 					onOpenSettings={() => Linking.openSettings()}
 				/>
 
-				<View style={styles.section}>
-					<Text style={styles.sectionTitle}>Bluetooth Connection</Text>
-					<TouchableOpacity
-						style={[styles.button, scanning ? styles.buttonWarning : null]}
-						onPress={
-							scanning
-								? deviceConnectionManager.stopScan
-								: deviceConnectionManager.startScan
-						}
-					>
-						<Text style={styles.buttonText}>
-							{scanning ? "Stop Scan" : "Scan for Devices"}
-						</Text>
-					</TouchableOpacity>
-				</View>
-
-				{/* Device List */}
-				{devices.length > 0 && (
-					<DeviceList
-						devices={devices}
-						connected={connected}
-						connectedDeviceId={
-							deviceConnectionManager.omiConnection.connectedDeviceId
-						}
-						onConnect={deviceConnectionManager.connectToDevice}
-						onDisconnect={deviceConnectionManager.disconnectFromDevice}
-					/>
-				)}
-
-				{connected && (
+				{connectedDeviceId && (
 					<View style={styles.section}>
 						<Text style={styles.sectionTitle}>Device Functions</Text>
 						<TouchableOpacity style={styles.button} onPress={getAudioCodec}>
@@ -581,5 +564,9 @@ const styles = StyleSheet.create({
 	},
 	audioControls: {
 		marginTop: 10,
+	},
+	pillContainer: {
+		alignItems: "center",
+		marginBottom: 10,
 	},
 });
