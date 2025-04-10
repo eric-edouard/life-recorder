@@ -1,0 +1,38 @@
+steps:
+  # Build the Docker image
+  - name: "gcr.io/cloud-builders/docker"
+    args:
+      [
+        "build",
+        "-t",
+        "europe-west4-docker.pkg.dev/personal-projects-456407/my-repo/audio-stream-service",
+        "./audio-stream-service",
+      ]
+
+  # Push the Docker image to Artifact Registry
+  - name: "gcr.io/cloud-builders/docker"
+    args:
+      [
+        "push",
+        "europe-west4-docker.pkg.dev/personal-projects-456407/my-repo/audio-stream-service",
+      ]
+
+  # Deploy the Docker image to Cloud Run
+  - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
+    entrypoint: "gcloud"
+    args:
+      [
+        "run",
+        "deploy",
+        "audio-stream-service",
+        "--image",
+        "europe-west4-docker.pkg.dev/personal-projects-456407/my-repo/audio-stream-service",
+        "--region",
+        "europe-west4",
+        "--platform",
+        "managed",
+        "--allow-unauthenticated",
+      ]
+
+images:
+  - "europe-west4-docker.pkg.dev/personal-projects-456407/my-repo/audio-stream-service"
