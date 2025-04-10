@@ -1,7 +1,7 @@
 import { omiDeviceManager } from "@/src/services/OmiDeviceManager/OmiDeviceManager";
 import { use$ } from "@legendapp/state/react";
 import type React from "react";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Animated, StyleSheet, Text, TouchableOpacity } from "react-native";
 import { State } from "react-native-ble-plx";
 
@@ -9,14 +9,48 @@ type ConnectionPillProps = {
 	onPress: () => void;
 };
 
-const ConnectionPill: React.FC<ConnectionPillProps> = ({ onPress }) => {
+export const ConnectionPill: React.FC<ConnectionPillProps> = ({ onPress }) => {
 	const blinkAnim = useRef(new Animated.Value(1)).current;
+	const [batteryLevel, setBatteryLevel] = useState<number | null>(null);
 
 	// Get state directly from omiDeviceManager
 	const bluetoothState = use$(omiDeviceManager.bluetoothState$);
 	const connectedDeviceId = use$(omiDeviceManager.connectedDeviceId$);
 	const scanning = use$(omiDeviceManager.scanning$);
 	const isConnecting = use$(omiDeviceManager.isConnecting$);
+
+	// Fetch battery level
+	const fetchBatteryLevel = async () => {
+		if (connectedDeviceId) {
+			try {
+				const level = await omiDeviceManager.getBatteryLevel();
+				if (level >= 0) {
+					setBatteryLevel(level);
+				}
+			} catch (error) {
+				console.error("Error fetching battery level:", error);
+			}
+		} else {
+			setBatteryLevel(null);
+		}
+	};
+
+	// Fetch battery level when connected and every 30 seconds
+	useEffect(() => {
+		if (connectedDeviceId) {
+			// Fetch immediately when connected
+			fetchBatteryLevel();
+
+			// Set up interval to fetch every 30 seconds
+			const intervalId = setInterval(fetchBatteryLevel, 30000);
+
+			// Clean up interval when disconnected or component unmounts
+			return () => {
+				clearInterval(intervalId);
+				setBatteryLevel(null);
+			};
+		}
+	}, [connectedDeviceId]);
 
 	// Start blinking animation when scanning or connecting
 	useEffect(() => {
@@ -69,7 +103,8 @@ const ConnectionPill: React.FC<ConnectionPillProps> = ({ onPress }) => {
 		if (connectedDeviceId) {
 			return {
 				dotColor: "#34C759", // Green
-				text: "Connected",
+				text:
+					batteryLevel !== null ? `Connected (${batteryLevel}%)` : "Connected",
 				animateOpacity: false,
 			};
 		}
@@ -138,5 +173,3 @@ const styles = StyleSheet.create({
 		color: "#333",
 	},
 });
-
-export default ConnectionPill;

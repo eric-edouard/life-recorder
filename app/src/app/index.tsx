@@ -15,7 +15,7 @@ import type { Subscription } from "react-native-ble-plx";
 
 import AudioStats from "@/src/components/AudioStats";
 import BatteryIndicator from "@/src/components/BatteryIndicator";
-import ConnectionPill from "@/src/components/ConnectionPill";
+import { ConnectionPill } from "@/src/components/ConnectionPill";
 // Import components
 import StatusBanner from "@/src/components/StatusBanner";
 import TranscriptionPanel from "@/src/components/TranscriptionPanel";
