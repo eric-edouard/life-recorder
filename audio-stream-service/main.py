@@ -10,6 +10,7 @@ from datetime import datetime
 from flask import Flask, request, Response
 from google.cloud import storage
 from google.oauth2 import service_account
+from silero_vad import load_silero_vad, read_audio, get_speech_timestamps
 
 app = Flask(__name__)
 
@@ -24,6 +25,46 @@ logger = logging.getLogger(__name__)
 NUM_CHANNELS = 1  # Mono audio
 SAMPLE_RATE = 16000
 BITS_PER_SAMPLE = 16  # 16 bits per sample
+
+# Silero VAD model - load once at startup for efficiency
+logger.info("Loading Silero VAD model...")
+try:
+    model = load_silero_vad()
+    logger.info("Silero VAD model loaded successfully")
+except Exception as e:
+    logger.error(f"Failed to load Silero VAD model: {e}", exc_info=True)
+    model = None
+
+def detect_voice_activity(audio_file_path):
+    """
+    Detect if there is voice activity in the audio file
+    Returns True if voice is detected, False otherwise
+    """
+    if model is None:
+        logger.warning("Silero VAD model not loaded, skipping voice detection")
+        return False
+    
+    try:
+        logger.info(f"Checking voice activity in file: {audio_file_path}")
+        # Load audio using Silero utils
+        wav = read_audio(audio_file_path, sampling_rate=SAMPLE_RATE)
+        
+        # Get speech timestamps
+        speech_timestamps = get_speech_timestamps(
+            wav, 
+            model,
+            threshold=0.5,  # Adjust threshold as needed
+            sampling_rate=SAMPLE_RATE
+        )
+        
+        # If we have any speech timestamps, voice is detected
+        has_voice = len(speech_timestamps) > 0
+        logger.info(f"Voice detection result: {'Voice detected' if has_voice else 'No voice detected'}")
+        return has_voice
+    
+    except Exception as e:
+        logger.error(f"Error in voice detection: {e}", exc_info=True)
+        return False  # Default to False on error
 
 def create_wav_header(data_length):
     """Generate a WAV header for the given data length"""
@@ -131,11 +172,12 @@ def handle_post_audio():
     
     # Generate filename with current timestamp
     current_time = datetime.now()
-    filename = f"{current_time.day:02d}_{current_time.month:02d}_{current_time.year:04d}_{current_time.hour:02d}_{current_time.minute:02d}_{current_time.second:02d}.wav"
-    logger.info(f"Generated filename: {filename}")
+    base_filename = f"{current_time.day:02d}_{current_time.month:02d}_{current_time.year:04d}_{current_time.hour:02d}_{current_time.minute:02d}_{current_time.second:02d}"
+    temp_filename = f"{base_filename}.wav"
+    logger.info(f"Generated base filename: {base_filename}")
     
     # Create temporary file
-    temp_file_path = os.path.join(tempfile.gettempdir(), filename)
+    temp_file_path = os.path.join(tempfile.gettempdir(), temp_filename)
     logger.debug(f"Temporary file path: {temp_file_path}")
     
     # Generate WAV header
@@ -152,6 +194,13 @@ def handle_post_audio():
         logger.error(f"Failed to write to temporary file: {e}", exc_info=True)
         return Response(f"Failed to write temporary file: {str(e)}", status=500)
     
+    # Check for voice activity
+    has_voice = detect_voice_activity(temp_file_path)
+    
+    # Annotate filename based on voice detection
+    final_filename = f"{base_filename}_{'voice' if has_voice else 'novoice'}.wav"
+    logger.info(f"Final filename with voice annotation: {final_filename}")
+    
     # Get bucket name from environment variable
     bucket_name = os.environ.get("GCS_BUCKET_NAME")
     if not bucket_name:
@@ -161,11 +210,11 @@ def handle_post_audio():
     
     try:
         # Upload the file to Google Cloud Storage
-        upload_file_to_gcs(bucket_name, filename, temp_file_path)
+        upload_file_to_gcs(bucket_name, final_filename, temp_file_path)
         end_time = time.time()
         total_processing_time = end_time - start_time
         logger.info(f"Request processed successfully in {total_processing_time:.2f} seconds")
-        return Response(f"Audio bytes received and uploaded as {filename}", status=200)
+        return Response(f"Audio bytes received and uploaded as {final_filename}", status=200)
     except Exception as e:
         logger.error(f"Failed to upload to Google Cloud Storage: {str(e)}", exc_info=True)
         return Response(f"Failed to upload to Google Cloud Storage: {str(e)}", status=500)
