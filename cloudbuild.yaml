@@ -22,7 +22,7 @@ steps:
       - "audio-stream-service"
       - "--image=gcr.io/personal-projects-456407/audio-stream-service"
       - "--platform=managed"
-      - "--region=us-central1"
+      - "--region=europe-west4"
       - "--allow-unauthenticated"
 
 images:
