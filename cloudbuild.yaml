@@ -36,3 +36,6 @@ steps:
 
 images:
   - "europe-west4-docker.pkg.dev/personal-projects-456407/my-repo/audio-stream-service"
+
+options:
+  logging: CLOUD_LOGGING_ONLY
