@@ -21,6 +21,7 @@ import StatusBanner from "@/src/components/StatusBanner";
 import TranscriptionPanel from "@/src/components/TranscriptionPanel";
 import { omiDeviceManager } from "@/src/services/OmiDeviceManager/OmiDeviceManager";
 import { use$ } from "@legendapp/state/react";
+// @ts-expect-error
 import { router } from "expo-router";
 
 export default function Home() {
