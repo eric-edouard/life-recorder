@@ -160,7 +160,7 @@ export const saveAudio = onRequest(
 				.toISOString()
 				.replace(/:/g, "-")
 				.replace(/\./g, "-");
-			const filename = `audio_${isoString}.wav`;
+			const filename = `${isoString}.wav`;
 
 			// Create a temp file path
 			const tempFilePath = path.join(os.tmpdir(), filename);
