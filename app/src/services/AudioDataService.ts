@@ -130,12 +130,16 @@ export class AudioDataService {
 			return;
 		}
 
-		try {
-			// Use the audio data directly in base64 format
-			console.log(
-				`Sending ${this.audioData.length} opus packets to Firebase function`,
-			);
+		// Create a copy of the current audio data
+		const packetsToSend = [...this.audioData];
+		// Clear the audio data array to collect new packets
+		this.audioData = [];
 
+		console.log(
+			`Sending ${packetsToSend.length} opus packets to Firebase function`,
+		);
+
+		try {
 			// Send to Firebase function
 			const response = await fetch(this.firebaseEndpoint, {
 				method: "POST",
@@ -143,22 +147,23 @@ export class AudioDataService {
 					"Content-Type": "application/json",
 				},
 				body: JSON.stringify({
-					opus_data_packets: this.audioData,
+					opus_data_packets: packetsToSend,
 				}),
 			});
 
 			if (response.ok) {
-				// Clear the audio data after successful save
-				const packetCount = this.audioData.length;
-				this.savedAudioCount += packetCount;
-				this.audioData = [];
-
-				console.log(`Successfully sent ${packetCount} audio packets`);
+				// Update the saved count
+				this.savedAudioCount += packetsToSend.length;
+				console.log(`Successfully sent ${packetsToSend.length} audio packets`);
 			} else {
+				// Add the packets back to the beginning of the array if the request failed
+				this.audioData = [...packetsToSend, ...this.audioData];
 				const errorData = await response.json();
 				console.error("Error sending audio data:", errorData);
 			}
 		} catch (error) {
+			// Recover the packets that weren't sent due to an error by adding them back to the beginning
+			this.audioData = [...packetsToSend, ...this.audioData];
 			console.error("Error sending audio to Firebase function:", error);
 		}
 	};

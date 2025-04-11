@@ -156,7 +156,11 @@ export const saveAudio = onRequest(
 
 			// Create timestamp-based filename
 			const now = new Date();
-			const filename = `audio_${now.getFullYear()}${(now.getMonth() + 1).toString().padStart(2, "0")}${now.getDate().toString().padStart(2, "0")}_${now.getHours().toString().padStart(2, "0")}${now.getMinutes().toString().padStart(2, "0")}${now.getSeconds().toString().padStart(2, "0")}.wav`;
+			const isoString = now
+				.toISOString()
+				.replace(/:/g, "-")
+				.replace(/\./g, "-");
+			const filename = `audio_${isoString}.wav`;
 
 			// Create a temp file path
 			const tempFilePath = path.join(os.tmpdir(), filename);
