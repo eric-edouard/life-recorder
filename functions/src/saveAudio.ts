@@ -101,7 +101,11 @@ export const saveAudio = onRequest(
 		cors: ["*"],
 		region: "europe-west4",
 	},
-	async (req: Request, res: Response): Promise<void> => {
+	async (
+		// biome-ignore lint/complexity/noBannedTypes: needed for express
+		req: Request<{}, {}, { opus_data_packets: string[] }>,
+		res: Response,
+	): Promise<void> => {
 		// Check if request is POST
 		if (req.method !== "POST") {
 			res.status(405).json({ error: "Method not allowed" });
@@ -142,7 +146,13 @@ export const saveAudio = onRequest(
 			);
 
 			// Convert opus packets to WAV
-			const wavData = opusPacketsToWav(opusPackets);
+			const wavData = opusPacketsToWav(
+				opusPackets.map((bytes) => {
+					// Trim the first 3 bytes (header) added by the Omi device
+					const trimmedBytes = bytes.length > 3 ? bytes.slice(3) : bytes;
+					return trimmedBytes;
+				}),
+			);
 
 			// Create timestamp-based filename
 			const now = new Date();

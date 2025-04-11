@@ -383,7 +383,10 @@ export class OmiDeviceManager {
 	 * @returns Promise that resolves with a subscription that can be used to stop listening
 	 */
 	startAudioBytesListener = async (
-		onAudioBytesReceived: (bytes: number[]) => void,
+		onAudioBytesReceived: (
+			bytes: number[],
+			base64ValueWithHeader: string,
+		) => void,
 	): Promise<Subscription | null> => {
 		if (!this._connectedDevice) {
 			throw new Error("Device not connected");
@@ -453,12 +456,11 @@ export class OmiDeviceManager {
 									// Convert Uint8Array to number[]
 									const byteArray = Array.from(bytes);
 
-									// Trim the first 3 bytes (header) as seen in the Flutter implementation
+									// Trim the first 3 bytes (header) added by the Omi device
 									const trimmedBytes =
 										byteArray.length > 3 ? byteArray.slice(3) : byteArray;
 
-									// Send to callback
-									onAudioBytesReceived(trimmedBytes);
+									onAudioBytesReceived(trimmedBytes, base64Value);
 								}
 							} catch (decodeError) {
 								console.error("Error decoding base64 data:", decodeError);

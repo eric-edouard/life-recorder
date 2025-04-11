@@ -11,7 +11,6 @@ import {
 	TouchableOpacity,
 	View,
 } from "react-native";
-import type { Subscription } from "react-native-ble-plx";
 
 import AudioStats from "@/src/components/AudioStats";
 import BatteryIndicator from "@/src/components/BatteryIndicator";
@@ -19,6 +18,7 @@ import { ConnectionPill } from "@/src/components/ConnectionPill";
 // Import components
 import StatusBanner from "@/src/components/StatusBanner";
 import TranscriptionPanel from "@/src/components/TranscriptionPanel";
+import { audioDataService } from "@/src/services/AudioDataService";
 import { omiDeviceManager } from "@/src/services/OmiDeviceManager/OmiDeviceManager";
 import { use$ } from "@legendapp/state/react";
 // @ts-expect-error
@@ -43,140 +43,8 @@ export default function Home() {
 	// Transcription processing state
 	const websocketRef = useRef<WebSocket | null>(null);
 	const isTranscribing = useRef<boolean>(false);
-	const allAudioData = useRef<Uint8Array[]>([]);
 	const audioBufferRef = useRef<Uint8Array[]>([]);
 	const processingIntervalRef = useRef<NodeJS.Timeout | null>(null);
-	// Firebase function interval ref
-	const firebaseSaveIntervalRef = useRef<NodeJS.Timeout | null>(null);
-
-	const audioSubscriptionRef = useRef<Subscription | null>(null);
-
-	/**
-	 * Send collected audio data to Firebase function
-	 * Following the Python implementation, we'll send the individual Opus packets
-	 * rather than concatenating them ourselves
-	 */
-	const sendAudioToFirebaseFunction = async () => {
-		if (allAudioData.current.length === 0) {
-			console.log("No audio data to send");
-			return;
-		}
-
-		try {
-			// Prepare array of individual packets for the Firebase function to process
-			const packets = allAudioData.current.map((data) => {
-				// Convert to base64
-				return btoa(String.fromCharCode(...data));
-			});
-
-			console.log(
-				`Sending ${packets.length} individual opus packets to Firebase function`,
-			);
-
-			// Send to Firebase function
-			const response = await fetch(
-				"https://tired-trams-add.loca.lt/personal-projects-456407/europe-west4/saveAudio",
-				{
-					method: "POST",
-					headers: {
-						"Content-Type": "application/json",
-					},
-					body: JSON.stringify({
-						opus_data_packets: packets, // Send all packets as an array
-					}),
-				},
-			);
-
-			if (response.ok) {
-				// Clear the audio data after successful save
-				const packetCount = allAudioData.current.length;
-				allAudioData.current = [];
-				setSavedAudioCount((prev) => prev + packetCount);
-				console.log(`Successfully sent ${packetCount} audio packets`);
-			} else {
-				const errorData = await response.json();
-				console.error("Error sending audio data:", errorData);
-			}
-		} catch (error) {
-			console.error("Error sending audio to Firebase function:", error);
-		}
-	};
-
-	const startAudioListener = async () => {
-		try {
-			if (!connectedDeviceId || !omiDeviceManager.isConnected()) {
-				Alert.alert("Not Connected", "Please connect to a device first");
-				return;
-			}
-
-			// Reset state
-			setAudioPacketsReceived(0);
-			setSavedAudioCount(0);
-			allAudioData.current = [];
-
-			console.log("Starting audio bytes listener...");
-
-			// Use a counter and timer to batch UI updates
-			let packetCounter = 0;
-			const updateInterval = setInterval(() => {
-				if (packetCounter > 0) {
-					setAudioPacketsReceived((prev) => prev + packetCounter);
-					packetCounter = 0;
-				}
-			}, 500); // Update UI every 500ms
-
-			const subscription = await omiDeviceManager.startAudioBytesListener(
-				(bytes) => {
-					// Increment local counter instead of updating state directly
-					packetCounter++;
-
-					// Store each audio packet individually
-					allAudioData.current.push(new Uint8Array(bytes));
-
-					// If transcription is enabled and active, add to buffer for WebSocket
-					if (bytes.length > 0 && isTranscribing.current) {
-						audioBufferRef.current.push(new Uint8Array(bytes));
-					}
-				},
-			);
-
-			// Store interval reference for cleanup
-			updateIntervalRef.current = updateInterval;
-
-			if (subscription) {
-				audioSubscriptionRef.current = subscription;
-				updateIntervalRef.current = updateInterval;
-				setIsListeningAudio(true);
-
-				// Set up Firebase function interval - send data every 5 seconds
-				// This matches the Python implementation's save interval
-				firebaseSaveIntervalRef.current = setInterval(
-					sendAudioToFirebaseFunction,
-					5000,
-				);
-
-				// If transcription was active, stop it when audio listener stops
-				if (isTranscribing.current) {
-					if (websocketRef.current) {
-						websocketRef.current.close();
-						websocketRef.current = null;
-					}
-
-					if (processingIntervalRef.current) {
-						clearInterval(processingIntervalRef.current);
-						processingIntervalRef.current = null;
-					}
-
-					isTranscribing.current = false;
-				}
-			} else {
-				Alert.alert("Error", "Failed to start audio listener");
-			}
-		} catch (error) {
-			console.error("Start audio listener error:", error);
-			Alert.alert("Error", `Failed to start audio listener: ${error}`);
-		}
-	};
 
 	/**
 	 * Initialize WebSocket transcription service with Deepgram
@@ -326,48 +194,57 @@ export default function Home() {
 		}
 	};
 
-	// Store the update interval reference
-	const updateIntervalRef = useRef<NodeJS.Timeout | null>(null);
+	const startAudioListener = async () => {
+		try {
+			if (!connectedDeviceId || !omiDeviceManager.isConnected()) {
+				Alert.alert("Not Connected", "Please connect to a device first");
+				return;
+			}
+
+			// Reset state
+			setAudioPacketsReceived(0);
+			setSavedAudioCount(0);
+
+			console.log("Starting audio bytes listener...");
+
+			// Start audio collection using our service
+			const success = await audioDataService.startAudioCollection(
+				(packetsReceived, savedCount) => {
+					// Update statistics in the UI
+					setAudioPacketsReceived(packetsReceived);
+					setSavedAudioCount(savedCount);
+				},
+			);
+
+			if (success) {
+				setIsListeningAudio(true);
+			} else {
+				Alert.alert("Error", "Failed to start audio listener");
+			}
+		} catch (error) {
+			console.error("Start audio listener error:", error);
+			Alert.alert("Error", `Failed to start audio listener: ${error}`);
+		}
+	};
 
 	const stopAudioListener = async () => {
 		try {
-			// Clear the UI update interval
-			if (updateIntervalRef.current) {
-				clearInterval(updateIntervalRef.current);
-				updateIntervalRef.current = null;
-			}
+			// Stop audio collection using our service
+			await audioDataService.stopAudioCollection();
+			setIsListeningAudio(false);
 
-			// Clear the Firebase save interval
-			if (firebaseSaveIntervalRef.current) {
-				clearInterval(firebaseSaveIntervalRef.current);
-				firebaseSaveIntervalRef.current = null;
-
-				// Send any remaining audio data
-				if (allAudioData.current.length > 0) {
-					await sendAudioToFirebaseFunction();
+			// Disable transcription
+			if (enableTranscription) {
+				// Close WebSocket connection
+				if (websocketRef.current) {
+					websocketRef.current.close();
+					websocketRef.current = null;
 				}
-			}
 
-			if (audioSubscriptionRef.current) {
-				await omiDeviceManager.stopAudioBytesListener(
-					audioSubscriptionRef.current,
-				);
-				audioSubscriptionRef.current = null;
-				setIsListeningAudio(false);
-
-				// Disable transcription
-				if (enableTranscription) {
-					// Close WebSocket connection
-					if (websocketRef.current) {
-						websocketRef.current.close();
-						websocketRef.current = null;
-					}
-
-					// Clear processing interval
-					if (processingIntervalRef.current) {
-						clearInterval(processingIntervalRef.current);
-						processingIntervalRef.current = null;
-					}
+				// Clear processing interval
+				if (processingIntervalRef.current) {
+					clearInterval(processingIntervalRef.current);
+					processingIntervalRef.current = null;
 				}
 			}
 		} catch (error) {
@@ -447,6 +324,9 @@ export default function Home() {
 				processingIntervalRef.current = null;
 			}
 
+			// Unregister audio callback
+			audioDataService.unregisterRawAudioCallback();
+
 			isTranscribing.current = false;
 		} else {
 			// Start transcription
@@ -462,6 +342,13 @@ export default function Home() {
 				Alert.alert("Audio Required", "Please start the audio listener first");
 				return;
 			}
+
+			// Register for raw audio data
+			audioDataService.registerRawAudioCallback((bytes) => {
+				if (isTranscribing.current && bytes.length > 0) {
+					audioBufferRef.current.push(new Uint8Array(bytes));
+				}
+			});
 
 			initializeWebSocketTranscription();
 			setTranscription(""); // Clear previous transcription
