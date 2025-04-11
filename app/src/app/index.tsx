@@ -37,6 +37,8 @@ export default function Home() {
 		"8054633d49b3daf20f12cc6bcbd71b2a4e2b5aa2",
 	);
 	const [transcription, setTranscription] = useState<string>("");
+	// Audio saving statistics
+	const [savedAudioCount, setSavedAudioCount] = useState<number>(0);
 
 	// Transcription processing state
 	const websocketRef = useRef<WebSocket | null>(null);
@@ -44,8 +46,61 @@ export default function Home() {
 	const allAudioData = useRef<Uint8Array[]>([]);
 	const audioBufferRef = useRef<Uint8Array[]>([]);
 	const processingIntervalRef = useRef<NodeJS.Timeout | null>(null);
+	// Firebase function interval ref
+	const firebaseSaveIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
 	const audioSubscriptionRef = useRef<Subscription | null>(null);
+
+	/**
+	 * Send collected audio data to Firebase function
+	 * Following the Python implementation, we'll send the individual Opus packets
+	 * rather than concatenating them ourselves
+	 */
+	const sendAudioToFirebaseFunction = async () => {
+		if (allAudioData.current.length === 0) {
+			console.log("No audio data to send");
+			return;
+		}
+
+		try {
+			// Prepare array of individual packets for the Firebase function to process
+			const packets = allAudioData.current.map((data) => {
+				// Convert to base64
+				return btoa(String.fromCharCode(...data));
+			});
+
+			console.log(
+				`Sending ${packets.length} individual opus packets to Firebase function`,
+			);
+
+			// Send to Firebase function
+			const response = await fetch(
+				"https://tired-trams-add.loca.lt/personal-projects-456407/europe-west4/saveAudio",
+				{
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json",
+					},
+					body: JSON.stringify({
+						opus_data_packets: packets, // Send all packets as an array
+					}),
+				},
+			);
+
+			if (response.ok) {
+				// Clear the audio data after successful save
+				const packetCount = allAudioData.current.length;
+				allAudioData.current = [];
+				setSavedAudioCount((prev) => prev + packetCount);
+				console.log(`Successfully sent ${packetCount} audio packets`);
+			} else {
+				const errorData = await response.json();
+				console.error("Error sending audio data:", errorData);
+			}
+		} catch (error) {
+			console.error("Error sending audio to Firebase function:", error);
+		}
+	};
 
 	const startAudioListener = async () => {
 		try {
@@ -54,8 +109,10 @@ export default function Home() {
 				return;
 			}
 
-			// Reset counter
+			// Reset state
 			setAudioPacketsReceived(0);
+			setSavedAudioCount(0);
+			allAudioData.current = [];
 
 			console.log("Starting audio bytes listener...");
 
@@ -72,6 +129,8 @@ export default function Home() {
 				(bytes) => {
 					// Increment local counter instead of updating state directly
 					packetCounter++;
+
+					// Store each audio packet individually
 					allAudioData.current.push(new Uint8Array(bytes));
 
 					// If transcription is enabled and active, add to buffer for WebSocket
@@ -88,6 +147,13 @@ export default function Home() {
 				audioSubscriptionRef.current = subscription;
 				updateIntervalRef.current = updateInterval;
 				setIsListeningAudio(true);
+
+				// Set up Firebase function interval - send data every 5 seconds
+				// This matches the Python implementation's save interval
+				firebaseSaveIntervalRef.current = setInterval(
+					sendAudioToFirebaseFunction,
+					5000,
+				);
 
 				// If transcription was active, stop it when audio listener stops
 				if (isTranscribing.current) {
@@ -269,6 +335,17 @@ export default function Home() {
 			if (updateIntervalRef.current) {
 				clearInterval(updateIntervalRef.current);
 				updateIntervalRef.current = null;
+			}
+
+			// Clear the Firebase save interval
+			if (firebaseSaveIntervalRef.current) {
+				clearInterval(firebaseSaveIntervalRef.current);
+				firebaseSaveIntervalRef.current = null;
+
+				// Send any remaining audio data
+				if (allAudioData.current.length > 0) {
+					await sendAudioToFirebaseFunction();
+				}
 			}
 
 			if (audioSubscriptionRef.current) {
@@ -456,6 +533,15 @@ export default function Home() {
 								showIf={isListeningAudio}
 							/>
 
+							{/* Audio Save Stats */}
+							{isListeningAudio && (
+								<View style={styles.statsContainer}>
+									<Text style={styles.statsText}>
+										Audio chunks saved: {savedAudioCount}
+									</Text>
+								</View>
+							)}
+
 							{/* Transcription Panel */}
 							<TranscriptionPanel
 								enableTranscription={enableTranscription}
@@ -554,5 +640,17 @@ const styles = StyleSheet.create({
 	pillContainer: {
 		alignItems: "center",
 		marginBottom: 10,
+	},
+	statsContainer: {
+		marginTop: 10,
+		padding: 8,
+		backgroundColor: "#f8f8f8",
+		borderRadius: 6,
+		alignItems: "center",
+	},
+	statsText: {
+		fontSize: 14,
+		color: "#555",
+		fontWeight: "500",
 	},
 });

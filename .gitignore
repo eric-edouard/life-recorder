@@ -70,3 +70,7 @@ node_modules/
 
 # venv
 venv/
+
+python2/
+
+__pycache__/
