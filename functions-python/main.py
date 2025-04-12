@@ -2,7 +2,7 @@
 # To get started, simply uncomment the below code or create your own.
 # Deploy with `firebase deploy`
 
-from firebase_functions import storage_fn
+from firebase_functions import storage_fn, logger
 from firebase_admin import initialize_app, storage
 import pathlib
 
@@ -17,8 +17,8 @@ def log_object_archived(event: storage_fn.CloudEvent[storage_fn.StorageObjectDat
     file_path = pathlib.PurePath(event.data.name)
     content_type = event.data.content_type
 
-    # logger.info(f"Bucket: {bucket_name}")
-    # logger.info(f"File: {file_path}")
-    # logger.info(f"Content type: {content_type}")
+    logger.info(f"Bucket: {bucket_name}")
+    logger.info(f"File: {file_path}")
+    logger.info(f"Content type: {content_type}")
 
     return
