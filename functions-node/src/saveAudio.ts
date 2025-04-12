@@ -103,7 +103,7 @@ export const saveAudio = onRequest(
 	},
 	async (
 		// biome-ignore lint/complexity/noBannedTypes: needed for express
-		req: Request<{}, {}, { opus_data_packets: string[] }>,
+		req: Request<{}, {}, { opus_data_packets: string[]; iso_date: string }>,
 		res: Response,
 	): Promise<void> => {
 		// Check if request is POST
@@ -119,11 +119,12 @@ export const saveAudio = onRequest(
 		if (
 			!requestJson ||
 			!requestJson.opus_data_packets ||
-			!Array.isArray(requestJson.opus_data_packets)
+			!Array.isArray(requestJson.opus_data_packets) ||
+			!requestJson.iso_date
 		) {
 			res.status(400).json({
 				error:
-					"Missing required field: opus_data_packets must be an array of base64 encoded opus packets",
+					"Missing required field: opus_data_packets must be an array of base64 encoded opus packets and iso_date must be a valid ISO 8601 date string",
 			});
 			return;
 		}
@@ -157,13 +158,7 @@ export const saveAudio = onRequest(
 			// Get WAV data buffer for file operations
 			const wavData = Buffer.from(wavFile.toBuffer());
 
-			// Create timestamp-based filename
-			const now = new Date();
-			const isoString = now
-				.toISOString()
-				.replace(/:/g, "-")
-				.replace(/\./g, "-");
-			let filename = `${isoString}.wav`;
+			let filename = `${requestJson.iso_date}.wav`;
 
 			// Create a temp file path
 			const tempFilePath = path.join(os.tmpdir(), filename);
@@ -200,7 +195,7 @@ export const saveAudio = onRequest(
 
 				// Update filename if voice is detected
 				if (hasVoice) {
-					filename = `${isoString}_VOICE_DETECTED.wav`;
+					filename = `${requestJson.iso_date}_VOICE_DETECTED.wav`;
 				}
 			} catch (vadError) {
 				// Log but continue if VAD fails
@@ -217,7 +212,7 @@ export const saveAudio = onRequest(
 				metadata: {
 					contentType: "audio/wav",
 					metadata: {
-						hasVoice: hasVoice.toString(),
+						"has-voice": hasVoice.toString(),
 					},
 				},
 			});
