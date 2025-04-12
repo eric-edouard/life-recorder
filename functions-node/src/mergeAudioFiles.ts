@@ -6,6 +6,7 @@ import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
 import * as util from "node:util";
+import { fileSafeToIso, isoToFileSafe } from "./utils/isoToFileSafe";
 
 // Configuration parameters
 const MAX_SILENCE_MS = 3000; // Maximum silence between recordings to be considered same conversation
@@ -23,7 +24,7 @@ function parseFilename(filename: string): {
 	durationMs: number;
 	hasVoice: boolean;
 } | null {
-	// Example filename: 2025-04-12T10:57:24.222Z__6000__VOICE_DETECTED.wav
+	// Example filename: 2025-04-12T10-57-24-222Z__6000__VOICE_DETECTED.wav
 	const regex = /^(.+?)__(\d+)(?:__VOICE_DETECTED)?\.wav$/;
 	const match = filename.match(regex);
 
@@ -33,7 +34,8 @@ function parseFilename(filename: string): {
 	const hasVoice = filename.includes("__VOICE_DETECTED");
 
 	try {
-		const timestamp = new Date(timestampStr);
+		const isoTimestamp = fileSafeToIso(timestampStr);
+		const timestamp = new Date(isoTimestamp);
 		const durationMs = Number.parseInt(durationStr, 10);
 
 		return {
@@ -241,7 +243,7 @@ export const mergeAudioFiles = functions.storage.onObjectFinalized(
 					0,
 				);
 
-				const outputFileName = `${firstFile.timestamp.toISOString()}__${totalDuration}__MERGED_VOICE.wav`;
+				const outputFileName = `${isoToFileSafe(firstFile.timestamp.toISOString())}__${totalDuration}__MERGED_VOICE.wav`;
 				const outputTempPath = path.join(tempDir, outputFileName);
 
 				// Merge files with ffmpeg

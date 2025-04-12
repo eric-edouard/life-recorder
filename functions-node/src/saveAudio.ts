@@ -180,6 +180,7 @@ export const saveAudio = onRequest(
 
 			// Detect voice activity in the file
 			let hasVoice = false;
+			let speechSegments: Array<{ start: number; end: number }> = [];
 			try {
 				// Get samples and handle proper type conversion
 				const rawSamples = wavFile.getSamples() as unknown as Int16Array;
@@ -197,9 +198,14 @@ export const saveAudio = onRequest(
 				// Check if there are any speech segments
 				const segments = vad.run(audioSamples, sampleRate);
 
-				// Get the first segment to see if we have any voice
-				const firstSegment = await segments[Symbol.asyncIterator]().next();
-				hasVoice = !firstSegment.done;
+				// Collect all speech segments
+				speechSegments = [];
+				for await (const { start, end } of segments) {
+					speechSegments.push({ start, end });
+				}
+
+				// Determine if voice was detected based on having any segments
+				hasVoice = speechSegments.length > 0;
 
 				logger.info(
 					`Voice detection result: ${hasVoice ? "Voice detected" : "No voice detected"}`,
@@ -226,6 +232,7 @@ export const saveAudio = onRequest(
 					metadata: {
 						"has-voice": hasVoice.toString(),
 						duration: durationMs.toString(),
+						segments: hasVoice ? JSON.stringify(speechSegments) : "[]",
 					},
 				},
 			});
