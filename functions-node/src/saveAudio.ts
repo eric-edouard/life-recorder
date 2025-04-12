@@ -155,16 +155,14 @@ export const saveAudio = onRequest(
 				}),
 			);
 
-			// Get WAV data buffer for file operations
-			const wavData = Buffer.from(wavFile.toBuffer());
-
-			let filename = `${requestJson.iso_date}.wav`;
+			const durationMs = requestJson.opus_data_packets.length * 20; // 20ms per packet for Opus
+			let filename = `${requestJson.iso_date}__${durationMs}.wav`;
 
 			// Create a temp file path
 			const tempFilePath = path.join(os.tmpdir(), filename);
 
 			// Write the WAV file to temp directory
-			fs.writeFileSync(tempFilePath, wavData);
+			fs.writeFileSync(tempFilePath, Buffer.from(wavFile.toBuffer()));
 
 			// Detect voice activity in the file
 			let hasVoice = false;
@@ -195,7 +193,7 @@ export const saveAudio = onRequest(
 
 				// Update filename if voice is detected
 				if (hasVoice) {
-					filename = `${requestJson.iso_date}_VOICE_DETECTED.wav`;
+					filename = `${requestJson.iso_date}__${durationMs}__VOICE_DETECTED.wav`;
 				}
 			} catch (vadError) {
 				// Log but continue if VAD fails
@@ -213,6 +211,7 @@ export const saveAudio = onRequest(
 					contentType: "audio/wav",
 					metadata: {
 						"has-voice": hasVoice.toString(),
+						duration: durationMs.toString(),
 					},
 				},
 			});
