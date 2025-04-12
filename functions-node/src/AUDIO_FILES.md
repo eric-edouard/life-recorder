@@ -32,7 +32,7 @@ Each audio file includes the following metadata:
 |-------|------|-------------|
 | `has-voice` | String | `"true"` or `"false"` indicating if voice was detected |
 | `duration` | String | Duration of the audio in milliseconds |
-| `segments` | String (JSON) | JSON array of voice segments with start/end times in seconds |
+| `segments` | String (JSON) | JSON array of voice segments with start/end times in milliseconds |
 
 ### Segments Format
 
@@ -40,13 +40,13 @@ The `segments` field contains a JSON string representing an array of objects wit
 
 ```json
 [
-  { "start": 1.25, "end": 2.75 },
-  { "start": 3.5, "end": 5.0 }
+  { "start": 125, "end": 275 },
+  { "start": 350, "end": 500 }
 ]
 ```
 
-- `start`: Starting time of the voice segment in seconds
-- `end`: Ending time of the voice segment in seconds
+- `start`: Starting time of the voice segment in milliseconds
+- `end`: Ending time of the voice segment in milliseconds
 
 If no voice was detected, the segments field will contain an empty array: `[]`
 
