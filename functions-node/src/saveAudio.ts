@@ -8,6 +8,7 @@
  */
 
 import { OpusEncoder } from "@discordjs/opus";
+import { NonRealTimeVAD } from "@ricky0123/vad-node";
 import type { Request, Response } from "express";
 import { getStorage } from "firebase-admin/storage";
 import * as logger from "firebase-functions/logger";
@@ -46,7 +47,7 @@ function opusPacketsToWav(
 	opusPackets: Buffer[],
 	sampleRate = 16000,
 	channels = 1,
-): Buffer {
+): WaveFile {
 	const decoder = new OpusDecoder(sampleRate, channels);
 
 	// Decode each opus packet to PCM and collect the results
@@ -89,8 +90,7 @@ function opusPacketsToWav(
 	// Create a 16-bit PCM WAV file from the combined PCM data
 	wav.fromScratch(channels, sampleRate, "16", Array.from(combinedPcmData));
 
-	// Get the WAV file as a buffer
-	return Buffer.from(wav.toBuffer());
+	return wav;
 }
 
 /**
@@ -146,7 +146,7 @@ export const saveAudio = onRequest(
 			);
 
 			// Convert opus packets to WAV
-			const wavData = opusPacketsToWav(
+			const wavFile = opusPacketsToWav(
 				opusPackets.map((bytes) => {
 					// Trim the first 3 bytes (header) added by the Omi device
 					const trimmedBytes = bytes.length > 3 ? bytes.slice(3) : bytes;
@@ -154,19 +154,58 @@ export const saveAudio = onRequest(
 				}),
 			);
 
+			// Get WAV data buffer for file operations
+			const wavData = Buffer.from(wavFile.toBuffer());
+
 			// Create timestamp-based filename
 			const now = new Date();
 			const isoString = now
 				.toISOString()
 				.replace(/:/g, "-")
 				.replace(/\./g, "-");
-			const filename = `${isoString}.wav`;
+			let filename = `${isoString}.wav`;
 
 			// Create a temp file path
 			const tempFilePath = path.join(os.tmpdir(), filename);
 
 			// Write the WAV file to temp directory
 			fs.writeFileSync(tempFilePath, wavData);
+
+			// Detect voice activity in the file
+			let hasVoice = false;
+			try {
+				// Get samples and handle proper type conversion
+				const rawSamples = wavFile.getSamples() as unknown as Int16Array;
+				const audioSamples = new Float32Array(rawSamples.length);
+
+				// Convert from Int16 to Float32 (normalize to -1.0 to 1.0)
+				for (let i = 0; i < rawSamples.length; i++) {
+					audioSamples[i] = rawSamples[i] / 32768.0;
+				}
+
+				// Run voice activity detection
+				const vad = await NonRealTimeVAD.new();
+				const sampleRate = (wavFile.fmt as { sampleRate: number }).sampleRate;
+
+				// Check if there are any speech segments
+				const segments = vad.run(audioSamples, sampleRate);
+
+				// Get the first segment to see if we have any voice
+				const firstSegment = await segments[Symbol.asyncIterator]().next();
+				hasVoice = !firstSegment.done;
+
+				logger.info(
+					`Voice detection result: ${hasVoice ? "Voice detected" : "No voice detected"}`,
+				);
+
+				// Update filename if voice is detected
+				if (hasVoice) {
+					filename = `${isoString}_VOICE_DETECTED.wav`;
+				}
+			} catch (vadError) {
+				// Log but continue if VAD fails
+				logger.error("Error during voice detection:", vadError);
+			}
 
 			// Upload to Firebase Storage
 			const bucket = getStorage().bucket();
@@ -177,6 +216,9 @@ export const saveAudio = onRequest(
 				destination,
 				metadata: {
 					contentType: "audio/wav",
+					metadata: {
+						hasVoice: hasVoice.toString(),
+					},
 				},
 			});
 
@@ -197,6 +239,7 @@ export const saveAudio = onRequest(
 				packets_processed: requestJson.opus_data_packets.length,
 				filename,
 				url: publicUrl,
+				has_voice: hasVoice,
 			});
 		} catch (e: unknown) {
 			const error = e as Error;
