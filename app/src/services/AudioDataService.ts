@@ -14,6 +14,7 @@ export class AudioDataService {
 		| null = null;
 	private onRawAudioData: ((data: number[]) => void) | null = null;
 	private firebaseEndpoint = "https://saveaudio-pu3kjmmxua-ez.a.run.app";
+	private sendInterval = 3000;
 
 	/**
 	 * Register a callback to receive raw audio data for transcription
@@ -79,7 +80,7 @@ export class AudioDataService {
 				// Set up Firebase function interval - send data every 5 seconds
 				this.firebaseSaveInterval = setInterval(
 					this.sendAudioToFirebaseFunction,
-					5000,
+					this.sendInterval,
 				);
 
 				return true;
@@ -148,6 +149,7 @@ export class AudioDataService {
 				},
 				body: JSON.stringify({
 					opus_data_packets: packetsToSend,
+					iso_date: new Date().toISOString(),
 				}),
 			});
 
@@ -166,30 +168,6 @@ export class AudioDataService {
 			this.audioData = [...packetsToSend, ...this.audioData];
 			console.error("Error sending audio to Firebase function:", error);
 		}
-	};
-
-	/**
-	 * Check if audio collection is active
-	 */
-	isCollecting = (): boolean => {
-		return this.isListening;
-	};
-
-	/**
-	 * Get current audio collection statistics
-	 */
-	getStats = (): { packetsReceived: number; savedCount: number } => {
-		return {
-			packetsReceived: this.audioPacketsReceived,
-			savedCount: this.savedAudioCount,
-		};
-	};
-
-	/**
-	 * Set the Firebase function endpoint
-	 */
-	setFirebaseEndpoint = (endpoint: string): void => {
-		this.firebaseEndpoint = endpoint;
 	};
 }
 
