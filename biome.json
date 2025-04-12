@@ -32,6 +32,9 @@
 			},
 			"complexity": {
 				"noUselessFragments": "off"
+			},
+			"suspicious": {
+				"noExplicitAny": "warn"
 			}
 		}
 	},
