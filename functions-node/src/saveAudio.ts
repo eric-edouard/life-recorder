@@ -17,6 +17,20 @@ import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
 import { WaveFile } from "wavefile";
+import { isoToFileSafe } from "./utils/isoToFileSafe";
+
+const createFilename = (
+	isoDate: string,
+	durationMs: number,
+	hasVoice: boolean,
+): string => {
+	const fileSafeIsoDate = isoToFileSafe(isoDate);
+	const filename = `${fileSafeIsoDate}__${durationMs}.wav`;
+	if (hasVoice) {
+		return `${fileSafeIsoDate}__${durationMs}__VOICE_DETECTED.wav`;
+	}
+	return filename;
+};
 
 /**
  * Opus decoder class to convert Opus data to PCM
@@ -156,7 +170,7 @@ export const saveAudio = onRequest(
 			);
 
 			const durationMs = requestJson.opus_data_packets.length * 20; // 20ms per packet for Opus
-			let filename = `${requestJson.iso_date}__${durationMs}.wav`;
+			let filename = createFilename(requestJson.iso_date, durationMs, false);
 
 			// Create a temp file path
 			const tempFilePath = path.join(os.tmpdir(), filename);
@@ -193,7 +207,7 @@ export const saveAudio = onRequest(
 
 				// Update filename if voice is detected
 				if (hasVoice) {
-					filename = `${requestJson.iso_date}__${durationMs}__VOICE_DETECTED.wav`;
+					filename = createFilename(requestJson.iso_date, durationMs, true);
 				}
 			} catch (vadError) {
 				// Log but continue if VAD fails
@@ -216,13 +230,6 @@ export const saveAudio = onRequest(
 				},
 			});
 
-			// Make the file publicly accessible (optional)
-			const file = bucket.file(destination);
-			await file.makePublic();
-
-			// Get the public URL
-			const publicUrl = `https://storage.googleapis.com/${bucket.name}/${destination}`;
-
 			// Clean up the temp file
 			fs.unlinkSync(tempFilePath);
 
@@ -230,9 +237,6 @@ export const saveAudio = onRequest(
 			res.status(200).json({
 				status: "success",
 				message: "Audio saved successfully",
-				packets_processed: requestJson.opus_data_packets.length,
-				filename,
-				url: publicUrl,
 				has_voice: hasVoice,
 			});
 		} catch (e: unknown) {
