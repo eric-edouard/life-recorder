@@ -7,24 +7,28 @@ import { audioBufferManager } from "./audio-buffer";
 
 /**
  * Process audio data
- * @param audioBuffer The audio data buffer to process
+ * @param packets An array of audio data packets to process
  * @param socketId The socket ID of the client sending the data
  * @param timestamp The timestamp of the audio data
  * @returns true if the audio was successfully queued for processing
  */
 export function processAudioData(
-	audioBuffer: ArrayBuffer,
+	packets: number[][],
 	socketId: string,
 	timestamp: number,
 ): boolean {
 	try {
-		// Queue the audio data for processing
-		// The AudioBufferManager will accumulate packets until we have 3 seconds
-		// Then it will process them, perform VAD, and upload to GCS
-		void audioBufferManager.addPacket(socketId, audioBuffer, timestamp);
+		// Process each packet individually
+		for (const packetData of packets) {
+			// Convert number array to ArrayBuffer
+			const arrayBuffer = new Uint8Array(packetData).buffer;
+
+			// Queue the audio data for processing
+			void audioBufferManager.addPacket(socketId, arrayBuffer, timestamp);
+		}
 
 		console.log(
-			`Queued audio data of size ${audioBuffer.byteLength} bytes from client ${socketId}`,
+			`Queued ${packets.length} audio packets from client ${socketId}`,
 		);
 		return true;
 	} catch (error) {

@@ -44,11 +44,11 @@ export class SocketService {
 
 				try {
 					console.log(
-						`Received audio data. Timestamp: ${data.timestamp}, Size: ${data.audio.byteLength} bytes`,
+						`Received audio data. Timestamp: ${data.timestamp}, Packets: ${data.packets.length}`,
 					);
 
 					// Process audio data after acknowledgment
-					processAudioData(data.audio, socket.id, data.timestamp);
+					processAudioData(data.packets, socket.id, data.timestamp);
 				} catch (error) {
 					console.error("Error processing audio data:", error);
 					// Processing errors don't affect acknowledgment

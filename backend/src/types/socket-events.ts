@@ -5,7 +5,7 @@ export interface ServerToClientEvents {
 
 export interface ClientToServerEvents {
 	audioData: (
-		data: { audio: ArrayBuffer; timestamp: number },
+		data: { packets: number[][]; timestamp: number },
 		callback: (success: boolean) => void,
 	) => void;
 }
