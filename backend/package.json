@@ -14,8 +14,8 @@
 	},
 	"dependencies": {
 		"@discordjs/opus": "^0.10.0",
+		"@ericedouard/vad-node-realtime": "^0.1.0",
 		"@google-cloud/storage": "^7.16.0",
-		"@ricky0123/vad-node": "^0.0.3",
 		"@types/cors": "^2.8.17",
 		"@types/socket.io": "^3.0.2",
 		"cors": "^2.8.5",

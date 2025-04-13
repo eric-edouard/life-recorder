@@ -1,6 +1,6 @@
 import { fileSafeIso } from "@/utils/fileSafeIso";
 import { OpusEncoder } from "@discordjs/opus";
-import { NonRealTimeVAD } from "@ricky0123/vad-node";
+import { createStreamVAD } from "@ericedouard/vad-node-realtime";
 import { WaveFile } from "wavefile";
 import { gcsBucket } from "./gcs";
 
@@ -8,37 +8,19 @@ import { gcsBucket } from "./gcs";
 const SAMPLE_RATE = 16000; // 16kHz as specified
 const CHANNELS = 1;
 const OPUS_PACKET_DURATION_MS = 20; // Each Opus packet represents 20ms of audio
-const BUFFER_DURATION_MS = 3000; // 3 seconds of audio before processing
-const MAX_PACKETS = Math.ceil(BUFFER_DURATION_MS / OPUS_PACKET_DURATION_MS); // 150 packets for 3 seconds
 
 const opusEncoder = new OpusEncoder(SAMPLE_RATE, CHANNELS);
 
-// Initialize the VAD instance once
-let vadInstance: NonRealTimeVAD | null = null;
-const getVadInstance = async (): Promise<NonRealTimeVAD> => {
-	if (!vadInstance) {
-		vadInstance = await NonRealTimeVAD.new();
-	}
-	return vadInstance;
-};
-
 /**
- * Generate a filename based on timestamp, duration, and voice detection
+ * Generate a filename based on timestamp and duration
  */
-const createFilename = (
-	isoDate: string,
-	durationMs: number,
-	hasVoice: boolean,
-): string => {
+const createFilename = (isoDate: string, durationMs: number): string => {
 	const fileSafeIsoDate = fileSafeIso.dateToFileName(isoDate);
-	if (hasVoice) {
-		return `${fileSafeIsoDate}__${durationMs}__VOICE_DETECTED.wav`;
-	}
-	return `${fileSafeIsoDate}__${durationMs}.wav`;
+	return `${fileSafeIsoDate}__${durationMs}__VOICE_DETECTED.wav`;
 };
 
 /**
- * Convert multiple Opus packets to a single WAV file
+ * Convert Opus packets to a WAV file
  */
 function opusPacketsToWav(
 	opusPackets: Buffer[],
@@ -89,46 +71,6 @@ function opusPacketsToWav(
 }
 
 /**
- * Detect voice activity in audio data
- */
-async function detectVoice(wavFile: WaveFile): Promise<{
-	hasVoice: boolean;
-	speechSegments: Array<{ start: number; end: number }>;
-}> {
-	try {
-		// Get samples and handle proper type conversion
-		const rawSamples = wavFile.getSamples() as unknown as Int16Array;
-		const audioSamples = new Float32Array(rawSamples.length);
-
-		// Convert from Int16 to Float32 (normalize to -1.0 to 1.0)
-		for (let i = 0; i < rawSamples.length; i++) {
-			audioSamples[i] = rawSamples[i] / 32768.0;
-		}
-
-		// Use the singleton VAD instance
-		const vad = await getVadInstance();
-		const sampleRate = (wavFile.fmt as { sampleRate: number }).sampleRate;
-
-		// Check if there are any speech segments
-		const segments = vad.run(audioSamples, sampleRate);
-
-		// Collect all speech segments
-		const speechSegments: Array<{ start: number; end: number }> = [];
-		for await (const { start, end } of segments) {
-			speechSegments.push({ start, end });
-		}
-
-		// Determine if voice was detected based on having any segments
-		const hasVoice = speechSegments.length > 0;
-
-		return { hasVoice, speechSegments };
-	} catch (error) {
-		console.error("Error during voice detection:", error);
-		return { hasVoice: false, speechSegments: [] };
-	}
-}
-
-/**
  * Upload a WAV file to Google Cloud Storage
  */
 async function uploadToGCS(
@@ -154,122 +96,129 @@ async function uploadToGCS(
 }
 
 /**
- * Audio buffer manager to collect packets by client ID
+ * Audio buffer manager to process audio with VAD
  */
 export class AudioBufferManager {
-	private clientBuffers: Map<
-		string,
-		{
-			packets: Buffer[];
-			startTimestamp: number;
-		}
-	> = new Map();
+	private vad: any; // StreamVAD instance
+	private packets: Buffer[] = [];
+	private isInitialized = false;
+	private currentTimestamp = 0;
 
 	/**
-	 * Add an audio packet to the client's buffer
+	 * Initialize the VAD instance
 	 */
-	async addPacket(
-		clientId: string,
-		audioBuffer: ArrayBuffer,
-		timestamp: number,
-	): Promise<void> {
-		// Convert ArrayBuffer to Buffer
+	private async initialize(): Promise<void> {
+		if (this.isInitialized) return;
+
+		// Create a new StreamVAD instance
+		this.vad = await createStreamVAD({
+			sampleRate: SAMPLE_RATE,
+			onSpeechStart: () => {
+				console.log("Speech started");
+				// Store the timestamp of the first packet when speech starts
+				// We'll keep the current timestamp for this speech segment
+			},
+			onSpeechEnd: async (audio: Float32Array) => {
+				try {
+					// Only process if we have packets
+					if (this.packets.length === 0) return;
+
+					// Save only speech segments to GCS
+					const durationMs = this.packets.length * OPUS_PACKET_DURATION_MS;
+
+					// Create a WAV file from the opus packets
+					const wavFile = opusPacketsToWav(this.packets);
+
+					// Create timestamp for filename
+					const timestampISO = new Date(this.currentTimestamp).toISOString();
+
+					// Generate filename
+					const filename = createFilename(timestampISO, durationMs);
+
+					// Upload to GCS with metadata
+					await uploadToGCS(Buffer.from(wavFile.toBuffer()), filename, {
+						"has-voice": "true",
+						duration: durationMs.toString(),
+						timestamp: this.currentTimestamp.toString(),
+					});
+
+					console.log(
+						`Processed and uploaded ${durationMs}ms voice audio: ${filename}`,
+					);
+
+					// Reset packets after successfully processing
+					this.packets = [];
+				} catch (error) {
+					console.error("Error processing speech audio:", error);
+				}
+			},
+			// Optional parameters for voice detection
+			positiveSpeechThreshold: 0.6,
+			negativeSpeechThreshold: 0.4,
+			minSpeechFrames: 4,
+		});
+
+		// Start the VAD
+		this.vad.start();
+		this.isInitialized = true;
+	}
+
+	/**
+	 * Add an audio packet to the stream
+	 */
+	async addPacket(audioBuffer: ArrayBuffer, timestamp: number): Promise<void> {
+		// Initialize if needed
+		if (!this.isInitialized) {
+			await this.initialize();
+		}
+
+		// Store timestamp of first packet if buffer is empty
+		if (this.packets.length === 0) {
+			this.currentTimestamp = timestamp;
+		}
+
+		// Convert ArrayBuffer to Buffer for storage
 		const packet = Buffer.from(audioBuffer);
 
-		// Get or create buffer for this client
-		if (!this.clientBuffers.has(clientId)) {
-			this.clientBuffers.set(clientId, {
-				packets: [],
-				startTimestamp: timestamp,
-			});
-		}
+		// Store the packet for later WAV creation
+		this.packets.push(packet);
 
-		const clientBuffer = this.clientBuffers.get(clientId)!;
-		clientBuffer.packets.push(packet);
+		// Decode the opus packet to get PCM data
+		const pcmData = opusEncoder.decode(packet);
 
-		// Process buffer if we've reached 3 seconds of audio
-		if (clientBuffer.packets.length >= MAX_PACKETS) {
-			// Atomically replace the buffer before processing to avoid losing packets
-			const buffersToProcess = clientBuffer.packets;
-			const startTime = clientBuffer.startTimestamp;
+		if (pcmData && pcmData.length > 0) {
+			// Convert to Float32Array for VAD processing
+			const float32Data = new Float32Array(pcmData.length / 2);
+			const int16View = new Int16Array(
+				pcmData.buffer,
+				pcmData.byteOffset,
+				pcmData.length / 2,
+			);
 
-			// Create a new buffer for this client with an updated timestamp
-			this.clientBuffers.set(clientId, {
-				packets: [],
-				startTimestamp: Date.now(),
-			});
+			// Convert from Int16 to Float32 (normalize to -1.0 to 1.0)
+			for (let i = 0; i < int16View.length; i++) {
+				float32Data[i] = int16View[i] / 32768.0;
+			}
 
-			// Process the previous buffer's contents
-			await this.processBufferContents(clientId, buffersToProcess, startTime);
+			// Process the audio with VAD
+			await this.vad.processAudio(float32Data);
 		}
 	}
 
 	/**
-	 * Process a client's buffer when it reaches 3 seconds
+	 * Clean up resources
 	 */
-	private async processBufferContents(
-		clientId: string,
-		packets: Buffer[],
-		startTimestamp: number,
-	): Promise<void> {
-		if (packets.length === 0) return;
+	async flush(): Promise<void> {
+		if (!this.isInitialized) return;
 
 		try {
-			// Calculate actual duration
-			const durationMs = packets.length * OPUS_PACKET_DURATION_MS;
-
-			// Convert to WAV
-			const wavFile = opusPacketsToWav(packets);
-
-			// Detect voice
-			const { hasVoice, speechSegments } = await detectVoice(wavFile);
-
-			// Create timestamp for filename
-			const timestampISO = new Date(startTimestamp).toISOString();
-
-			// Generate filename
-			const filename = createFilename(timestampISO, durationMs, hasVoice);
-
-			// Upload to GCS with metadata
-			await uploadToGCS(Buffer.from(wavFile.toBuffer()), filename, {
-				"has-voice": hasVoice.toString(),
-				duration: durationMs.toString(),
-				segments: JSON.stringify(speechSegments),
-				timestamp: startTimestamp.toString(),
-			});
-
-			console.log(
-				`Processed and uploaded ${durationMs}ms audio file: ${filename}`,
-			);
+			// Process any remaining audio
+			await this.vad.flush();
+			// Clean up resources
+			this.vad.destroy();
+			this.isInitialized = false;
 		} catch (error) {
-			console.error(
-				`Error processing audio buffer for client ${clientId}:`,
-				error,
-			);
-		}
-	}
-
-	/**
-	 * Force process any remaining audio for a client (e.g., on disconnect)
-	 */
-	async flushClientBuffer(clientId: string): Promise<void> {
-		const clientBuffer = this.clientBuffers.get(clientId);
-		if (!clientBuffer || clientBuffer.packets.length === 0) return;
-
-		// Only process if we have enough packets to make it worthwhile
-		if (clientBuffer.packets.length >= 10) {
-			// At least 200ms of audio
-			const buffersToProcess = clientBuffer.packets;
-			const startTime = clientBuffer.startTimestamp;
-
-			// Clear the buffer immediately to avoid any race conditions
-			this.clientBuffers.delete(clientId);
-
-			// Process the remaining audio
-			await this.processBufferContents(clientId, buffersToProcess, startTime);
-		} else {
-			// Clear buffer without processing if too small
-			this.clientBuffers.delete(clientId);
+			console.error("Error flushing audio stream:", error);
 		}
 	}
 }
