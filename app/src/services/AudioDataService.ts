@@ -1,4 +1,6 @@
 import type { Subscription } from "react-native-ble-plx";
+import { atob } from "react-native-quick-base64";
+import { type Socket, io } from "socket.io-client";
 import { omiDeviceManager } from "./OmiDeviceManager/OmiDeviceManager";
 
 export class AudioDataService {
@@ -6,15 +8,47 @@ export class AudioDataService {
 	private savedAudioCount = 0;
 	private isListening = false;
 	private audioSubscription: Subscription | null = null;
-	private firebaseSaveInterval: NodeJS.Timeout | null = null;
+	private audioSendInterval: NodeJS.Timeout | null = null;
 	private updateStatsInterval: NodeJS.Timeout | null = null;
 	private audioData: string[] = []; // Store base64 packets directly
 	private onStatsUpdate:
 		| ((packetsReceived: number, savedCount: number) => void)
 		| null = null;
 	private onRawAudioData: ((data: number[]) => void) | null = null;
-	private firebaseEndpoint = "https://saveaudio-pu3kjmmxua-ez.a.run.app";
+	private socketEndpoint = "life-recorder-production.up.railway.app";
+	private socket: Socket | null = null;
+	private isSending = false;
 	private sendInterval = 3000;
+
+	constructor() {
+		this.initializeSocket();
+	}
+
+	/**
+	 * Initialize Socket.IO connection
+	 */
+	private initializeSocket = (): void => {
+		this.socket = io(`https://${this.socketEndpoint}`, {
+			transports: ["websocket", "polling"],
+		});
+
+		this.socket.on("connect", () => {
+			console.log("Connected to socket server using WebSockets");
+			// Log the active transport method
+			if (this.socket) {
+				const transport = this.socket.io.engine.transport.name;
+				console.log(`Active transport method: ${transport}`);
+			}
+		});
+
+		this.socket.on("disconnect", () => {
+			console.log("Disconnected from socket server");
+		});
+
+		this.socket.on("error", (error) => {
+			console.error("Socket error:", error);
+		});
+	};
 
 	/**
 	 * Register a callback to receive raw audio data for transcription
@@ -49,6 +83,11 @@ export class AudioDataService {
 		this.audioData = [];
 		this.onStatsUpdate = onStatsUpdate || null;
 
+		// Ensure socket is connected
+		if (!this.socket?.connected) {
+			this.initializeSocket();
+		}
+
 		try {
 			// Start listening for audio packets
 			const subscription = await omiDeviceManager.startAudioBytesListener(
@@ -77,9 +116,9 @@ export class AudioDataService {
 					}
 				}, 500);
 
-				// Set up Firebase function interval - send data every 5 seconds
-				this.firebaseSaveInterval = setInterval(
-					this.sendAudioToFirebaseFunction,
+				// Set up socket sending interval
+				this.audioSendInterval = setInterval(
+					this.sendAudioData,
 					this.sendInterval,
 				);
 
@@ -103,13 +142,13 @@ export class AudioDataService {
 			this.updateStatsInterval = null;
 		}
 
-		if (this.firebaseSaveInterval) {
-			clearInterval(this.firebaseSaveInterval);
-			this.firebaseSaveInterval = null;
+		if (this.audioSendInterval) {
+			clearInterval(this.audioSendInterval);
+			this.audioSendInterval = null;
 
 			// Send any remaining audio data
 			if (this.audioData.length > 0) {
-				await this.sendAudioToFirebaseFunction();
+				await this.sendAudioData();
 			}
 		}
 
@@ -123,51 +162,97 @@ export class AudioDataService {
 	};
 
 	/**
-	 * Send collected audio data to Firebase function
+	 * Get the current socket transport method
+	 * @returns The name of the current transport or null if not connected
 	 */
-	private sendAudioToFirebaseFunction = async (): Promise<void> => {
-		if (this.audioData.length === 0) {
-			console.log("No audio data to send");
+	getCurrentTransport = (): string | null => {
+		if (!this.socket?.connected) {
+			return null;
+		}
+		return this.socket.io.engine.transport.name;
+	};
+
+	/**
+	 * Send collected audio data via socket.io
+	 */
+	private sendAudioData = async (): Promise<void> => {
+		if (
+			this.audioData.length === 0 ||
+			!this.socket?.connected ||
+			this.isSending
+		) {
 			return;
 		}
 
+		// Set flag to prevent concurrent sends
+		this.isSending = true;
+
 		// Create a copy of the current audio data
 		const packetsToSend = [...this.audioData];
-		// Clear the audio data array to collect new packets
-		this.audioData = [];
-
-		console.log(
-			`Sending ${packetsToSend.length} opus packets to Firebase function`,
-		);
 
 		try {
-			// Send to Firebase function
-			const response = await fetch(this.firebaseEndpoint, {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-				},
-				body: JSON.stringify({
-					opus_data_packets: packetsToSend,
-					iso_date: new Date().toISOString(),
-				}),
-			});
+			// Convert base64 data to ArrayBuffer
+			const concatenatedAudio = this.convertBase64ToArrayBuffer(packetsToSend);
 
-			if (response.ok) {
-				// Update the saved count
-				this.savedAudioCount += packetsToSend.length;
-				console.log(`Successfully sent ${packetsToSend.length} audio packets`);
-			} else {
-				// Add the packets back to the beginning of the array if the request failed
-				this.audioData = [...packetsToSend, ...this.audioData];
-				const errorData = await response.json();
-				console.error("Error sending audio data:", errorData);
-			}
+			// Send via socket.io
+			this.socket.emit(
+				"audioData",
+				{
+					audio: concatenatedAudio,
+					timestamp: Date.now(),
+				},
+				(success: boolean) => {
+					if (success) {
+						// Only clear the sent data after confirmation
+						this.audioData = this.audioData.slice(packetsToSend.length);
+						this.savedAudioCount += packetsToSend.length;
+						console.log(
+							`Successfully sent ${packetsToSend.length} audio packets`,
+						);
+					} else {
+						console.error("Failed to send audio data, will retry later");
+					}
+					this.isSending = false;
+				},
+			);
 		} catch (error) {
-			// Recover the packets that weren't sent due to an error by adding them back to the beginning
-			this.audioData = [...packetsToSend, ...this.audioData];
-			console.error("Error sending audio to Firebase function:", error);
+			console.error("Error sending audio data:", error);
+			this.isSending = false;
 		}
+	};
+
+	/**
+	 * Convert array of base64 strings to a single ArrayBuffer
+	 */
+	private convertBase64ToArrayBuffer = (
+		base64Packets: string[],
+	): ArrayBuffer => {
+		// Decode all base64 packets and calculate total length
+		const decodedPackets = base64Packets.map((packet) => {
+			const bytes = atob(packet);
+			const bytesArray = new Uint8Array([...bytes].map((c) => c.charCodeAt(0)));
+
+			// Trim the first 3 bytes (header) from each packet
+			return bytesArray.length > 3 ? bytesArray.slice(3) : bytesArray;
+		});
+
+		// Calculate total length
+		const totalLength = decodedPackets.reduce(
+			(sum, packet) => sum + packet.length,
+			0,
+		);
+
+		// Create a single buffer to hold all packets
+		const result = new Uint8Array(totalLength);
+
+		// Copy all packets into the result buffer
+		let offset = 0;
+		for (const packet of decodedPackets) {
+			result.set(packet, offset);
+			offset += packet.length;
+		}
+
+		return result.buffer;
 	};
 }
 
