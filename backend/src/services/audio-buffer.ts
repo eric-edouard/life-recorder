@@ -13,6 +13,15 @@ const MAX_PACKETS = Math.ceil(BUFFER_DURATION_MS / OPUS_PACKET_DURATION_MS); // 
 
 const opusEncoder = new OpusEncoder(SAMPLE_RATE, CHANNELS);
 
+// Initialize the VAD instance once
+let vadInstance: NonRealTimeVAD | null = null;
+const getVadInstance = async (): Promise<NonRealTimeVAD> => {
+	if (!vadInstance) {
+		vadInstance = await NonRealTimeVAD.new();
+	}
+	return vadInstance;
+};
+
 /**
  * Generate a filename based on timestamp, duration, and voice detection
  */
@@ -96,8 +105,8 @@ async function detectVoice(wavFile: WaveFile): Promise<{
 			audioSamples[i] = rawSamples[i] / 32768.0;
 		}
 
-		// Run voice activity detection
-		const vad = await NonRealTimeVAD.new();
+		// Use the singleton VAD instance
+		const vad = await getVadInstance();
 		const sampleRate = (wavFile.fmt as { sampleRate: number }).sampleRate;
 
 		// Check if there are any speech segments
