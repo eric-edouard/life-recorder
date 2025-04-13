@@ -15,6 +15,7 @@ import {
 import AudioStats from "@/src/components/AudioStats";
 import BatteryIndicator from "@/src/components/BatteryIndicator";
 import { ConnectionPill } from "@/src/components/ConnectionPill";
+import { ServerConnectionPill } from "@/src/components/ServerConnectionPill";
 // Import components
 import StatusBanner from "@/src/components/StatusBanner";
 import { audioDataService } from "@/src/services/AudioDataService";
@@ -118,14 +119,26 @@ export default function Home() {
 		}
 	};
 
+	const handleServerReconnect = async () => {
+		try {
+			const initiated = await audioDataService.reconnectToServer();
+			if (initiated) {
+				console.log("Server reconnection initiated");
+			}
+		} catch (error) {
+			console.error("Server reconnect error:", error);
+		}
+	};
+
 	return (
 		<SafeAreaView style={styles.container}>
 			<ScrollView contentContainerStyle={styles.content}>
 				<Text style={styles.title}>Life Logger</Text>
 
-				{/* Connection Pill */}
+				{/* Connection Pills */}
 				<View style={styles.pillContainer}>
 					<ConnectionPill onPress={() => router.push("/pair-device")} />
+					<ServerConnectionPill onPress={handleServerReconnect} />
 				</View>
 
 				{/* Bluetooth Status Banner */}
@@ -277,6 +290,8 @@ const styles = StyleSheet.create({
 	pillContainer: {
 		alignItems: "center",
 		marginBottom: 10,
+		gap: 8,
+		flexDirection: "row",
 	},
 	statsContainer: {
 		marginTop: 10,

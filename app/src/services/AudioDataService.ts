@@ -1,15 +1,27 @@
+import { observable } from "@legendapp/state";
 import type { Subscription } from "react-native-ble-plx";
 import { type Socket, io } from "socket.io-client";
 import { omiDeviceManager } from "./OmiDeviceManager/OmiDeviceManager";
 
+// Connection states for the socket
+export enum SocketConnectionState {
+	DISCONNECTED = "disconnected",
+	CONNECTING = "connecting",
+	CONNECTED = "connected",
+}
+
 export class AudioDataService {
+	// Observable for connection state
+	public connectionState$ = observable<SocketConnectionState>(
+		SocketConnectionState.DISCONNECTED,
+	);
+
 	private audioPacketsReceived = 0;
 	private savedAudioCount = 0;
-	private isListening = false;
 	private audioSubscription: Subscription | null = null;
 	private audioSendInterval: NodeJS.Timeout | null = null;
 	private updateStatsInterval: NodeJS.Timeout | null = null;
-	private audioData: number[][] = []; // Store processed bytes directly
+	private audioPacketsBuffer: number[][] = []; // Store processed bytes directly
 	private onStatsUpdate:
 		| ((packetsReceived: number, savedCount: number) => void)
 		| null = null;
@@ -26,12 +38,16 @@ export class AudioDataService {
 	 * Initialize Socket.IO connection
 	 */
 	private initializeSocket = (): void => {
+		this.connectionState$.set(SocketConnectionState.CONNECTING);
+
 		this.socket = io(`https://${this.socketEndpoint}`, {
 			transports: ["websocket", "polling"],
 		});
 
 		this.socket.on("connect", () => {
 			console.log("Connected to socket server using WebSockets");
+			this.connectionState$.set(SocketConnectionState.CONNECTED);
+
 			// Log the active transport method
 			if (this.socket) {
 				const transport = this.socket.io.engine.transport.name;
@@ -41,10 +57,12 @@ export class AudioDataService {
 
 		this.socket.on("disconnect", () => {
 			console.log("Disconnected from socket server");
+			this.connectionState$.set(SocketConnectionState.DISCONNECTED);
 		});
 
 		this.socket.on("error", (error) => {
 			console.error("Socket error:", error);
+			this.connectionState$.set(SocketConnectionState.DISCONNECTED);
 		});
 	};
 
@@ -57,6 +75,26 @@ export class AudioDataService {
 			return null;
 		}
 		return this.socket.io.engine.transport.name;
+	};
+
+	/**
+	 * Manually reconnect to the socket server
+	 * @returns Promise that resolves to true if reconnection was initiated
+	 */
+	reconnectToServer = async (): Promise<boolean> => {
+		if (this.socket?.connected) {
+			console.log("Already connected to server");
+			return false;
+		}
+
+		// Disconnect existing socket if any
+		if (this.socket) {
+			this.socket.disconnect();
+		}
+
+		// Reinitialize socket connection
+		this.initializeSocket();
+		return true;
 	};
 
 	/**
@@ -74,7 +112,7 @@ export class AudioDataService {
 		// Reset state
 		this.audioPacketsReceived = 0;
 		this.savedAudioCount = 0;
-		this.audioData = [];
+		this.audioPacketsBuffer = [];
 		this.onStatsUpdate = onStatsUpdate || null;
 
 		// Ensure socket is connected
@@ -88,7 +126,7 @@ export class AudioDataService {
 				(processedBytes: number[]) => {
 					// Store the processed bytes directly
 					if (processedBytes.length > 0) {
-						this.audioData.push(processedBytes);
+						this.audioPacketsBuffer.push(processedBytes);
 						this.audioPacketsReceived++;
 					}
 				},
@@ -96,7 +134,6 @@ export class AudioDataService {
 
 			if (subscription) {
 				this.audioSubscription = subscription;
-				this.isListening = true;
 
 				// Set up stats update interval
 				this.updateStatsInterval = setInterval(() => {
@@ -107,7 +144,7 @@ export class AudioDataService {
 
 				// Set up socket sending interval
 				this.audioSendInterval = setInterval(
-					this.sendAudioData,
+					this.sendAudioPackets,
 					this.sendInterval,
 				);
 
@@ -136,8 +173,8 @@ export class AudioDataService {
 			this.audioSendInterval = null;
 
 			// Send any remaining audio data
-			if (this.audioData.length > 0) {
-				await this.sendAudioData();
+			if (this.audioPacketsBuffer.length > 0) {
+				await this.sendAudioPackets();
 			}
 		}
 
@@ -146,16 +183,14 @@ export class AudioDataService {
 			await omiDeviceManager.stopAudioBytesListener(this.audioSubscription);
 			this.audioSubscription = null;
 		}
-
-		this.isListening = false;
 	};
 
 	/**
-	 * Send collected audio data via socket.io
+	 * Send collected audio packets via socket.io
 	 */
-	private sendAudioData = async (): Promise<void> => {
+	private sendAudioPackets = async (): Promise<void> => {
 		if (
-			this.audioData.length === 0 ||
+			this.audioPacketsBuffer.length === 0 ||
 			!this.socket?.connected ||
 			this.isSending
 		) {
@@ -166,62 +201,43 @@ export class AudioDataService {
 		this.isSending = true;
 
 		// Create a copy of the current audio data
-		const packetsToSend = [...this.audioData];
+		const packetsToSend = [...this.audioPacketsBuffer];
+		this.audioPacketsBuffer = []; // Clear the buffer immediately to avoid duplicate sends
 
 		try {
-			// Convert bytes arrays to a single ArrayBuffer
-			const concatenatedAudio = this.convertBytesToArrayBuffer(packetsToSend);
+			// Instead of concatenating, send an array of individual packets
+			const packets = packetsToSend.map((packet) => Array.from(packet));
 
 			// Send via socket.io
 			this.socket.emit(
 				"audioData",
 				{
-					audio: concatenatedAudio,
+					packets: packets, // Send array of packets instead of concatenated buffer
 					timestamp: Date.now(),
 				},
 				(success: boolean) => {
 					if (success) {
-						// Only clear the sent data after confirmation
-						this.audioData = this.audioData.slice(packetsToSend.length);
 						this.savedAudioCount += packetsToSend.length;
 						console.log(
 							`Successfully sent ${packetsToSend.length} audio packets`,
 						);
 					} else {
 						console.error("Failed to send audio data, will retry later");
+						// Re-add the packets to the buffer for retry
+						this.audioPacketsBuffer = [
+							...packetsToSend,
+							...this.audioPacketsBuffer,
+						];
 					}
 					this.isSending = false;
 				},
 			);
 		} catch (error) {
 			console.error("Error sending audio data:", error);
+			// Re-add the packets to the buffer for retry
+			this.audioPacketsBuffer = [...packetsToSend, ...this.audioPacketsBuffer];
 			this.isSending = false;
 		}
-	};
-
-	/**
-	 * Convert array of byte arrays to a single ArrayBuffer
-	 */
-	private convertBytesToArrayBuffer = (
-		bytesPackets: number[][],
-	): ArrayBuffer => {
-		// Calculate total length
-		const totalLength = bytesPackets.reduce(
-			(sum, packet) => sum + packet.length,
-			0,
-		);
-
-		// Create a single buffer to hold all packets
-		const result = new Uint8Array(totalLength);
-
-		// Copy all packets into the result buffer
-		let offset = 0;
-		for (const packet of bytesPackets) {
-			result.set(packet, offset);
-			offset += packet.length;
-		}
-
-		return result.buffer;
 	};
 }
 
