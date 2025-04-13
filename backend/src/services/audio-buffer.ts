@@ -70,53 +70,44 @@ async function uploadToGCS(
 }
 
 /**
- * Audio processor class that handles real-time voice activity detection
+ * Audio processor for real-time voice activity detection
  */
 export class AudioProcessor {
-	private clientVADs: Map<string, StreamVAD> = new Map();
-	private clientStartTimes: Map<string, number> = new Map();
+	private streamVAD: StreamVAD | null = null;
+	private speechStartTime = 0;
+
+	constructor() {
+		this.initVAD();
+	}
 
 	/**
-	 * Initialize a StreamVAD for a client
+	 * Initialize VAD
 	 */
-	private async getOrCreateClientVAD(
-		clientId: string,
-		timestamp: number,
-	): Promise<StreamVAD> {
-		if (!this.clientVADs.has(clientId)) {
-			const streamVAD = await createStreamVAD({
-				onSpeechStart: () => {
-					console.log(`Speech started for client ${clientId}`);
-					this.clientStartTimes.set(clientId, timestamp);
-				},
-				onSpeechEnd: async (audio: Float32Array) => {
-					console.log(
-						`Speech ended for client ${clientId}, audio length: ${audio.length}`,
-					);
-					await this.processSpeechAudio(clientId, audio);
-				},
-				// Optional: customize VAD parameters
-				positiveSpeechThreshold: 0.6,
-				negativeSpeechThreshold: 0.4,
-				minSpeechFrames: 4,
-			});
+	private async initVAD(): Promise<void> {
+		this.streamVAD = await createStreamVAD({
+			onSpeechStart: () => {
+				console.log("Speech started");
+				this.speechStartTime = Date.now();
+			},
+			onSpeechEnd: async (audio: Float32Array) => {
+				console.log(`Speech ended, audio length: ${audio.length}`);
+				await this.processSpeechAudio(audio);
+			},
+			// Optional: customize VAD parameters
+			positiveSpeechThreshold: 0.6,
+			negativeSpeechThreshold: 0.4,
+			minSpeechFrames: 4,
+		});
 
-			streamVAD.start();
-			this.clientVADs.set(clientId, streamVAD);
-		}
-
-		return this.clientVADs.get(clientId)!;
+		this.streamVAD.start();
 	}
 
 	/**
 	 * Process speech audio and upload to GCS
 	 */
-	private async processSpeechAudio(
-		clientId: string,
-		audio: Float32Array,
-	): Promise<void> {
+	private async processSpeechAudio(audio: Float32Array): Promise<void> {
 		try {
-			const startTime = this.clientStartTimes.get(clientId) || Date.now();
+			const startTime = this.speechStartTime;
 			const durationMs = Math.round((audio.length / SAMPLE_RATE) * 1000);
 
 			// Convert to WAV
@@ -139,10 +130,7 @@ export class AudioProcessor {
 				`Processed and uploaded ${durationMs}ms voice audio file: ${filename}`,
 			);
 		} catch (error) {
-			console.error(
-				`Error processing speech audio for client ${clientId}:`,
-				error,
-			);
+			console.error("Error processing speech audio:", error);
 		}
 	}
 
@@ -150,7 +138,6 @@ export class AudioProcessor {
 	 * Process an audio packet
 	 */
 	async processAudioPacket(
-		clientId: string,
 		audioBuffer: ArrayBuffer,
 		timestamp: number,
 	): Promise<void> {
@@ -171,30 +158,26 @@ export class AudioProcessor {
 					float32Data[i] = sample / 32768.0;
 				}
 
-				// Get or create VAD for this client
-				const vad = await this.getOrCreateClientVAD(clientId, timestamp);
-
-				// Process the audio data
-				await vad.processAudio(float32Data);
+				// Process the audio data with VAD
+				if (this.streamVAD) {
+					await this.streamVAD.processAudio(float32Data);
+				} else {
+					throw new Error("VAD not initialized");
+				}
 			}
 		} catch (error) {
-			console.error(
-				`Error processing audio packet for client ${clientId}:`,
-				error,
-			);
+			console.error("Error processing audio packet:", error);
 		}
 	}
 
 	/**
-	 * Clean up resources for a client
+	 * Clean up resources
 	 */
-	async cleanupClient(clientId: string): Promise<void> {
-		const vad = this.clientVADs.get(clientId);
-		if (vad) {
-			await vad.flush(); // Process any remaining audio
-			vad.destroy(); // Clean up resources
-			this.clientVADs.delete(clientId);
-			this.clientStartTimes.delete(clientId);
+	async cleanup(): Promise<void> {
+		if (this.streamVAD) {
+			await this.streamVAD.flush(); // Process any remaining audio
+			this.streamVAD.destroy(); // Clean up resources
+			this.streamVAD = null;
 		}
 	}
 }

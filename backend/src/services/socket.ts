@@ -1,12 +1,12 @@
-import type { Server as HttpServer } from "node:http";
 import type {
 	ClientToServerEvents,
 	InterServerEvents,
 	ServerToClientEvents,
 	SocketData,
 } from "@/types/socket-events";
+import type { Server as HttpServer } from "node:http";
 import { Server as SocketIOServer } from "socket.io";
-import { handleClientDisconnect, processAudioData } from "./audio";
+import { handleDisconnect, processAudioData } from "./audio";
 
 export class SocketService {
 	private io: SocketIOServer<
@@ -35,7 +35,7 @@ export class SocketService {
 
 	private setupSocketEvents(): void {
 		this.io.on("connection", (socket) => {
-			console.log(`Client connected: ${socket.id}`);
+			console.log("Client connected");
 
 			// Handle audio data
 			socket.on("audioData", (data, callback) => {
@@ -48,7 +48,7 @@ export class SocketService {
 					);
 
 					// Process audio data after acknowledgment
-					processAudioData(data.packets, socket.id, data.timestamp);
+					processAudioData(data.packets, data.timestamp);
 				} catch (error) {
 					console.error("Error processing audio data:", error);
 					// Processing errors don't affect acknowledgment
@@ -57,10 +57,10 @@ export class SocketService {
 
 			// Handle disconnection
 			socket.on("disconnect", () => {
-				console.log(`Client disconnected: ${socket.id}`);
+				console.log("Client disconnected");
 
-				// Process any remaining audio data from this client
-				handleClientDisconnect(socket.id);
+				// Process any remaining audio data
+				handleDisconnect();
 			});
 		});
 	}
