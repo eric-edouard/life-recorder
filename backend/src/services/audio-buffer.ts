@@ -11,27 +11,7 @@ const OPUS_PACKET_DURATION_MS = 20; // Each Opus packet represents 20ms of audio
 const BUFFER_DURATION_MS = 3000; // 3 seconds of audio before processing
 const MAX_PACKETS = Math.ceil(BUFFER_DURATION_MS / OPUS_PACKET_DURATION_MS); // 150 packets for 3 seconds
 
-/**
- * Opus decoder class to convert Opus data to PCM
- */
-class OpusDecoder {
-	private decoder: OpusEncoder;
-
-	constructor(sampleRate = SAMPLE_RATE, channels = CHANNELS) {
-		this.decoder = new OpusEncoder(sampleRate, channels);
-	}
-
-	decodePacket(data: Buffer): Buffer {
-		try {
-			// Decode Opus to PCM 16-bit
-			const pcmData = this.decoder.decode(data);
-			return pcmData;
-		} catch (e) {
-			console.error("Opus decode error:", e);
-			return Buffer.from([]);
-		}
-	}
-}
+const opusEncoder = new OpusEncoder(SAMPLE_RATE, CHANNELS);
 
 /**
  * Generate a filename based on timestamp, duration, and voice detection
@@ -56,15 +36,13 @@ function opusPacketsToWav(
 	sampleRate = SAMPLE_RATE,
 	channels = CHANNELS,
 ): WaveFile {
-	const decoder = new OpusDecoder(sampleRate, channels);
-
 	// Decode each opus packet to PCM and collect the results
 	const allPcmData: Int16Array[] = [];
 	let totalSamples = 0;
 
 	for (const packet of opusPackets) {
 		// Decode the current packet
-		const pcmData = decoder.decodePacket(packet);
+		const pcmData = opusEncoder.decode(packet);
 
 		if (pcmData && pcmData.length > 0) {
 			// Convert Buffer to Int16Array (PCM 16-bit format)
