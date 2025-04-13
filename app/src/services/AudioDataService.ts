@@ -1,5 +1,4 @@
 import type { Subscription } from "react-native-ble-plx";
-import { atob } from "react-native-quick-base64";
 import { type Socket, io } from "socket.io-client";
 import { omiDeviceManager } from "./OmiDeviceManager/OmiDeviceManager";
 
@@ -10,15 +9,14 @@ export class AudioDataService {
 	private audioSubscription: Subscription | null = null;
 	private audioSendInterval: NodeJS.Timeout | null = null;
 	private updateStatsInterval: NodeJS.Timeout | null = null;
-	private audioData: string[] = []; // Store base64 packets directly
+	private audioData: number[][] = []; // Store processed bytes directly
 	private onStatsUpdate:
 		| ((packetsReceived: number, savedCount: number) => void)
 		| null = null;
-	private onRawAudioData: ((data: number[]) => void) | null = null;
 	private socketEndpoint = "life-recorder-production.up.railway.app";
 	private socket: Socket | null = null;
 	private isSending = false;
-	private sendInterval = 3000;
+	private sendInterval = 1000;
 
 	constructor() {
 		this.initializeSocket();
@@ -51,18 +49,14 @@ export class AudioDataService {
 	};
 
 	/**
-	 * Register a callback to receive raw audio data for transcription
-	 * @param callback Function to receive raw audio bytes
+	 * Get the current socket transport method
+	 * @returns The name of the current transport or null if not connected
 	 */
-	registerRawAudioCallback = (callback: (data: number[]) => void): void => {
-		this.onRawAudioData = callback;
-	};
-
-	/**
-	 * Unregister the raw audio callback
-	 */
-	unregisterRawAudioCallback = (): void => {
-		this.onRawAudioData = null;
+	getCurrentTransport = (): string | null => {
+		if (!this.socket?.connected) {
+			return null;
+		}
+		return this.socket.io.engine.transport.name;
 	};
 
 	/**
@@ -89,18 +83,13 @@ export class AudioDataService {
 		}
 
 		try {
-			// Start listening for audio packets
+			// Start listening for audio packets - we now receive processed bytes directly
 			const subscription = await omiDeviceManager.startAudioBytesListener(
-				(bytes: number[], base64ValueWithHeader: string) => {
-					// Store the original base64 data
-					if (base64ValueWithHeader) {
-						this.audioData.push(base64ValueWithHeader);
+				(processedBytes: number[]) => {
+					// Store the processed bytes directly
+					if (processedBytes.length > 0) {
+						this.audioData.push(processedBytes);
 						this.audioPacketsReceived++;
-
-						// Forward raw audio data to transcription service if registered
-						if (this.onRawAudioData && bytes.length > 0) {
-							this.onRawAudioData(bytes);
-						}
 					}
 				},
 			);
@@ -162,17 +151,6 @@ export class AudioDataService {
 	};
 
 	/**
-	 * Get the current socket transport method
-	 * @returns The name of the current transport or null if not connected
-	 */
-	getCurrentTransport = (): string | null => {
-		if (!this.socket?.connected) {
-			return null;
-		}
-		return this.socket.io.engine.transport.name;
-	};
-
-	/**
 	 * Send collected audio data via socket.io
 	 */
 	private sendAudioData = async (): Promise<void> => {
@@ -191,8 +169,8 @@ export class AudioDataService {
 		const packetsToSend = [...this.audioData];
 
 		try {
-			// Convert base64 data to ArrayBuffer
-			const concatenatedAudio = this.convertBase64ToArrayBuffer(packetsToSend);
+			// Convert bytes arrays to a single ArrayBuffer
+			const concatenatedAudio = this.convertBytesToArrayBuffer(packetsToSend);
 
 			// Send via socket.io
 			this.socket.emit(
@@ -222,22 +200,13 @@ export class AudioDataService {
 	};
 
 	/**
-	 * Convert array of base64 strings to a single ArrayBuffer
+	 * Convert array of byte arrays to a single ArrayBuffer
 	 */
-	private convertBase64ToArrayBuffer = (
-		base64Packets: string[],
+	private convertBytesToArrayBuffer = (
+		bytesPackets: number[][],
 	): ArrayBuffer => {
-		// Decode all base64 packets and calculate total length
-		const decodedPackets = base64Packets.map((packet) => {
-			const bytes = atob(packet);
-			const bytesArray = new Uint8Array([...bytes].map((c) => c.charCodeAt(0)));
-
-			// Trim the first 3 bytes (header) from each packet
-			return bytesArray.length > 3 ? bytesArray.slice(3) : bytesArray;
-		});
-
 		// Calculate total length
-		const totalLength = decodedPackets.reduce(
+		const totalLength = bytesPackets.reduce(
 			(sum, packet) => sum + packet.length,
 			0,
 		);
@@ -247,7 +216,7 @@ export class AudioDataService {
 
 		// Copy all packets into the result buffer
 		let offset = 0;
-		for (const packet of decodedPackets) {
+		for (const packet of bytesPackets) {
 			result.set(packet, offset);
 			offset += packet.length;
 		}

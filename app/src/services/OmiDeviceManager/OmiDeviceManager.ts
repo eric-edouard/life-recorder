@@ -379,14 +379,11 @@ export class OmiDeviceManager {
 
 	/**
 	 * Start listening for audio bytes from the device
-	 * @param onAudioBytesReceived Callback function that receives audio bytes
+	 * @param onAudioBytesReceived Callback function that receives processed audio bytes
 	 * @returns Promise that resolves with a subscription that can be used to stop listening
 	 */
 	startAudioBytesListener = async (
-		onAudioBytesReceived: (
-			bytes: number[],
-			base64ValueWithHeader: string,
-		) => void,
+		onAudioBytesReceived: (processedBytes: number[]) => void,
 	): Promise<Subscription | null> => {
 		if (!this._connectedDevice) {
 			throw new Error("Device not connected");
@@ -448,23 +445,11 @@ export class OmiDeviceManager {
 
 						if (characteristic?.value) {
 							const base64Value = characteristic.value;
-
-							try {
-								const bytes = base64ToBytes(base64Value);
-
-								if (bytes.length > 0) {
-									// Convert Uint8Array to number[]
-									const byteArray = Array.from(bytes);
-
-									// Trim the first 3 bytes (header) added by the Omi device
-									const trimmedBytes =
-										byteArray.length > 3 ? byteArray.slice(3) : byteArray;
-
-									onAudioBytesReceived(trimmedBytes, base64Value);
-								}
-							} catch (decodeError) {
-								console.error("Error decoding base64 data:", decodeError);
-							}
+							// Convert base64 to bytes using optimized function
+							const bytes = base64ToBytes(base64Value);
+							// Remove the first 3 bytes (header) added by the Omi device
+							const processedBytes = bytes.length > 3 ? bytes.slice(3) : bytes;
+							onAudioBytesReceived(processedBytes);
 						} else {
 							console.log("Received notification but no value");
 						}
