@@ -1,3 +1,6 @@
+// Register module aliases
+import "module-alias/register";
+
 import { routes } from "@/routes";
 import { SocketService } from "@/services/socket";
 import cors from "cors";
