@@ -3,7 +3,7 @@
  * This service handles processing audio data received from clients
  */
 
-import { audioBufferManager } from "./audio-buffer";
+import { audioProcessor } from "@/services/audio-buffer";
 
 /**
  * Process audio data
@@ -24,7 +24,7 @@ export function processAudioData(
 			const arrayBuffer = new Uint8Array(packetData).buffer;
 
 			// Queue the audio data for processing
-			void audioBufferManager.addPacket(socketId, arrayBuffer, timestamp);
+			void audioProcessor.processAudioPacket(socketId, arrayBuffer, timestamp);
 		}
 
 		console.log(
@@ -44,7 +44,7 @@ export function processAudioData(
 export function handleClientDisconnect(socketId: string): void {
 	try {
 		// Process any remaining audio data for this client
-		void audioBufferManager.flushClientBuffer(socketId);
+		void audioProcessor.cleanupClient(socketId);
 	} catch (error) {
 		console.error(`Error flushing audio buffer for client ${socketId}:`, error);
 	}
