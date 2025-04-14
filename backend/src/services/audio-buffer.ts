@@ -72,6 +72,7 @@ async function uploadToGCS(
 export class AudioProcessor {
 	private streamVAD: RealTimeVAD | null = null;
 	private speechStartTime = 0;
+	private lastTimestamp = 0;
 
 	constructor() {
 		this.initVAD();
@@ -84,7 +85,7 @@ export class AudioProcessor {
 		this.streamVAD = await RealTimeVAD.new({
 			onSpeechStart: () => {
 				console.log("Speech started");
-				this.speechStartTime = Date.now();
+				this.speechStartTime = this.lastTimestamp;
 			},
 			onSpeechEnd: async (audio: Float32Array) => {
 				console.log(`Speech ended, audio length: ${audio.length}`);
@@ -139,6 +140,8 @@ export class AudioProcessor {
 		timestamp: number,
 	): Promise<void> {
 		try {
+			this.lastTimestamp = timestamp;
+
 			// Convert ArrayBuffer to Buffer
 			const packet = Buffer.from(audioBuffer);
 
