@@ -16,10 +16,12 @@ import AudioStats from "@/src/components/AudioStats";
 import BatteryIndicator from "@/src/components/BatteryIndicator";
 import { ConnectionPill } from "@/src/components/ConnectionPill";
 import { ServerConnectionPill } from "@/src/components/ServerConnectionPill";
+import { ServerLogs } from "@/src/components/ServerLogs";
 // Import components
 import StatusBanner from "@/src/components/StatusBanner";
 import { audioDataService } from "@/src/services/AudioDataService";
 import { omiDeviceManager } from "@/src/services/OmiDeviceManager/OmiDeviceManager";
+import { socketService } from "@/src/services/SocketService";
 import { use$ } from "@legendapp/state/react";
 // @ts-expect-error
 import { router } from "expo-router";
@@ -29,6 +31,7 @@ export default function Home() {
 	const connectedDeviceId = use$(omiDeviceManager.connectedDeviceId$);
 	const bluetoothState = use$(omiDeviceManager.bluetoothState$);
 	const [isListeningAudio, setIsListeningAudio] = useState<boolean>(false);
+	const [showServerLogs, setShowServerLogs] = useState<boolean>(false);
 	const [audioPacketsReceived, setAudioPacketsReceived] = useState<number>(0);
 	const [batteryLevel, setBatteryLevel] = useState<number>(-1);
 	// Audio saving statistics
@@ -121,13 +124,17 @@ export default function Home() {
 
 	const handleServerReconnect = async () => {
 		try {
-			const initiated = await audioDataService.reconnectToServer();
+			const initiated = await socketService.reconnectToServer();
 			if (initiated) {
 				console.log("Server reconnection initiated");
 			}
 		} catch (error) {
 			console.error("Server reconnect error:", error);
 		}
+	};
+
+	const toggleServerLogs = () => {
+		setShowServerLogs(!showServerLogs);
 	};
 
 	return (
@@ -147,6 +154,17 @@ export default function Home() {
 					onRequestPermission={omiDeviceManager.requestBluetoothPermission}
 					onOpenSettings={() => Linking.openSettings()}
 				/>
+
+				{/* Server Logs Section */}
+				<View style={styles.section}>
+					<TouchableOpacity style={styles.button} onPress={toggleServerLogs}>
+						<Text style={styles.buttonText}>
+							{showServerLogs ? "Close Server Logs" : "Open Server Logs"}
+						</Text>
+					</TouchableOpacity>
+
+					{showServerLogs && <ServerLogs />}
+				</View>
 
 				{connectedDeviceId && (
 					<View style={styles.section}>
