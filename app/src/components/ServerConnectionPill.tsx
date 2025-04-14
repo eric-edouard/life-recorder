@@ -1,7 +1,7 @@
 import {
 	SocketConnectionState,
-	audioDataService,
-} from "@/src/services/AudioDataService";
+	socketService,
+} from "@/src/services/SocketService";
 import { use$ } from "@legendapp/state/react";
 import type React from "react";
 import { useEffect, useRef } from "react";
@@ -17,8 +17,8 @@ export const ServerConnectionPill: React.FC<ServerConnectionPillProps> = ({
 	const blinkAnim = useRef(new Animated.Value(1)).current;
 
 	// Get connection state from audioDataService
-	const connectionState = use$(audioDataService.connectionState$);
-	const transport = audioDataService.getCurrentTransport();
+	const connectionState = use$(socketService.connectionState$);
+	const transport = socketService.getCurrentTransport();
 
 	// Start blinking animation when connecting
 	useEffect(() => {

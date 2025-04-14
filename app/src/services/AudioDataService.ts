@@ -1,21 +1,8 @@
-import { observable } from "@legendapp/state";
 import type { Subscription } from "react-native-ble-plx";
-import { type Socket, io } from "socket.io-client";
 import { omiDeviceManager } from "./OmiDeviceManager/OmiDeviceManager";
-
-// Connection states for the socket
-export enum SocketConnectionState {
-	DISCONNECTED = "disconnected",
-	CONNECTING = "connecting",
-	CONNECTED = "connected",
-}
+import { socketService } from "./SocketService";
 
 export class AudioDataService {
-	// Observable for connection state
-	public connectionState$ = observable<SocketConnectionState>(
-		SocketConnectionState.DISCONNECTED,
-	);
-
 	private audioPacketsReceived = 0;
 	private savedAudioCount = 0;
 	private audioSubscription: Subscription | null = null;
@@ -25,77 +12,8 @@ export class AudioDataService {
 	private onStatsUpdate:
 		| ((packetsReceived: number, savedCount: number) => void)
 		| null = null;
-	private socketEndpoint = "life-recorder-production.up.railway.app";
-	private socket: Socket | null = null;
 	private isSending = false;
 	private sendInterval = 1000;
-
-	constructor() {
-		this.initializeSocket();
-	}
-
-	/**
-	 * Initialize Socket.IO connection
-	 */
-	private initializeSocket = (): void => {
-		this.connectionState$.set(SocketConnectionState.CONNECTING);
-
-		this.socket = io(`https://${this.socketEndpoint}`, {
-			transports: ["websocket", "polling"],
-		});
-
-		this.socket.on("connect", () => {
-			console.log("Connected to socket server using WebSockets");
-			this.connectionState$.set(SocketConnectionState.CONNECTED);
-
-			// Log the active transport method
-			if (this.socket) {
-				const transport = this.socket.io.engine.transport.name;
-				console.log(`Active transport method: ${transport}`);
-			}
-		});
-
-		this.socket.on("disconnect", () => {
-			console.log("Disconnected from socket server");
-			this.connectionState$.set(SocketConnectionState.DISCONNECTED);
-		});
-
-		this.socket.on("error", (error) => {
-			console.error("Socket error:", error);
-			this.connectionState$.set(SocketConnectionState.DISCONNECTED);
-		});
-	};
-
-	/**
-	 * Get the current socket transport method
-	 * @returns The name of the current transport or null if not connected
-	 */
-	getCurrentTransport = (): string | null => {
-		if (!this.socket?.connected) {
-			return null;
-		}
-		return this.socket.io.engine.transport.name;
-	};
-
-	/**
-	 * Manually reconnect to the socket server
-	 * @returns Promise that resolves to true if reconnection was initiated
-	 */
-	reconnectToServer = async (): Promise<boolean> => {
-		if (this.socket?.connected) {
-			console.log("Already connected to server");
-			return false;
-		}
-
-		// Disconnect existing socket if any
-		if (this.socket) {
-			this.socket.disconnect();
-		}
-
-		// Reinitialize socket connection
-		this.initializeSocket();
-		return true;
-	};
 
 	/**
 	 * Start collecting audio data from the connected device
@@ -115,9 +33,9 @@ export class AudioDataService {
 		this.audioPacketsBuffer = [];
 		this.onStatsUpdate = onStatsUpdate || null;
 
-		// Ensure socket is connected
-		if (!this.socket?.connected) {
-			this.initializeSocket();
+		// Ensure socket is connected - use socket service for this
+		if (!socketService.isConnected()) {
+			await socketService.reconnectToServer();
 		}
 
 		try {
@@ -191,7 +109,7 @@ export class AudioDataService {
 	private sendAudioPackets = async (): Promise<void> => {
 		if (
 			this.audioPacketsBuffer.length === 0 ||
-			!this.socket?.connected ||
+			!socketService.isConnected() ||
 			this.isSending
 		) {
 			return;
@@ -208,8 +126,9 @@ export class AudioDataService {
 			// Instead of concatenating, send an array of individual packets
 			const packets = packetsToSend.map((packet) => Array.from(packet));
 
-			// Send via socket.io
-			this.socket.emit(
+			// Get socket from service and send via socket.io
+			const socket = socketService.getSocket();
+			socket.emit(
 				"audioData",
 				{
 					packets: packets, // Send array of packets instead of concatenated buffer

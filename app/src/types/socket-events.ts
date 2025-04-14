@@ -1,6 +1,6 @@
-import type { Socket } from "socket.io";
+import type { Socket } from "socket.io-client";
 
-type ServerLog = {
+export type ServerLog = {
 	type: "log" | "warn" | "error";
 	message: string;
 	timestamp: number;
@@ -19,18 +19,4 @@ export interface ClientToServerEvents {
 	stopLogForwarding: (callback: (success: boolean) => void) => void;
 }
 
-export interface InterServerEvents {
-	ping: () => void;
-}
-
-export interface SocketData {
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	[key: string]: any;
-}
-
-export type TypedSocket = Socket<
-	ServerToClientEvents,
-	ClientToServerEvents,
-	InterServerEvents,
-	SocketData
->;
+export type TypedSocket = Socket<ServerToClientEvents, ClientToServerEvents>;
