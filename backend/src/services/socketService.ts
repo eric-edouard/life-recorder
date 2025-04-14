@@ -54,20 +54,7 @@ export const socketService = (() => {
 		});
 	};
 
-	/**
-	 * Get the Socket.IO server instance
-	 */
-	const getIO = (): TypedServer => {
-		if (!io) {
-			throw new Error(
-				"Socket.IO server not initialized. Call initialize() first.",
-			);
-		}
-		return io;
-	};
-
 	return {
 		initialize,
-		getIO,
 	};
 })();
