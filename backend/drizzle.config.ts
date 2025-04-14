@@ -1,3 +1,5 @@
+declare const process: { env: { [key: string]: string | undefined } };
+
 import "dotenv/config";
 import { defineConfig } from "drizzle-kit";
 
@@ -6,8 +8,8 @@ if (!process.env.DATABASE_URL) {
 }
 
 export default defineConfig({
-	out: "../../drizzle",
-	schema: "../db/schema.ts",
+	out: "./drizzle",
+	schema: "./src/db/schema.ts",
 	dialect: "postgresql",
 	dbCredentials: {
 		// biome-ignore lint/style/noNonNullAssertion: Just checked at line 3
