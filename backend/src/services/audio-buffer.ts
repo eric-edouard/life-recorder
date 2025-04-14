@@ -1,9 +1,6 @@
 import { fileSafeIso } from "@/utils/fileSafeIso";
 import { OpusEncoder } from "@discordjs/opus";
-import {
-	type StreamVAD,
-	createStreamVAD,
-} from "@ericedouard/vad-node-realtime";
+import { RealTimeVAD } from "@ericedouard/vad-node-realtime";
 import { WaveFile } from "wavefile";
 import { gcsBucket } from "./gcs";
 
@@ -73,7 +70,7 @@ async function uploadToGCS(
  * Audio processor for real-time voice activity detection
  */
 export class AudioProcessor {
-	private streamVAD: StreamVAD | null = null;
+	private streamVAD: RealTimeVAD | null = null;
 	private speechStartTime = 0;
 
 	constructor() {
@@ -84,7 +81,7 @@ export class AudioProcessor {
 	 * Initialize VAD
 	 */
 	private async initVAD(): Promise<void> {
-		this.streamVAD = await createStreamVAD({
+		this.streamVAD = await RealTimeVAD.new({
 			onSpeechStart: () => {
 				console.log("Speech started");
 				this.speechStartTime = Date.now();
