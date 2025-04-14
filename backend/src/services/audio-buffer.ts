@@ -118,9 +118,9 @@ export class AudioProcessor {
 
 			// Upload to GCS with metadata
 			await uploadToGCS(Buffer.from(wavFile.toBuffer()), filename, {
-				"has-voice": "true",
 				duration: durationMs.toString(),
 				timestamp: startTime.toString(),
+				isoDate: timestampISO,
 			});
 
 			console.log(
