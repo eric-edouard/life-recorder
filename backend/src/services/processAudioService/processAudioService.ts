@@ -14,31 +14,29 @@ import {
 import { OpusEncoder } from "@discordjs/opus";
 import { RealTimeVAD } from "@ericedouard/vad-node-realtime";
 
-const opusEncoder = new OpusEncoder(SAMPLE_RATE, CHANNELS);
-
 /**
  * Audio processor for real-time voice activity detection
  */
-export class ProcessAudioService {
-	private streamVAD: RealTimeVAD | null = null;
-	private speechStartTime = 0;
-	private lastTimestamp = 0;
-	private isSpeechActive = false;
+export const processAudioService = (() => {
+	let streamVAD: RealTimeVAD | null = null;
+	let speechStartTime = 0;
+	let lastTimestamp = 0;
+	let isSpeechActive = false;
+	const opusEncoder = new OpusEncoder(SAMPLE_RATE, CHANNELS);
 
-	constructor() {
-		this.initVAD();
-	}
+	// Initialize VAD
+	initVAD();
 
 	/**
 	 * Initialize VAD
 	 */
-	private async initVAD(): Promise<void> {
+	async function initVAD(): Promise<void> {
 		console.log("[VAD] initializing vad");
-		this.streamVAD = await RealTimeVAD.new({
+		streamVAD = await RealTimeVAD.new({
 			onSpeechStart: () => {
 				console.log("Speech started");
-				this.speechStartTime = this.lastTimestamp;
-				this.isSpeechActive = true;
+				speechStartTime = lastTimestamp;
+				isSpeechActive = true;
 
 				// Start Deepgram live transcription when speech detected
 				if (DEEPGRAM_TRANSCRIPTION_ENABLED) {
@@ -47,11 +45,11 @@ export class ProcessAudioService {
 			},
 			onSpeechEnd: async (audio: Float32Array) => {
 				console.log(`Speech ended, audio length: ${audio.length}`);
-				this.isSpeechActive = false;
+				isSpeechActive = false;
 
 				// Clean up Deepgram transcription session
 				if (DEEPGRAM_TRANSCRIPTION_ENABLED) {
-					deepgramLiveTranscriptionService.cleanup();
+					deepgramLiveTranscriptionService.stopTranscription();
 				}
 
 				// Convert to WAV once
@@ -59,29 +57,29 @@ export class ProcessAudioService {
 
 				await Promise.all([
 					ASSEMBLYAI_TRANSCRIPTION_ENABLED
-						? createAndSaveTranscript(wavBuffer, this.speechStartTime)
+						? createAndSaveTranscript(wavBuffer, speechStartTime)
 						: Promise.resolve(),
 					SAVE_RECORDINGS_TO_GCS_ENABLED
-						? saveAudioToGCS(wavBuffer, this.speechStartTime)
+						? saveAudioToGCS(wavBuffer, speechStartTime)
 						: Promise.resolve(),
 				]);
 			},
 			preSpeechPadFrames: 10,
 		});
 
-		this.streamVAD.start();
+		streamVAD.start();
 		console.log("[VAD] vad initialized");
 	}
 
 	/**
 	 * Process an audio packet
 	 */
-	async processAudioPacket(
+	const processAudioPacket = async (
 		audioBuffer: ArrayBuffer,
 		timestamp: number,
-	): Promise<void> {
+	): Promise<void> => {
 		try {
-			this.lastTimestamp = timestamp;
+			lastTimestamp = timestamp;
 
 			// Convert ArrayBuffer to Buffer
 			const packet = Buffer.from(audioBuffer);
@@ -91,7 +89,7 @@ export class ProcessAudioService {
 
 			if (pcmData && pcmData.length > 0) {
 				// If speech is active, send the packet to Deepgram
-				if (this.isSpeechActive && DEEPGRAM_TRANSCRIPTION_ENABLED) {
+				if (isSpeechActive && DEEPGRAM_TRANSCRIPTION_ENABLED) {
 					deepgramLiveTranscriptionService.sendAudioPacket(pcmData);
 				}
 
@@ -99,8 +97,8 @@ export class ProcessAudioService {
 				const float32Data = convertPcmToFloat32Array(pcmData);
 
 				// Process the audio data with VAD
-				if (this.streamVAD) {
-					await this.streamVAD.processAudio(float32Data);
+				if (streamVAD) {
+					await streamVAD.processAudio(float32Data);
 				} else {
 					throw new Error("VAD not initialized");
 				}
@@ -108,22 +106,24 @@ export class ProcessAudioService {
 		} catch (error) {
 			console.error("Error processing audio packet:", error);
 		}
-	}
+	};
 
 	/**
 	 * Clean up resources
 	 */
-	async handleClientDisconnect(): Promise<void> {
-		if (this.streamVAD) {
-			await this.streamVAD.flush(); // Process any remaining audio
+	const handleClientDisconnect = async (): Promise<void> => {
+		if (streamVAD) {
+			await streamVAD.flush(); // Process any remaining audio
 		}
 
 		// Clean up Deepgram transcription
 		if (DEEPGRAM_TRANSCRIPTION_ENABLED) {
-			deepgramLiveTranscriptionService.cleanup();
+			deepgramLiveTranscriptionService.stopTranscription();
 		}
-	}
-}
+	};
 
-// Export a singleton instance
-export const processAudioService = new ProcessAudioService();
+	return {
+		processAudioPacket,
+		handleClientDisconnect,
+	};
+})();

@@ -1,4 +1,4 @@
-import type { Socket } from "socket.io";
+import type { Server, Socket } from "socket.io";
 
 type ServerLog = {
 	type: "log" | "warn" | "error";
@@ -29,8 +29,15 @@ export interface SocketData {
 }
 
 export type TypedSocket = Socket<
-	ServerToClientEvents,
 	ClientToServerEvents,
+	ServerToClientEvents,
+	InterServerEvents,
+	SocketData
+>;
+
+export type TypedServer = Server<
+	ClientToServerEvents,
+	ServerToClientEvents,
 	InterServerEvents,
 	SocketData
 >;

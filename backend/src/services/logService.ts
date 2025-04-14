@@ -1,124 +1,87 @@
-import type {
-	ClientToServerEvents,
-	InterServerEvents,
-	ServerToClientEvents,
-	SocketData,
-} from "@/types/socket-events";
-import type { Socket, Server as SocketIOServer } from "socket.io";
+import { socketService } from "@/services/socket/socket";
 
-export class LogService {
-	private io: SocketIOServer<
-		ClientToServerEvents,
-		ServerToClientEvents,
-		InterServerEvents,
-		SocketData
-	>;
-	private originalConsole: {
-		log: typeof console.log;
-		warn: typeof console.warn;
-		error: typeof console.error;
+export const logService = (() => {
+	const originalConsole = {
+		log: console.log,
+		warn: console.warn,
+		error: console.error,
 	};
-	private forwardingEnabled: boolean;
-	private forwardingClients: Set<string>; // Set of socket IDs that requested log forwarding
 
-	constructor(
-		io: SocketIOServer<
-			ClientToServerEvents,
-			ServerToClientEvents,
-			InterServerEvents,
-			SocketData
-		>,
-	) {
-		this.io = io;
-		this.forwardingEnabled = false;
-		this.forwardingClients = new Set<string>();
+	const forwardingClients = new Set<string>(); // Set of socket IDs that requested log forwarding
 
-		// Save original console methods
-		this.originalConsole = {
-			log: console.log,
-			warn: console.warn,
-			error: console.error,
-		};
+	// Setup console overrides and error handlers
+	setupConsoleOverride();
+	setupErrorHandlers();
 
-		this.setupConsoleOverride();
-		this.setupErrorHandlers();
-	}
-
-	public setupSocketEvents(
-		socket: Socket<
-			ClientToServerEvents,
-			ServerToClientEvents,
-			InterServerEvents,
-			SocketData
-		>,
-	): void {
+	// Register socket connection handler (only for disconnect cleanup)
+	socketService.registerConnectionHandler((socket) => {
 		// Handle start log forwarding request
 		socket.on("startLogForwarding", (callback: (success: boolean) => void) => {
-			this.forwardingClients.add(socket.id);
+			forwardingClients.add(socket.id);
 			console.log(`Client ${socket.id} started log forwarding`);
 			callback(true);
 		});
 
 		// Handle stop log forwarding request
 		socket.on("stopLogForwarding", (callback: (success: boolean) => void) => {
-			this.forwardingClients.delete(socket.id);
+			forwardingClients.delete(socket.id);
 			console.log(`Client ${socket.id} stopped log forwarding`);
 			callback(true);
 		});
 
 		// Clean up when client disconnects
 		socket.on("disconnect", () => {
-			this.forwardingClients.delete(socket.id);
+			forwardingClients.delete(socket.id);
 		});
-	}
+	});
 
-	private setupConsoleOverride(): void {
+	function setupConsoleOverride(): void {
 		// Override console.log
 		console.log = (...args: unknown[]) => {
 			// Call original console.log
-			this.originalConsole.log(...args);
+			originalConsole.log(...args);
 
 			// Forward to clients if enabled
-			if (this.forwardingClients.size > 0) {
-				this.broadcastLog("log", args);
+			if (forwardingClients.size > 0) {
+				broadcastLog("log", args);
 			}
 		};
 
 		// Override console.warn
 		console.warn = (...args: unknown[]) => {
 			// Call original console.warn
-			this.originalConsole.warn(...args);
+			originalConsole.warn(...args);
 
 			// Forward to clients if enabled
-			if (this.forwardingClients.size > 0) {
-				this.broadcastLog("warn", args);
+			if (forwardingClients.size > 0) {
+				broadcastLog("warn", args);
 			}
 		};
 
 		// Override console.error
 		console.error = (...args: unknown[]) => {
 			// Call original console.error
-			this.originalConsole.error(...args);
+			originalConsole.error(...args);
 
 			// Forward to clients if enabled
-			if (this.forwardingClients.size > 0) {
-				this.broadcastLog("error", args);
+			if (forwardingClients.size > 0) {
+				broadcastLog("error", args);
 			}
 		};
 	}
 
-	private setupErrorHandlers(): void {
+	function setupErrorHandlers(): void {
 		// Handle uncaught exceptions
 		process.on("uncaughtException", (error) => {
 			// Use original console to prevent potential loops
-			this.originalConsole.error(
+			originalConsole.error(
 				`Uncaught Exception: ${error.message}`,
 				error.stack,
 			);
 
 			// Forward to clients if enabled
-			if (this.forwardingClients.size > 0) {
-				this.broadcastLog("error", [
+			if (forwardingClients.size > 0) {
+				broadcastLog("error", [
 					`Uncaught Exception: ${error.message}`,
 					error.stack || "",
 				]);
@@ -128,16 +91,16 @@ export class LogService {
 		// Handle unhandled promise rejections
 		process.on("unhandledRejection", (reason) => {
 			// Use original console to prevent potential loops
-			this.originalConsole.error(`Unhandled Promise Rejection: ${reason}`);
+			originalConsole.error(`Unhandled Promise Rejection: ${reason}`);
 
 			// Forward to clients if enabled
-			if (this.forwardingClients.size > 0) {
-				this.broadcastLog("error", [`Unhandled Promise Rejection: ${reason}`]);
+			if (forwardingClients.size > 0) {
+				broadcastLog("error", [`Unhandled Promise Rejection: ${reason}`]);
 			}
 		});
 	}
 
-	private broadcastLog(type: "log" | "warn" | "error", args: unknown[]): void {
+	function broadcastLog(type: "log" | "warn" | "error", args: unknown[]): void {
 		try {
 			// Convert arguments to string
 			const message = args
@@ -146,9 +109,12 @@ export class LogService {
 				)
 				.join(" ");
 
+			// Get the socket.io instance
+			const io = socketService.getIO();
+
 			// Only send to clients that requested log forwarding
-			for (const socketId of this.forwardingClients) {
-				const socket = this.io.sockets.sockets.get(socketId);
+			for (const socketId of forwardingClients) {
+				const socket = io.sockets.sockets.get(socketId);
 				if (socket) {
 					socket.emit("serverLog", {
 						type,
@@ -159,7 +125,11 @@ export class LogService {
 			}
 		} catch (error) {
 			// Use original console to prevent infinite loop
-			this.originalConsole.error("Error broadcasting log:", error);
+			originalConsole.error("Error broadcasting log:", error);
 		}
 	}
-}
+
+	return {
+		// Expose no methods publicly as everything is handled internally
+	};
+})();

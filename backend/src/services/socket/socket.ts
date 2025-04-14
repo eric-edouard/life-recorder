@@ -1,26 +1,37 @@
-import { handleReceiveAudioData } from "@/services/socket/handleReceiveAudioData";
 import type {
 	ClientToServerEvents,
 	InterServerEvents,
 	ServerToClientEvents,
 	SocketData,
+	TypedServer,
+	TypedSocket,
 } from "@/types/socket-events";
 import type { Server as HttpServer } from "node:http";
 import { Server as SocketIOServer } from "socket.io";
-import { LogService } from "../logService";
-import { processAudioService } from "../processAudioService/processAudioService";
 
-export class SocketService {
-	private io: SocketIOServer<
-		ClientToServerEvents,
-		ServerToClientEvents,
-		InterServerEvents,
-		SocketData
-	>;
-	private logService: LogService;
+// Type for connection handlers that other services can register
+type ConnectionHandler = (socket: TypedSocket) => void;
 
-	constructor(server: HttpServer) {
-		this.io = new SocketIOServer<
+export const socketService = (() => {
+	let io: TypedServer | null = null;
+
+	// Registry of connection handlers from other services
+	const connectionHandlers: ConnectionHandler[] = [];
+
+	/**
+	 * Register a handler to be called when a new socket connects
+	 * @param handler Function to call with the socket on connection
+	 */
+	const registerConnectionHandler = (handler: ConnectionHandler): void => {
+		connectionHandlers.push(handler);
+	};
+
+	/**
+	 * Initialize the Socket.IO server
+	 * @param server HTTP server instance
+	 */
+	const initialize = (server: HttpServer): void => {
+		io = new SocketIOServer<
 			ClientToServerEvents,
 			ServerToClientEvents,
 			InterServerEvents,
@@ -33,24 +44,36 @@ export class SocketService {
 			maxHttpBufferSize: 5 * 1024 * 1024, // 5MB max buffer size for audio data
 		});
 
-		// Initialize log service
-		this.logService = new LogService(this.io);
-
-		this.io.on("connection", (socket) => {
+		io.on("connection", (socket) => {
 			console.log("Client connected");
 
-			// Set up log forwarding events for this socket
-			this.logService.setupSocketEvents(socket);
+			// Call all registered connection handlers
+			for (const handler of connectionHandlers) {
+				handler(socket);
+			}
 
-			// Handle audio data
-			socket.on("audioData", handleReceiveAudioData);
-
-			// Handle disconnection
+			// Basic disconnect logging
 			socket.on("disconnect", () => {
 				console.log("Client disconnected");
-				// Clean up audio processing
-				void processAudioService.handleClientDisconnect();
 			});
 		});
-	}
-}
+	};
+
+	/**
+	 * Get the Socket.IO server instance
+	 */
+	const getIO = (): TypedServer => {
+		if (!io) {
+			throw new Error(
+				"Socket.IO server not initialized. Call initialize() first.",
+			);
+		}
+		return io;
+	};
+
+	return {
+		registerConnectionHandler,
+		initialize,
+		getIO,
+	};
+})();
