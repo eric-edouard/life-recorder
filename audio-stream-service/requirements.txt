@@ -1,4 +1,0 @@
-flask==2.0.1
-werkzeug==2.0.3
-google-cloud-storage==2.0.0
-silero-vad>=5.1.2 
