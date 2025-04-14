@@ -17,12 +17,8 @@ const server = createServer(app);
 
 // Initialize Socket.IO
 socketService.initialize(server);
-
-// Initialize services (they're already initialized when imported, this is just to ensure they're loaded)
-// eslint-disable-next-line no-unused-expressions
-logService;
-// eslint-disable-next-line no-unused-expressions
-audioSocketService;
+socketService.use(audioSocketService);
+socketService.use(logService);
 
 // Middleware
 app.use(cors());

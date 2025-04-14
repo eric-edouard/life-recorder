@@ -3,27 +3,24 @@ import type {
 	InterServerEvents,
 	ServerToClientEvents,
 	SocketData,
+	SocketMiddleware,
 	TypedServer,
-	TypedSocket,
 } from "@/types/socket-events";
 import type { Server as HttpServer } from "node:http";
 import { Server as SocketIOServer } from "socket.io";
 
-// Type for connection handlers that other services can register
-type ConnectionHandler = (socket: TypedSocket) => void;
-
 export const socketService = (() => {
 	let io: TypedServer | null = null;
 
-	// Registry of connection handlers from other services
-	const connectionHandlers: ConnectionHandler[] = [];
+	// Registry of socket middlewares
+	const middlewares: SocketMiddleware[] = [];
 
 	/**
-	 * Register a handler to be called when a new socket connects
-	 * @param handler Function to call with the socket on connection
+	 * Register a middleware to handle socket events
+	 * @param middleware Function to handle socket connection
 	 */
-	const registerConnectionHandler = (handler: ConnectionHandler): void => {
-		connectionHandlers.push(handler);
+	const use = (middleware: SocketMiddleware): void => {
+		middlewares.push(middleware);
 	};
 
 	/**
@@ -47,9 +44,10 @@ export const socketService = (() => {
 		io.on("connection", (socket) => {
 			console.log("Client connected");
 
-			// Call all registered connection handlers
-			for (const handler of connectionHandlers) {
-				handler(socket);
+			// Apply all registered middlewares
+			for (const middleware of middlewares) {
+				// biome-ignore lint/style/noNonNullAssertion: Initialized in initialize()
+				middleware(socket, io!);
 			}
 
 			// Basic disconnect logging
@@ -72,7 +70,7 @@ export const socketService = (() => {
 	};
 
 	return {
-		registerConnectionHandler,
+		use,
 		initialize,
 		getIO,
 	};

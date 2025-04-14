@@ -41,3 +41,5 @@ export type TypedServer = Server<
 	InterServerEvents,
 	SocketData
 >;
+
+export type SocketMiddleware = (socket: TypedSocket, io: TypedServer) => void;
