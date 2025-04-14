@@ -1,10 +1,10 @@
-import type { Server as HttpServer } from "node:http";
 import type {
 	ClientToServerEvents,
 	InterServerEvents,
 	ServerToClientEvents,
 	SocketData,
 } from "@/types/socket-events";
+import type { Server as HttpServer } from "node:http";
 import { Server as SocketIOServer } from "socket.io";
 import { audioProcessor } from "./audio";
 

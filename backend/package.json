@@ -12,20 +12,20 @@
 		"dev": "tsx -r tsconfig-paths/register src/index.ts",
 		"lint": "biome check --write",
 		"typecheck": "tsc --noEmit",
-		"check": "npm run lint && npm run typecheck",
 		"test": "echo \"Error: no test specified\" && exit 1"
 	},
 	"dependencies": {
 		"@discordjs/opus": "^0.10.0",
 		"@ericedouard/vad-node-realtime": "^0.1.2",
+		"@google-cloud/storage": "^7.16.0",
 		"@types/cors": "^2.8.17",
 		"@types/socket.io": "^3.0.2",
 		"assemblyai": "^4.9.0",
-		"axios": "^1.8.4",
 		"cors": "^2.8.5",
 		"express": "^4.18.2",
 		"module-alias": "^2.2.3",
-		"socket.io": "^4.8.1"
+		"socket.io": "^4.8.1",
+		"wavefile": "^11.0.0"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "^1.9.4",
