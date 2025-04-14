@@ -1,12 +1,12 @@
-import type { Server as HttpServer } from "node:http";
 import type {
 	ClientToServerEvents,
 	InterServerEvents,
 	ServerToClientEvents,
 	SocketData,
 } from "@/types/socket-events";
+import type { Server as HttpServer } from "node:http";
 import { Server as SocketIOServer } from "socket.io";
-import { audioProcessor } from "./audio";
+import { processAudioService } from "./processAudioService";
 
 export class SocketService {
 	private io: SocketIOServer<
@@ -53,7 +53,10 @@ export class SocketService {
 						const arrayBuffer = new Uint8Array(packetData).buffer;
 
 						// Send directly to audio processor
-						void audioProcessor.processAudioPacket(arrayBuffer, data.timestamp);
+						void processAudioService.processAudioPacket(
+							arrayBuffer,
+							data.timestamp,
+						);
 					}
 
 					console.log(`Processed ${data.packets.length} audio packets`);
@@ -67,7 +70,7 @@ export class SocketService {
 				console.log("Client disconnected");
 
 				// Clean up audio processing
-				void audioProcessor.cleanup();
+				void processAudioService.cleanup();
 			});
 		});
 	}

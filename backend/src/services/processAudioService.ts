@@ -69,7 +69,7 @@ async function uploadToGCS(
 /**
  * Audio processor for real-time voice activity detection
  */
-export class AudioProcessor {
+export class ProcessAudioService {
 	private streamVAD: RealTimeVAD | null = null;
 	private speechStartTime = 0;
 	private lastTimestamp = 0;
@@ -180,4 +180,4 @@ export class AudioProcessor {
 }
 
 // Export a singleton instance
-export const audioProcessor = new AudioProcessor();
+export const processAudioService = new ProcessAudioService();
