@@ -1,8 +1,10 @@
 import { CHANNELS, SAMPLE_RATE } from "@/constants/audioConstants";
 import {
 	ASSEMBLYAI_TRANSCRIPTION_ENABLED,
+	DEEPGRAM_TRANSCRIPTION_ENABLED,
 	SAVE_RECORDINGS_TO_GCS_ENABLED,
 } from "@/constants/features";
+import { deepgramLiveTranscriptionService } from "@/services/deepgramLiveTranscription";
 import { createAndSaveTranscript } from "@/services/processAudioService/createAndSaveTranscript";
 import { saveAudioToGCS } from "@/services/processAudioService/saveAudioToGcs";
 import {
@@ -21,6 +23,7 @@ export class ProcessAudioService {
 	private streamVAD: RealTimeVAD | null = null;
 	private speechStartTime = 0;
 	private lastTimestamp = 0;
+	private isSpeechActive = false;
 
 	constructor() {
 		this.initVAD();
@@ -35,9 +38,21 @@ export class ProcessAudioService {
 			onSpeechStart: () => {
 				console.log("Speech started");
 				this.speechStartTime = this.lastTimestamp;
+				this.isSpeechActive = true;
+
+				// Start Deepgram live transcription when speech detected
+				if (DEEPGRAM_TRANSCRIPTION_ENABLED) {
+					deepgramLiveTranscriptionService.startTranscription();
+				}
 			},
 			onSpeechEnd: async (audio: Float32Array) => {
 				console.log(`Speech ended, audio length: ${audio.length}`);
+				this.isSpeechActive = false;
+
+				// Clean up Deepgram transcription session
+				if (DEEPGRAM_TRANSCRIPTION_ENABLED) {
+					deepgramLiveTranscriptionService.cleanup();
+				}
 
 				// Convert to WAV once
 				const wavBuffer = convertFloat32ArrayToWavBuffer(audio);
@@ -75,6 +90,11 @@ export class ProcessAudioService {
 			const pcmData = opusEncoder.decode(packet);
 
 			if (pcmData && pcmData.length > 0) {
+				// If speech is active, send the packet to Deepgram
+				if (this.isSpeechActive && DEEPGRAM_TRANSCRIPTION_ENABLED) {
+					deepgramLiveTranscriptionService.sendAudioPacket(pcmData);
+				}
+
 				// Convert Buffer to Float32Array for VAD using utility function
 				const float32Data = convertPcmToFloat32Array(pcmData);
 
@@ -98,6 +118,11 @@ export class ProcessAudioService {
 			await this.streamVAD.flush(); // Process any remaining audio
 			this.streamVAD.destroy(); // Clean up resources
 			this.streamVAD = null;
+		}
+
+		// Clean up Deepgram transcription
+		if (DEEPGRAM_TRANSCRIPTION_ENABLED) {
+			deepgramLiveTranscriptionService.cleanup();
 		}
 	}
 }
