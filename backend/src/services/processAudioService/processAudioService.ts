@@ -1,6 +1,7 @@
 import { CHANNELS, SAMPLE_RATE } from "@/constants/audioConstants";
 import { createAndSaveTranscript } from "@/services/processAudioService/createAndSaveTranscript";
 import { saveAudioToGCS } from "@/services/processAudioService/saveAudioToGcs";
+import { convertPcmToFloat32Array } from "@/utils/audioUtils";
 import { OpusEncoder } from "@discordjs/opus";
 import { RealTimeVAD } from "@ericedouard/vad-node-realtime";
 
@@ -59,14 +60,8 @@ export class ProcessAudioService {
 			const pcmData = opusEncoder.decode(packet);
 
 			if (pcmData && pcmData.length > 0) {
-				// Convert Buffer to Float32Array for VAD
-				const float32Data = new Float32Array(pcmData.length / 2);
-
-				for (let i = 0; i < float32Data.length; i++) {
-					// Extract 16-bit samples and normalize to [-1, 1]
-					const sample = pcmData.readInt16LE(i * 2);
-					float32Data[i] = sample / 32768.0;
-				}
+				// Convert Buffer to Float32Array for VAD using utility function
+				const float32Data = convertPcmToFloat32Array(pcmData);
 
 				// Process the audio data with VAD
 				if (this.streamVAD) {
