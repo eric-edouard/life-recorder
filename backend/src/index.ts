@@ -1,11 +1,11 @@
 // Register module aliases
 import "module-alias/register";
 
+import { createServer } from "node:http";
 import { routes } from "@/routes";
 import { socketService } from "@/services/socketService";
 import cors from "cors";
 import express from "express";
-import { createServer } from "node:http";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
