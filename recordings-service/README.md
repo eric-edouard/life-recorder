@@ -1,35 +1,37 @@
-# Backend API
+# Recordings Service
 
-A minimal Node.js with TypeScript and Express backend server.
-
-## Setup
-
-```bash
-# Install dependencies
-npm install
-
-# Run in development mode
-npm run dev
-
-# Build for production
-npm run build
-
-# Start production server
-npm start
-```
+This service is responsible for converting audio data to WAV format and uploading it to Google Cloud Storage.
 
 ## API Endpoints
 
-- `GET /api/hello` - Returns a hello world message
+### POST /save-recording
 
-## Project Structure
+Saves a recording by converting it to WAV format and uploading it to Google Cloud Storage.
 
+#### Request Body
+
+```json
+{
+  "audioData": [0.1, 0.2, 0.3, ...], // Array of float values representing audio samples
+  "startTime": 1234567890 // Unix timestamp in milliseconds
+}
 ```
-backend/
-├── src/             # Source files
-│   ├── index.ts     # Entry point
-│   └── routes/      # API routes
-├── dist/            # Compiled JavaScript (generated)
-├── package.json     # Dependencies and scripts
-└── tsconfig.json    # TypeScript configuration
-``` 
+
+#### Response
+
+```json
+{
+  "success": true,
+  "url": "https://storage.googleapis.com/bucket-name/audio_recordings/filename.wav"
+}
+```
+
+## Environment Variables
+
+- `GCS_SERVICE_ACCOUNT_BASE64`: Base64-encoded Google Cloud Service Account credentials
+- `GCS_BUCKET_NAME`: Name of the Google Cloud Storage bucket to upload recordings to
+- `PORT`: Port to listen on (default: 3000)
+
+## Railway Deployment
+
+This service is designed to be deployed on Railway and uses Railway's private networking to communicate with other services. The service listens on IPv6 to support Railway's private networking. 

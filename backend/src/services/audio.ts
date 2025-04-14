@@ -1,8 +1,6 @@
-import { fileSafeIso } from "@/utils/fileSafeIso";
 import { OpusEncoder } from "@discordjs/opus";
 import { RealTimeVAD } from "@ericedouard/vad-node-realtime";
-import { WaveFile } from "wavefile";
-import { gcsBucket } from "./gcs";
+import axios from "axios";
 
 // Constants for audio processing
 const SAMPLE_RATE = 16000; // 16kHz as specified
@@ -11,57 +9,38 @@ const OPUS_PACKET_DURATION_MS = 20; // Each Opus packet represents 20ms of audio
 
 const opusEncoder = new OpusEncoder(SAMPLE_RATE, CHANNELS);
 
-/**
- * Generate a filename based on timestamp and duration
- */
-const createFilename = (isoDate: string, durationMs: number): string => {
-	const fileSafeIsoDate = fileSafeIso.dateToFileName(isoDate);
-	return `${fileSafeIsoDate}__${durationMs}.wav`;
-};
+// Get the recordings service URL from environment variables
+const RECORDINGS_SERVICE_URL =
+	process.env.RECORDINGS_SERVICE_URL ||
+	"http://recordings-service.railway.internal:3000";
 
 /**
- * Convert Float32Array to WAV file
+ * Send audio data to the recordings service
  */
-function float32ToWav(
-	float32Audio: Float32Array,
-	sampleRate = SAMPLE_RATE,
-	channels = CHANNELS,
-): WaveFile {
-	// Convert Float32Array to Int16Array for WAV file
-	const int16Audio = new Int16Array(float32Audio.length);
-	for (let i = 0; i < float32Audio.length; i++) {
-		// Clip audio to [-1, 1] and scale to Int16 range
-		const sample = Math.max(-1, Math.min(1, float32Audio[i]));
-		int16Audio[i] = Math.round(sample * 32767);
-	}
-
-	// Create WAV file
-	const wav = new WaveFile();
-	wav.fromScratch(channels, sampleRate, "16", Array.from(int16Audio));
-	return wav;
-}
-
-/**
- * Upload a WAV file to Google Cloud Storage
- */
-async function uploadToGCS(
-	wavBuffer: Buffer,
-	filename: string,
-	metadata: Record<string, string>,
+async function sendToRecordingsService(
+	audioData: Float32Array,
+	startTime: number,
 ): Promise<string> {
-	const file = gcsBucket.file(`audio_recordings/${filename}`);
-
 	try {
-		await file.save(wavBuffer, {
-			metadata: {
-				contentType: "audio/wav",
-				metadata,
-			},
-		});
+		// Convert Float32Array to regular array for JSON serialization
+		const audioArray = Array.from(audioData);
 
-		return file.publicUrl();
+		// Send to recordings service
+		const response = await axios.post(
+			`${RECORDINGS_SERVICE_URL}/save-recording`,
+			{
+				audioData: audioArray,
+				startTime,
+			},
+		);
+
+		if (response.data?.url) {
+			return response.data.url;
+		}
+
+		throw new Error("Invalid response from recordings service");
 	} catch (error) {
-		console.error("Error uploading to GCS:", error);
+		console.error("Error sending audio to recordings service:", error);
 		throw error;
 	}
 }
@@ -98,31 +77,17 @@ export class AudioProcessor {
 	}
 
 	/**
-	 * Process speech audio and upload to GCS
+	 * Process speech audio and send to recordings service
 	 */
 	private async processSpeechAudio(audio: Float32Array): Promise<void> {
 		try {
 			const startTime = this.speechStartTime;
-			const durationMs = Math.round((audio.length / SAMPLE_RATE) * 1000);
 
-			// Convert to WAV
-			const wavFile = float32ToWav(audio);
-
-			// Create timestamp for filename
-			const timestampISO = new Date(startTime).toISOString();
-
-			// Generate filename
-			const filename = createFilename(timestampISO, durationMs);
-
-			// Upload to GCS with metadata
-			await uploadToGCS(Buffer.from(wavFile.toBuffer()), filename, {
-				duration: durationMs.toString(),
-				timestamp: startTime.toString(),
-				isoDate: timestampISO,
-			});
+			// Send to recordings service
+			const publicUrl = await sendToRecordingsService(audio, startTime);
 
 			console.log(
-				`Processed and uploaded ${durationMs}ms voice audio file: ${filename}`,
+				`Processed voice audio file and sent to recordings service: ${publicUrl}`,
 			);
 		} catch (error) {
 			console.error("Error processing speech audio:", error);
