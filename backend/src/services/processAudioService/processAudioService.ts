@@ -113,11 +113,9 @@ export class ProcessAudioService {
 	/**
 	 * Clean up resources
 	 */
-	async cleanup(): Promise<void> {
+	async handleClientDisconnect(): Promise<void> {
 		if (this.streamVAD) {
 			await this.streamVAD.flush(); // Process any remaining audio
-			this.streamVAD.destroy(); // Clean up resources
-			this.streamVAD = null;
 		}
 
 		// Clean up Deepgram transcription

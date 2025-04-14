@@ -49,7 +49,7 @@ export class SocketService {
 			socket.on("disconnect", () => {
 				console.log("Client disconnected");
 				// Clean up audio processing
-				void processAudioService.cleanup();
+				void processAudioService.handleClientDisconnect();
 			});
 		});
 	}
