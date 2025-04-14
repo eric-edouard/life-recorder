@@ -22,6 +22,7 @@ export class ProcessAudioService {
 	 * Initialize VAD
 	 */
 	private async initVAD(): Promise<void> {
+		console.log("[VAD] initializing vad");
 		this.streamVAD = await RealTimeVAD.new({
 			onSpeechStart: () => {
 				console.log("Speech started");
@@ -38,6 +39,7 @@ export class ProcessAudioService {
 		});
 
 		this.streamVAD.start();
+		console.log("[VAD] vad initialized");
 	}
 
 	/**
