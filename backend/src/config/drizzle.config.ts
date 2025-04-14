@@ -6,8 +6,8 @@ if (!process.env.DATABASE_URL) {
 }
 
 export default defineConfig({
-	out: "./drizzle",
-	schema: "./src/db/schema.ts",
+	out: "../../drizzle",
+	schema: "../db/schema.ts",
 	dialect: "postgresql",
 	dbCredentials: {
 		// biome-ignore lint/style/noNonNullAssertion: Just checked at line 3

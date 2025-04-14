@@ -8,12 +8,12 @@
 		"skipLibCheck": true,
 		"forceConsistentCasingInFileNames": true,
 		"outDir": "dist",
-		"rootDir": "./",
-		"baseUrl": ".",
+		"rootDir": "src",
+		"baseUrl": "src",
 		"paths": {
-			"@/*": ["src/*"]
+			"@/*": ["*"]
 		}
 	},
-	"include": ["src/**/*", "drizzle.config.ts"],
+	"include": ["src/**/*"],
 	"exclude": ["node_modules", "dist"]
 }
