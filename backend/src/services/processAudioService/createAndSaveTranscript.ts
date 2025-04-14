@@ -6,6 +6,7 @@ export const createAndSaveTranscript = async (
 	audioBuffer: Buffer,
 	startTime: number,
 ): Promise<void> => {
+	console.log("Creating and saving transcript...");
 	const transcription = await assemblyAi.transcripts.transcribe({
 		audio: audioBuffer,
 	});
@@ -20,8 +21,12 @@ export const createAndSaveTranscript = async (
 		return;
 	}
 
+	console.log("Transcript: ", transcription.text);
+
 	await db.insert(memoriesTable).values({
 		content: transcription.text,
 		createdAt: new Date(startTime),
 	});
+
+	console.log("Transcript created and saved !");
 };
