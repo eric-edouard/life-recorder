@@ -3,11 +3,11 @@ import { memoriesTable } from "@/db/schema";
 import { assemblyAi } from "@/services/assemblyAi";
 
 export const createAndSaveTranscript = async (
-	audio: Float32Array,
+	audioBuffer: Buffer,
 	startTime: number,
 ): Promise<void> => {
 	const transcription = await assemblyAi.transcripts.transcribe({
-		audio,
+		audio: audioBuffer,
 	});
 
 	if (transcription.error) {

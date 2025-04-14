@@ -1,7 +1,10 @@
 import { CHANNELS, SAMPLE_RATE } from "@/constants/audioConstants";
 import { createAndSaveTranscript } from "@/services/processAudioService/createAndSaveTranscript";
 import { saveAudioToGCS } from "@/services/processAudioService/saveAudioToGcs";
-import { convertPcmToFloat32Array } from "@/utils/audioUtils";
+import {
+	convertFloat32ArrayToWavBuffer,
+	convertPcmToFloat32Array,
+} from "@/utils/audioUtils";
 import { OpusEncoder } from "@discordjs/opus";
 import { RealTimeVAD } from "@ericedouard/vad-node-realtime";
 
@@ -31,9 +34,13 @@ export class ProcessAudioService {
 			},
 			onSpeechEnd: async (audio: Float32Array) => {
 				console.log(`Speech ended, audio length: ${audio.length}`);
+
+				// Convert to WAV once
+				const wavBuffer = convertFloat32ArrayToWavBuffer(audio);
+
 				await Promise.all([
-					createAndSaveTranscript(audio, this.speechStartTime),
-					saveAudioToGCS(audio, this.speechStartTime),
+					createAndSaveTranscript(wavBuffer, this.speechStartTime),
+					saveAudioToGCS(wavBuffer, this.speechStartTime),
 				]);
 			},
 			preSpeechPadFrames: 10,

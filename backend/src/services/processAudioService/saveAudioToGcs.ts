@@ -1,6 +1,5 @@
-import { SAMPLE_RATE } from "@/constants/audioConstants";
+import { CHANNELS, SAMPLE_RATE } from "@/constants/audioConstants";
 import { gcsBucket } from "@/services/gcs";
-import { convertAudioToWav } from "@/services/processAudioService/convertAudioToWav";
 import { fileSafeIso } from "@/utils/fileSafeIso";
 
 /**
@@ -37,14 +36,18 @@ async function uploadToGCS(
 }
 
 export const saveAudioToGCS = async (
-	audio: Float32Array,
+	wavBuffer: Buffer,
 	startTime: number,
 ): Promise<void> => {
 	try {
-		const durationMs = Math.round((audio.length / SAMPLE_RATE) * 1000);
-
-		// Convert to WAV
-		const wavFile = convertAudioToWav(audio);
+		// Get audio duration from metadata (passed from parent function)
+		// We have to estimate the duration from the buffer size
+		// WAV header is 44 bytes, and the rest is audio data
+		// Each sample is 2 bytes (16-bit) per channel
+		const audioDataSize = wavBuffer.length - 44;
+		const bytesPerSample = 2 * CHANNELS;
+		const samples = audioDataSize / bytesPerSample;
+		const durationMs = Math.round((samples / SAMPLE_RATE) * 1000);
 
 		// Create timestamp for filename
 		const timestampISO = new Date(startTime).toISOString();
@@ -53,7 +56,7 @@ export const saveAudioToGCS = async (
 		const filename = createFilename(timestampISO, durationMs);
 
 		// Upload to GCS with metadata
-		await uploadToGCS(Buffer.from(wavFile.toBuffer()), filename, {
+		await uploadToGCS(wavBuffer, filename, {
 			duration: durationMs.toString(),
 			timestamp: startTime.toString(),
 			isoDate: timestampISO,
