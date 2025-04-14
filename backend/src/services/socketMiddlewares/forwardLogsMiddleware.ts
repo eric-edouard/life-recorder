@@ -3,7 +3,7 @@ import type { SocketMiddleware } from "@/types/socket-events";
 /**
  * Creates and returns a socket middleware for log handling
  */
-export const logService: SocketMiddleware = (() => {
+export const forwardLogsMiddleware: SocketMiddleware = (() => {
 	// Private state confined to this closure
 	const forwardingClients = new Set<string>();
 	const originalConsole = {

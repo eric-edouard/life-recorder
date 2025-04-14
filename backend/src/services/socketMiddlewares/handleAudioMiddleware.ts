@@ -4,7 +4,7 @@ import type { SocketMiddleware } from "@/types/socket-events";
 /**
  * Socket middleware for handling audio-related socket events
  */
-export const audioSocketService: SocketMiddleware = (socket) => {
+export const handleAudioMiddleware: SocketMiddleware = (socket) => {
 	// Handle audio data
 	socket.on("audioData", (data, callback) => {
 		// Immediately acknowledge receipt

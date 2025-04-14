@@ -1,3 +1,4 @@
+import type { Server as HttpServer } from "node:http";
 import type {
 	ClientToServerEvents,
 	InterServerEvents,
@@ -6,7 +7,6 @@ import type {
 	SocketMiddleware,
 	TypedServer,
 } from "@/types/socket-events";
-import type { Server as HttpServer } from "node:http";
 import { Server as SocketIOServer } from "socket.io";
 
 export const socketService = (() => {

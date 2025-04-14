@@ -1,5 +1,5 @@
 import { CHANNELS, SAMPLE_RATE } from "@/constants/audioConstants";
-import { gcsBucket } from "@/services/gcs";
+import { gcsBucket } from "@/services/external/gcs";
 import { fileSafeIso } from "@/utils/fileSafeIso";
 
 /**

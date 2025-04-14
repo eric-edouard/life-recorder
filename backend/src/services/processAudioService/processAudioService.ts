@@ -4,9 +4,9 @@ import {
 	DEEPGRAM_TRANSCRIPTION_ENABLED,
 	SAVE_RECORDINGS_TO_GCS_ENABLED,
 } from "@/constants/features";
-import { deepgramLiveTranscriptionService } from "@/services/deepgramLiveTranscription";
-import { createAndSaveTranscript } from "@/services/processAudioService/createAndSaveTranscript";
-import { saveAudioToGCS } from "@/services/processAudioService/saveAudioToGcs";
+import { deepgramLiveTranscriptionService } from "@/services/deepgramLiveTranscriptionService";
+import { createAndSaveTranscript } from "@/services/processAudioService/utils/createAndSaveTranscript";
+import { saveAudioToGCS } from "@/services/processAudioService/utils/saveAudioToGcs";
 import {
 	convertFloat32ArrayToWavBuffer,
 	convertPcmToFloat32Array,

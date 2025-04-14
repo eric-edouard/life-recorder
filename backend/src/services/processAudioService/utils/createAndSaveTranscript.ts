@@ -1,6 +1,6 @@
 import { db } from "@/db/db";
 import { memoriesTable } from "@/db/schema";
-import { assemblyAi } from "@/services/assemblyAi";
+import { assemblyAi } from "@/services/external/assemblyAi";
 
 export const createAndSaveTranscript = async (
 	audioBuffer: Buffer,

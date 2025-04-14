@@ -1,13 +1,13 @@
 // Register module aliases
 import "module-alias/register";
 
+import { createServer } from "node:http";
 import { routes } from "@/routes";
-import { logService } from "@/services/logService";
-import { audioSocketService } from "@/services/socket/AudioSocketService";
-import { socketService } from "@/services/socket/socket";
+import { forwardLogsMiddleware } from "@/services/socketMiddlewares/forwardLogsMiddleware";
+import { handleAudioMiddleware } from "@/services/socketMiddlewares/handleAudioMiddleware";
+import { socketService } from "@/services/socketService";
 import cors from "cors";
 import express from "express";
-import { createServer } from "node:http";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -17,8 +17,8 @@ const server = createServer(app);
 
 // Initialize Socket.IO
 socketService.initialize(server);
-socketService.use(audioSocketService);
-socketService.use(logService);
+socketService.use(handleAudioMiddleware);
+socketService.use(forwardLogsMiddleware);
 
 // Middleware
 app.use(cors());
