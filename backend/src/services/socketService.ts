@@ -1,4 +1,5 @@
-import type { Server as HttpServer } from "node:http";
+import { forwardLogsMiddleware } from "@/services/socketMiddlewares/forwardLogsMiddleware";
+import { handleAudioMiddleware } from "@/services/socketMiddlewares/handleAudioMiddleware";
 import type {
 	ClientToServerEvents,
 	InterServerEvents,
@@ -7,21 +8,17 @@ import type {
 	SocketMiddleware,
 	TypedServer,
 } from "@/types/socket-events";
+import type { Server as HttpServer } from "node:http";
 import { Server as SocketIOServer } from "socket.io";
+
+// The middlewares that will be applied to all socket connections
+const middlewares: SocketMiddleware[] = [
+	handleAudioMiddleware,
+	forwardLogsMiddleware,
+];
 
 export const socketService = (() => {
 	let io: TypedServer | null = null;
-
-	// Registry of socket middlewares
-	const middlewares: SocketMiddleware[] = [];
-
-	/**
-	 * Register a middleware to handle socket events
-	 * @param middleware Function to handle socket connection
-	 */
-	const use = (middleware: SocketMiddleware): void => {
-		middlewares.push(middleware);
-	};
 
 	/**
 	 * Initialize the Socket.IO server
@@ -70,7 +67,6 @@ export const socketService = (() => {
 	};
 
 	return {
-		use,
 		initialize,
 		getIO,
 	};
