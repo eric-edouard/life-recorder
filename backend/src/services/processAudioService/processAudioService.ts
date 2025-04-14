@@ -1,4 +1,8 @@
 import { CHANNELS, SAMPLE_RATE } from "@/constants/audioConstants";
+import {
+	ASSEMBLYAI_TRANSCRIPTION_ENABLED,
+	SAVE_RECORDINGS_TO_GCS_ENABLED,
+} from "@/constants/features";
 import { createAndSaveTranscript } from "@/services/processAudioService/createAndSaveTranscript";
 import { saveAudioToGCS } from "@/services/processAudioService/saveAudioToGcs";
 import {
@@ -39,8 +43,12 @@ export class ProcessAudioService {
 				const wavBuffer = convertFloat32ArrayToWavBuffer(audio);
 
 				await Promise.all([
-					createAndSaveTranscript(wavBuffer, this.speechStartTime),
-					saveAudioToGCS(wavBuffer, this.speechStartTime),
+					ASSEMBLYAI_TRANSCRIPTION_ENABLED
+						? createAndSaveTranscript(wavBuffer, this.speechStartTime)
+						: Promise.resolve(),
+					SAVE_RECORDINGS_TO_GCS_ENABLED
+						? saveAudioToGCS(wavBuffer, this.speechStartTime)
+						: Promise.resolve(),
 				]);
 			},
 			preSpeechPadFrames: 10,

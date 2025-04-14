@@ -1,0 +1,3 @@
+export const SAVE_RECORDINGS_TO_GCS_ENABLED = true;
+export const ASSEMBLYAI_TRANSCRIPTION_ENABLED = false;
+export const DEEPGRAM_TRANSCRIPTION_ENABLED = true;
