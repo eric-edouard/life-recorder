@@ -54,9 +54,10 @@ export const ServerLogs = () => {
 				<Text style={styles.headerText}>Server Logs</Text>
 			</View>
 			<FlatList
+				inverted
 				style={styles.flatList}
 				contentContainerStyle={styles.logContainer}
-				data={logs}
+				data={logs.toReversed()}
 				renderItem={renderLogItem}
 				keyExtractor={(log, index) => `${log.timestamp}-${index}`}
 				ListEmptyComponent={renderEmptyComponent}
