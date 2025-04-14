@@ -1,6 +1,9 @@
 export interface ServerToClientEvents {
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	[key: string]: any;
+	serverLog: (logData: {
+		type: "log" | "warn" | "error";
+		message: string;
+		timestamp: number;
+	}) => void;
 }
 
 export interface ClientToServerEvents {
@@ -8,6 +11,8 @@ export interface ClientToServerEvents {
 		data: { packets: number[][]; timestamp: number },
 		callback: (success: boolean) => void,
 	) => void;
+	startLogForwarding: (callback: (success: boolean) => void) => void;
+	stopLogForwarding: (callback: (success: boolean) => void) => void;
 }
 
 export interface InterServerEvents {
