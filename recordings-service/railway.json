@@ -1,0 +1,15 @@
+{
+	"$schema": "https://railway.com/railway.schema.json",
+	"build": {
+		"builder": "NIXPACKS",
+		"buildCommand": "cd recordings-service && npm install && npm run build",
+		"watchPatterns": ["recordings-service/**", "railway.json"],
+		"nixpacksPlan": {
+			"providers": ["node"]
+		}
+	},
+	"deploy": {
+		"startCommand": "cd recordings-service && npm run start",
+		"healthcheckPath": "/health"
+	}
+}
