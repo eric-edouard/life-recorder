@@ -91,10 +91,7 @@ export class AudioProcessor {
 				console.log(`Speech ended, audio length: ${audio.length}`);
 				await this.processSpeechAudio(audio);
 			},
-			// Optional: customize VAD parameters
-			positiveSpeechThreshold: 0.6,
-			negativeSpeechThreshold: 0.4,
-			minSpeechFrames: 4,
+			preSpeechPadFrames: 10,
 		});
 
 		this.streamVAD.start();
