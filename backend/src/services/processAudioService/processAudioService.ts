@@ -1,0 +1,94 @@
+import { CHANNELS, SAMPLE_RATE } from "@/constants/audioConstants";
+import { createAndSaveTranscript } from "@/services/processAudioService/createAndSaveTranscript";
+import { saveAudioToGCS } from "@/services/processAudioService/saveAudioToGcs";
+import { OpusEncoder } from "@discordjs/opus";
+import { RealTimeVAD } from "@ericedouard/vad-node-realtime";
+
+const opusEncoder = new OpusEncoder(SAMPLE_RATE, CHANNELS);
+
+/**
+ * Audio processor for real-time voice activity detection
+ */
+export class ProcessAudioService {
+	private streamVAD: RealTimeVAD | null = null;
+	private speechStartTime = 0;
+	private lastTimestamp = 0;
+
+	constructor() {
+		this.initVAD();
+	}
+
+	/**
+	 * Initialize VAD
+	 */
+	private async initVAD(): Promise<void> {
+		this.streamVAD = await RealTimeVAD.new({
+			onSpeechStart: () => {
+				console.log("Speech started");
+				this.speechStartTime = this.lastTimestamp;
+			},
+			onSpeechEnd: async (audio: Float32Array) => {
+				console.log(`Speech ended, audio length: ${audio.length}`);
+				await Promise.all([
+					createAndSaveTranscript(audio, this.speechStartTime),
+					saveAudioToGCS(audio, this.speechStartTime),
+				]);
+			},
+			preSpeechPadFrames: 10,
+		});
+
+		this.streamVAD.start();
+	}
+
+	/**
+	 * Process an audio packet
+	 */
+	async processAudioPacket(
+		audioBuffer: ArrayBuffer,
+		timestamp: number,
+	): Promise<void> {
+		try {
+			this.lastTimestamp = timestamp;
+
+			// Convert ArrayBuffer to Buffer
+			const packet = Buffer.from(audioBuffer);
+
+			// Decode Opus packet to PCM
+			const pcmData = opusEncoder.decode(packet);
+
+			if (pcmData && pcmData.length > 0) {
+				// Convert Buffer to Float32Array for VAD
+				const float32Data = new Float32Array(pcmData.length / 2);
+
+				for (let i = 0; i < float32Data.length; i++) {
+					// Extract 16-bit samples and normalize to [-1, 1]
+					const sample = pcmData.readInt16LE(i * 2);
+					float32Data[i] = sample / 32768.0;
+				}
+
+				// Process the audio data with VAD
+				if (this.streamVAD) {
+					await this.streamVAD.processAudio(float32Data);
+				} else {
+					throw new Error("VAD not initialized");
+				}
+			}
+		} catch (error) {
+			console.error("Error processing audio packet:", error);
+		}
+	}
+
+	/**
+	 * Clean up resources
+	 */
+	async cleanup(): Promise<void> {
+		if (this.streamVAD) {
+			await this.streamVAD.flush(); // Process any remaining audio
+			this.streamVAD.destroy(); // Clean up resources
+			this.streamVAD = null;
+		}
+	}
+}
+
+// Export a singleton instance
+export const processAudioService = new ProcessAudioService();

@@ -6,7 +6,7 @@ import type {
 } from "@/types/socket-events";
 import type { Server as HttpServer } from "node:http";
 import { Server as SocketIOServer } from "socket.io";
-import { processAudioService } from "./processAudioService";
+import { processAudioService } from "./processAudioService/processAudioService";
 
 export class SocketService {
 	private io: SocketIOServer<
