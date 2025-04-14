@@ -9,6 +9,9 @@ export const createAndSaveTranscript = async (
 	console.log("Creating and saving transcript...");
 	const transcription = await assemblyAi.transcripts.transcribe({
 		audio: audioBuffer,
+		speaker_labels: true,
+		speech_model: "best",
+		language_detection: true,
 	});
 
 	if (transcription.error) {
@@ -16,15 +19,26 @@ export const createAndSaveTranscript = async (
 		return;
 	}
 
-	if (!transcription.text) {
-		console.error("No transcription text found");
+	if (
+		!transcription.text ||
+		!transcription.utterances ||
+		transcription.utterances.length === 0
+	) {
+		console.error("No transcription text or utterances found");
 		return;
 	}
 
-	console.log("Transcript: ", transcription.text);
+	const content =
+		transcription.utterances && transcription.utterances.length > 0
+			? transcription.utterances
+					.map((u) => `Speaker ${u.speaker}: ${u.text}`)
+					.join("\n")
+			: transcription.text;
+
+	console.log("Transcription content: ", content);
 
 	await db.insert(memoriesTable).values({
-		content: transcription.text,
+		content,
 		createdAt: new Date(startTime),
 	});
 

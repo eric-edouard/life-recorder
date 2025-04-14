@@ -7,4 +7,6 @@ if (!process.env.ASSEMBLYAI_API_KEY) {
 
 export const assemblyAi = new AssemblyAI({
 	apiKey: process.env.ASSEMBLYAI_API_KEY,
+	// Use EU endpoint
+	baseUrl: "https://api.eu.assemblyai.com",
 });
