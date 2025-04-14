@@ -16,6 +16,7 @@
 		"test": "echo \"Error: no test specified\" && exit 1"
 	},
 	"dependencies": {
+		"@deepgram/sdk": "^3.11.3",
 		"@discordjs/opus": "^0.10.0",
 		"@ericedouard/vad-node-realtime": "^0.1.2",
 		"@google-cloud/storage": "^7.16.0",
