@@ -6,7 +6,7 @@ import type {
 } from "@/types/socket-events";
 import type { Server as HttpServer } from "node:http";
 import { Server as SocketIOServer } from "socket.io";
-import { handleDisconnect, processAudioData } from "./audio";
+import { audioProcessor } from "./audio";
 
 export class SocketService {
 	private io: SocketIOServer<
@@ -47,11 +47,18 @@ export class SocketService {
 						`Received audio data. Timestamp: ${data.timestamp}, Packets: ${data.packets.length}`,
 					);
 
-					// Process audio data after acknowledgment
-					processAudioData(data.packets, data.timestamp);
+					// Process each packet individually
+					for (const packetData of data.packets) {
+						// Convert number array to ArrayBuffer
+						const arrayBuffer = new Uint8Array(packetData).buffer;
+
+						// Send directly to audio processor
+						void audioProcessor.processAudioPacket(arrayBuffer, data.timestamp);
+					}
+
+					console.log(`Processed ${data.packets.length} audio packets`);
 				} catch (error) {
 					console.error("Error processing audio data:", error);
-					// Processing errors don't affect acknowledgment
 				}
 			});
 
@@ -59,8 +66,8 @@ export class SocketService {
 			socket.on("disconnect", () => {
 				console.log("Client disconnected");
 
-				// Process any remaining audio data
-				handleDisconnect();
+				// Clean up audio processing
+				void audioProcessor.cleanup();
 			});
 		});
 	}
