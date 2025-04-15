@@ -4,6 +4,7 @@ import {
 	DEEPGRAM_TRANSCRIPTION_ENABLED,
 	SAVE_RECORDINGS_TO_GCS_ENABLED,
 } from "@/constants/features";
+// import { audioBufferService } from "@/services/audioBufferService"; // Removed
 import { deepgramLiveTranscriptionService } from "@/services/deepgramLiveTranscriptionService";
 import { createAndSaveTranscript } from "@/services/processAudioService/utils/createAndSaveTranscript";
 import { saveAudioToGCS } from "@/services/processAudioService/utils/saveAudioToGcs";
@@ -40,6 +41,7 @@ export const processAudioService = (() => {
 
 				// Start Deepgram live transcription when speech detected
 				if (DEEPGRAM_TRANSCRIPTION_ENABLED) {
+					// Start the connection (it handles buffering internally)
 					deepgramLiveTranscriptionService.startTranscription();
 				}
 			},
@@ -89,6 +91,7 @@ export const processAudioService = (() => {
 
 			if (pcmData && pcmData.length > 0) {
 				// If speech is active, send the packet to Deepgram
+				// Deepgram service handles buffering if connection is not ready
 				if (isSpeechActive && DEEPGRAM_TRANSCRIPTION_ENABLED) {
 					deepgramLiveTranscriptionService.sendAudioPacket(pcmData);
 				}
@@ -115,6 +118,9 @@ export const processAudioService = (() => {
 		if (streamVAD) {
 			await streamVAD.flush(); // Process any remaining audio
 		}
+
+		// Reset flags
+		isSpeechActive = false;
 
 		// Clean up Deepgram transcription
 		if (DEEPGRAM_TRANSCRIPTION_ENABLED) {
