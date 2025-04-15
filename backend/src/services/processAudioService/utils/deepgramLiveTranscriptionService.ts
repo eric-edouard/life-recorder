@@ -5,7 +5,7 @@ import {
 	type ListenLiveClient,
 	LiveTranscriptionEvents,
 } from "@deepgram/sdk";
-import { deepgram } from "./external/deepgram";
+import { deepgram } from "../../external/deepgram";
 
 export const deepgramLiveTranscriptionService = (() => {
 	let liveTranscription: ListenLiveClient | null = null;

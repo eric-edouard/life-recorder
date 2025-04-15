@@ -1,12 +1,11 @@
 import { CHANNELS, SAMPLE_RATE } from "@/constants/audioConstants";
 import {
-	ASSEMBLYAI_TRANSCRIPTION_ENABLED,
-	DEEPGRAM_TRANSCRIPTION_ENABLED,
+	DEEPGRAM_LIVE_TRANSCRIPTION_ENABLED,
 	SAVE_RECORDINGS_TO_GCS_ENABLED,
 } from "@/constants/features";
-// import { audioBufferService } from "@/services/audioBufferService"; // Removed
-import { deepgramLiveTranscriptionService } from "@/services/deepgramLiveTranscriptionService";
 import { createAndSaveTranscript } from "@/services/processAudioService/utils/createAndSaveTranscript";
+// import { audioBufferService } from "@/services/audioBufferService"; // Removed
+import { deepgramLiveTranscriptionService } from "@/services/processAudioService/utils/deepgramLiveTranscriptionService";
 import { saveAudioToGCS } from "@/services/processAudioService/utils/saveAudioToGcs";
 import {
 	convertFloat32ArrayToWavBuffer,
@@ -40,7 +39,7 @@ export const processAudioService = (() => {
 				isSpeechActive = true;
 
 				// Start Deepgram live transcription when speech detected
-				if (DEEPGRAM_TRANSCRIPTION_ENABLED) {
+				if (DEEPGRAM_LIVE_TRANSCRIPTION_ENABLED) {
 					// Start the connection (it handles buffering internally)
 					deepgramLiveTranscriptionService.startTranscription();
 				}
@@ -50,7 +49,7 @@ export const processAudioService = (() => {
 				isSpeechActive = false;
 
 				// Clean up Deepgram transcription session
-				if (DEEPGRAM_TRANSCRIPTION_ENABLED) {
+				if (DEEPGRAM_LIVE_TRANSCRIPTION_ENABLED) {
 					deepgramLiveTranscriptionService.stopTranscription();
 				}
 
@@ -58,9 +57,7 @@ export const processAudioService = (() => {
 				const wavBuffer = convertFloat32ArrayToWavBuffer(audio);
 
 				await Promise.all([
-					ASSEMBLYAI_TRANSCRIPTION_ENABLED
-						? createAndSaveTranscript(wavBuffer, speechStartTime)
-						: Promise.resolve(),
+					createAndSaveTranscript(wavBuffer, speechStartTime),
 					SAVE_RECORDINGS_TO_GCS_ENABLED
 						? saveAudioToGCS(wavBuffer, speechStartTime)
 						: Promise.resolve(),
@@ -92,7 +89,7 @@ export const processAudioService = (() => {
 			if (pcmData && pcmData.length > 0) {
 				// If speech is active, send the packet to Deepgram
 				// Deepgram service handles buffering if connection is not ready
-				if (isSpeechActive && DEEPGRAM_TRANSCRIPTION_ENABLED) {
+				if (isSpeechActive && DEEPGRAM_LIVE_TRANSCRIPTION_ENABLED) {
 					deepgramLiveTranscriptionService.sendAudioPacket(pcmData);
 				}
 
@@ -123,7 +120,7 @@ export const processAudioService = (() => {
 		isSpeechActive = false;
 
 		// Clean up Deepgram transcription
-		if (DEEPGRAM_TRANSCRIPTION_ENABLED) {
+		if (DEEPGRAM_LIVE_TRANSCRIPTION_ENABLED) {
 			deepgramLiveTranscriptionService.stopTranscription();
 		}
 	};

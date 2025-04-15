@@ -50,9 +50,6 @@ export const ServerLogs = () => {
 
 	return (
 		<View style={styles.container}>
-			<View style={styles.header}>
-				<Text style={styles.headerText}>Server Logs</Text>
-			</View>
 			<FlatList
 				inverted
 				style={styles.flatList}
@@ -68,17 +65,11 @@ export const ServerLogs = () => {
 
 const styles = StyleSheet.create({
 	container: {
-		height: 300,
+		height: 280,
 		backgroundColor: "#1E1E1E",
 		borderRadius: 8,
 		overflow: "hidden",
 		marginVertical: 10,
-	},
-	header: {
-		backgroundColor: "#333333",
-		padding: 8,
-		borderBottomWidth: 1,
-		borderBottomColor: "#444444",
 	},
 	headerText: {
 		color: "#FFFFFF",
@@ -99,12 +90,12 @@ const styles = StyleSheet.create({
 	},
 	timestamp: {
 		color: "#555555",
-		fontSize: 12,
+		fontSize: 9,
 		marginRight: 8,
 	},
 	logText: {
 		flex: 1,
-		fontSize: 13,
+		fontSize: 11,
 		fontFamily: Platform.OS === "ios" ? "Menlo" : "monospace",
 	},
 	emptyText: {
