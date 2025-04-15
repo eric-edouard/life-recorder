@@ -27,7 +27,7 @@ export const handleAudioMiddleware: SocketMiddleware = (socket) => {
 				);
 			}
 
-			console.log(`Processed ${data.packets.length} audio packets`);
+			// console.log(`Processed ${data.packets.length} audio packets`);
 		} catch (error) {
 			console.error("Error processing audio data:", error);
 		}
