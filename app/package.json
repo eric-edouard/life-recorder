@@ -3,7 +3,7 @@
 	"main": "expo-router/entry",
 	"version": "1.0.0",
 	"scripts": {
-		"sync-shared": "cp -r ../shared/* src/shared/",
+		"sync-shared": "cp -r ../shared/* src/shared/ && cp -r ../shared/* ../backend/src/shared/",
 		"watch-shared": "nodemon --watch ../shared --ext '*' --exec 'npm run sync-shared'",
 		"prebuild": "npm run sync-shared && npx expo prebuild --platform ios --clean",
 		"start": "npm-run-all --parallel watch-shared expo-start",
