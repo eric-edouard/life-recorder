@@ -2,8 +2,9 @@ import { omiDeviceManager } from "@/src/services/OmiDeviceManager/OmiDeviceManag
 import { use$ } from "@legendapp/state/react";
 import type React from "react";
 import { useEffect, useRef, useState } from "react";
-import { Animated, Text, TouchableOpacity } from "react-native";
+import { Animated, TouchableOpacity } from "react-native";
 import { State } from "react-native-ble-plx";
+import { Text } from "./Text";
 
 type ConnectionPillProps = {
 	onPress: () => void;

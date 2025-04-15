@@ -1,17 +1,10 @@
 import FontAwesome from "@expo/vector-icons/FontAwesome";
+import { BlurView } from "expo-blur";
 import { Link, Tabs } from "expo-router";
 import { SymbolView } from "expo-symbols";
 import type React from "react";
-import { Pressable, useColorScheme } from "react-native";
+import { Pressable, StyleSheet, useColorScheme } from "react-native";
 import { Colors } from "react-native/Libraries/NewAppScreen";
-
-// You can explore the built-in icon families and icons on the web at https://icons.expo.fyi/
-function TabBarIcon(props: {
-	name: React.ComponentProps<typeof FontAwesome>["name"];
-	color: string;
-}) {
-	return <FontAwesome size={28} style={{ marginBottom: -3 }} {...props} />;
-}
 
 export default function TabLayout() {
 	const colorScheme = useColorScheme();
@@ -21,6 +14,19 @@ export default function TabLayout() {
 				tabBarActiveTintColor: Colors[colorScheme ?? "light"].tint,
 				headerShown: false,
 				animation: "fade",
+				tabBarStyle: {
+					position: "absolute",
+				},
+				tabBarBackground: () => (
+					<BlurView
+						tint={colorScheme === "dark" ? "dark" : "light"}
+						intensity={80}
+						style={{
+							...StyleSheet.absoluteFillObject,
+							backgroundColor: "transparent",
+						}}
+					/>
+				),
 			}}
 		>
 			<Tabs.Screen

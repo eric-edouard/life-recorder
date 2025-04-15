@@ -1,15 +1,20 @@
 import { liveTranscriptionService } from "@/src/services/liveTranscriptionService";
 import { use$ } from "@legendapp/state/react";
-import React from "react";
-import { ActivityIndicator, FlatList, Text, View } from "react-native";
+import React, { type ReactNode } from "react";
+import { ActivityIndicator, FlatList, View } from "react-native";
 import { SpeechDetected } from "./SpeechDetected";
+import { Text } from "./Text";
 
 type Transcript = {
 	transcript: string;
 	startTime: number;
 };
 
-export const LiveTranscripts = () => {
+type LiveTranscriptsProps = {
+	headerComponent?: ReactNode;
+};
+
+export const LiveTranscripts = ({ headerComponent }: LiveTranscriptsProps) => {
 	const transcripts = use$(liveTranscriptionService.transcripts$);
 	const processingAudioPhase = use$(
 		liveTranscriptionService.processingAudioPhase$,
@@ -33,8 +38,9 @@ export const LiveTranscripts = () => {
 		</View>
 	);
 
-	return (
+	const TranscriptHeader = () => (
 		<View>
+			{headerComponent}
 			<SpeechDetected />
 			<Text className="text-lg font-semibold mb-3">Live Transcripts</Text>
 			{processingAudioPhase !== "3-done" ? (
@@ -47,20 +53,23 @@ export const LiveTranscripts = () => {
 					</Text>
 				</View>
 			) : null}
-			<FlatList
-				StickyHeaderComponent={() => <Text>StickyHeaderComponent</Text>}
-				ListHeaderComponent={() => <Text>ListHeaderComponent</Text>}
-				data={transcripts}
-				renderItem={renderItem}
-				keyExtractor={(item) => item.startTime.toString()}
-				contentContainerStyle={{ paddingBottom: 20, height: "100%" }}
-				showsVerticalScrollIndicator={true}
-				ListEmptyComponent={
-					<Text className="text-center text-[#666] mt-5 italic">
-						No transcripts yet
-					</Text>
-				}
-			/>
 		</View>
+	);
+
+	return (
+		<FlatList
+			stickyHeaderIndices={[0]}
+			ListHeaderComponent={TranscriptHeader}
+			data={transcripts}
+			renderItem={renderItem}
+			keyExtractor={(item) => item.startTime.toString()}
+			contentContainerStyle={{ paddingBottom: 20 }}
+			showsVerticalScrollIndicator={true}
+			ListEmptyComponent={
+				<Text className="text-center text-[#666] mt-5 italic">
+					No transcripts yet
+				</Text>
+			}
+		/>
 	);
 };

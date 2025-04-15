@@ -5,7 +5,8 @@ import {
 import { use$ } from "@legendapp/state/react";
 import type React from "react";
 import { useEffect, useRef } from "react";
-import { Animated, Text, TouchableOpacity } from "react-native";
+import { Animated, TouchableOpacity } from "react-native";
+import { Text } from "./Text";
 
 type ServerConnectionPillProps = {
 	onPress?: () => void;

@@ -4,7 +4,43 @@ module.exports = {
 	content: ["./src/**/*.{js,jsx,ts,tsx}"],
 	presets: [require("nativewind/preset")],
 	theme: {
-		extend: {},
+		extend: {
+			colors: {
+				background: "var(--background)",
+				"background-muted": "var(--background-muted)",
+				"background-subtle": "var(--background-subtle)",
+				foreground: "var(--foreground)",
+				"foreground-muted": "var(--foreground-muted)",
+				"foreground-subtle": "var(--foreground-subtle)",
+				primary: "var(--primary)",
+				green: "var(--green)",
+				yellow: "var(--yellow)",
+				red: "var(--red)",
+			},
+		},
 	},
 	plugins: [],
+
 };
+
+
+// import { vars } from "nativewind";
+
+// export const themes = {
+// 	light: vars({
+// 		"--background": "#FCFDFD",
+// 		"--foreground": "#1E1E1E",
+// 		"--foreground-muted": "#979797",
+// 		"--foreground-subtle": "#666666",
+// 		"--primary": "#3a5e96",
+// 		"--destructive": "#ff88bd",
+// 	}),
+// 	dark: vars({
+// 		"--background": "#1E1E1E",
+// 		"--foreground": "#FCFDFD",
+// 		"--foreground-muted": "#979797",
+// 		"--foreground-subtle": "#666666",
+// 		"--primary": "#5bd1e7",
+// 		"--destructive": "#ff88bd",
+// 	}),
+// };
