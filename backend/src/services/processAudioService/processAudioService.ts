@@ -76,7 +76,7 @@ export const processAudioService = (() => {
 				]);
 			},
 			preSpeechPadFrames: 10,
-			redemptionFrames: 3,
+			redemptionFrames: 5,
 			positiveSpeechThreshold: 0.6,
 			negativeSpeechThreshold: 0.6 - 0.15,
 		});
