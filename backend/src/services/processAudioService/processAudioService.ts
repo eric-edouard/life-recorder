@@ -72,7 +72,21 @@ export const processAudioService = (() => {
 				]);
 			},
 			preSpeechPadFrames: 10,
+			redemptionFrames: 3,
+			positiveSpeechThreshold: 0.6,
+			negativeSpeechThreshold: 0.6 - 0.15,
 		});
+		/*
+			const defaultFrameProcessorOptions: FrameProcessorOptions = {
+				positiveSpeechThreshold: 0.5,
+				negativeSpeechThreshold: 0.5 - 0.15,
+				preSpeechPadFrames: 1,
+				redemptionFrames: 8,
+				frameSamples: 1536,
+				minSpeechFrames: 3,
+				submitUserSpeechOnPause: false,
+			};
+		*/
 
 		streamVAD.start();
 		console.log("[VAD] vad initialized");

@@ -1,29 +1,35 @@
 import { CHANNELS, SAMPLE_RATE } from "@/constants/audioConstants";
 import { gcsBucket } from "@/services/external/gcs";
+import { convertWavToMp3 } from "@/services/processAudioService/utils/convertWavToMp3";
 import { fileSafeIso } from "@/utils/fileSafeIso";
 
 /**
  * Generate a filename based on timestamp and duration
  */
-const createFilename = (isoDate: string, durationMs: number): string => {
+const createFilename = (
+	isoDate: string,
+	durationMs: number,
+	format: string,
+): string => {
 	const fileSafeIsoDate = fileSafeIso.dateToFileName(isoDate);
-	return `${fileSafeIsoDate}__${durationMs}.wav`;
+	return `${fileSafeIsoDate}__${durationMs}.${format}`;
 };
 
 /**
- * Upload a WAV file to Google Cloud Storage
+ * Upload an audio file to Google Cloud Storage
  */
 async function uploadToGCS(
-	wavBuffer: Buffer,
+	audioBuffer: Buffer,
 	filename: string,
 	metadata: Record<string, string>,
+	contentType: string,
 ): Promise<string> {
 	const file = gcsBucket.file(`audio_recordings/${filename}`);
 
 	try {
-		await file.save(wavBuffer, {
+		await file.save(audioBuffer, {
 			metadata: {
-				contentType: "audio/wav",
+				contentType,
 				metadata,
 			},
 		});
@@ -52,15 +58,23 @@ export const saveAudioToGCS = async (
 		// Create timestamp for filename
 		const timestampISO = new Date(startTime).toISOString();
 
+		// Convert WAV to MP3
+		const mp3Buffer = await convertWavToMp3(wavBuffer);
+
 		// Generate filename
-		const filename = createFilename(timestampISO, durationMs);
+		const filename = createFilename(timestampISO, durationMs, "mp3");
 
 		// Upload to GCS with metadata
-		await uploadToGCS(wavBuffer, filename, {
-			duration: durationMs.toString(),
-			timestamp: startTime.toString(),
-			isoDate: timestampISO,
-		});
+		await uploadToGCS(
+			mp3Buffer,
+			filename,
+			{
+				duration: durationMs.toString(),
+				timestamp: startTime.toString(),
+				isoDate: timestampISO,
+			},
+			"audio/mpeg",
+		);
 
 		console.log(
 			`Processed and uploaded ${durationMs}ms voice audio file: ${filename}`,
