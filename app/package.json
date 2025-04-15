@@ -3,6 +3,7 @@
 	"main": "expo-router/entry",
 	"version": "1.0.0",
 	"scripts": {
+		"sync-shared": "cp -r ../shared/* src/shared/",
 		"prebuild": "npx expo prebuild --platform ios --clean",
 		"start": "expo start",
 		"reset-project": "node ./scripts/reset-project.js",

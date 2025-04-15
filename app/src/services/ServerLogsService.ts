@@ -1,4 +1,4 @@
-import type { ServerLog } from "@/src/types/socket-events";
+import type { ServerLog } from "@/src/shared/socketEvents";
 import { observable } from "@legendapp/state";
 import { socketService } from "./socketService";
 

@@ -1,22 +1,7 @@
+import type {
+	ClientToServerEvents,
+	ServerToClientEvents,
+} from "@/src/shared/socketEvents";
 import type { Socket } from "socket.io-client";
-
-export type ServerLog = {
-	type: "log" | "warn" | "error";
-	message: string;
-	timestamp: number;
-};
-
-export interface ServerToClientEvents {
-	serverLog: (logData: ServerLog) => void;
-}
-
-export interface ClientToServerEvents {
-	audioData: (
-		data: { packets: number[][]; timestamp: number },
-		callback: (success: boolean) => void,
-	) => void;
-	startLogForwarding: (callback: (success: boolean) => void) => void;
-	stopLogForwarding: (callback: (success: boolean) => void) => void;
-}
 
 export type TypedSocket = Socket<ServerToClientEvents, ClientToServerEvents>;
