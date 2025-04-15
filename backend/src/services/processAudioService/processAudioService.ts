@@ -39,6 +39,7 @@ export const processAudioService = (() => {
 				speechStartTime = lastTimestamp;
 				isSpeechActive = true;
 
+				console.log(">>>>>>>>>> socketService.socket", socketService.socket);
 				socketService.socket?.emit("speechStarted");
 
 				// Start Deepgram live transcription when speech detected
