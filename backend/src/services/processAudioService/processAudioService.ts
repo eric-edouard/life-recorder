@@ -47,6 +47,10 @@ export const processAudioService = (() => {
 					deepgramLiveTranscriptionService.startTranscription();
 				}
 			},
+			onVADMisfire: () => {
+				socketService.socket?.emit("speechStopped");
+				console.log("VAD misfire");
+			},
 			onSpeechEnd: async (audio: Float32Array) => {
 				console.log(`Speech ended, audio length: ${audio.length}`);
 				isSpeechActive = false;

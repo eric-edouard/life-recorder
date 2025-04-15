@@ -77,6 +77,7 @@ export const createAndSaveTranscript = async (
 			? await transcribeWithAssemblyAi(audioBuffer)
 			: await transcribeWithDeepgram(audioBuffer);
 
+	socketService.socket?.emit("processingAudioUpdate", "3-done");
 	console.log("Transcription content: ", content);
 
 	if (!content) {
@@ -84,7 +85,6 @@ export const createAndSaveTranscript = async (
 		return;
 	}
 
-	socketService.socket?.emit("processingAudioUpdate", "3-done");
 	socketService.socket?.emit("transcriptReceived", content, startTime);
 
 	await db.insert(memoriesTable).values({
