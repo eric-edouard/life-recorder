@@ -3,8 +3,10 @@ import { forwardLogsMiddleware } from "@/services/socketMiddlewares/forwardLogsM
 import { handleAudioMiddleware } from "@/services/socketMiddlewares/handleAudioMiddleware";
 import type {
 	ClientToServerEvents,
-	InterServerEvents,
 	ServerToClientEvents,
+} from "@/shared/socketEvents";
+import type {
+	InterServerEvents,
 	SocketData,
 	SocketMiddleware,
 	TypedServer,
