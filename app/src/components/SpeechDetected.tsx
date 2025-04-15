@@ -1,7 +1,7 @@
 import { liveTranscriptionService } from "@/src/services/liveTranscriptionService";
 import { use$ } from "@legendapp/state/react";
 import { useEffect, useRef } from "react";
-import { Animated, StyleSheet, Text, View } from "react-native";
+import { Animated, Text, View } from "react-native";
 
 export const SpeechDetected = () => {
 	const isSpeechDetected = use$(liveTranscriptionService.isSpeechDetected$);
@@ -33,46 +33,23 @@ export const SpeechDetected = () => {
 	}, [isSpeechDetected, opacityAnim]);
 
 	return (
-		<View style={styles.statusContainer}>
+		<View className="mb-3 h-[30px]">
 			{isSpeechDetected ? (
 				<Animated.View
-					style={[
-						styles.pill,
-						styles.speechDetectedPill,
-						{ opacity: opacityAnim },
-					]}
+					style={[{ opacity: opacityAnim }]}
+					className="py-1.5 px-3 rounded-full self-start bg-[#FF4D4D]"
 				>
-					<Text style={styles.pillText}>Speech detected</Text>
+					<Text className="text-sm font-medium text-black">
+						Speech detected
+					</Text>
 				</Animated.View>
 			) : (
-				<View style={[styles.pill, styles.noSpeechPill]}>
-					<Text style={styles.pillText}>No speech detected</Text>
+				<View className="py-1.5 px-3 rounded-full self-start bg-[#E0E0E0]">
+					<Text className="text-sm font-medium text-black">
+						No speech detected
+					</Text>
 				</View>
 			)}
 		</View>
 	);
 };
-
-const styles = StyleSheet.create({
-	statusContainer: {
-		marginBottom: 12,
-		height: 30,
-	},
-	pill: {
-		paddingVertical: 6,
-		paddingHorizontal: 12,
-		borderRadius: 20,
-		alignSelf: "flex-start",
-	},
-	noSpeechPill: {
-		backgroundColor: "#E0E0E0",
-	},
-	speechDetectedPill: {
-		backgroundColor: "#FF4D4D",
-	},
-	pillText: {
-		fontSize: 14,
-		fontWeight: "500",
-		color: "#000",
-	},
-});

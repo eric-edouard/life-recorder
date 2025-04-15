@@ -25,7 +25,8 @@
 				"useImportType": {
 					"fix": "safe",
 					"level": "warn"
-				}
+				},
+				"noUnusedTemplateLiteral": "off"
 			},
 			"correctness": {
 				"useExhaustiveDependencies": "off"

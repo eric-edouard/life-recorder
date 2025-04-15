@@ -4,7 +4,6 @@ import {
 	Linking,
 	Platform,
 	SafeAreaView,
-	StyleSheet,
 	Text,
 	TouchableOpacity,
 	View,
@@ -91,11 +90,13 @@ export default function Home() {
 	};
 
 	return (
-		<SafeAreaView style={styles.container}>
-			<View style={styles.content}>
+		<SafeAreaView className="flex-1 bg-[#f5f5f5]">
+			<View
+				className={`p-5 ${Platform.OS === "android" ? "pt-10" : ""} pb-[200px]`}
+			>
 				<Text className="text-4xl font-extrabold mt-8">Life Logger</Text>
 				{/* Connection Pills */}
-				<View style={styles.pillContainer}>
+				<View className="flex-row items-center mb-2.5 gap-2">
 					<ConnectionPill onPress={() => router.push("/pair-device")} />
 					<ServerConnectionPill onPress={handleServerReconnect} />
 				</View>
@@ -108,9 +109,12 @@ export default function Home() {
 				/>
 
 				{/* Server Logs Section */}
-				<View style={styles.section}>
-					<TouchableOpacity style={styles.button} onPress={toggleServerLogs}>
-						<Text style={styles.buttonText}>
+				<View className="mb-6 p-4 bg-white rounded-lg shadow-sm">
+					<TouchableOpacity
+						className={`bg-[#007AFF] py-3 px-5 rounded-lg items-center shadow-sm`}
+						onPress={toggleServerLogs}
+					>
+						<Text className="text-white text-base font-semibold">
 							{showServerLogs ? "Close Server Logs" : "Open Server Logs"}
 						</Text>
 					</TouchableOpacity>
@@ -118,17 +122,18 @@ export default function Home() {
 					{showServerLogs && <ServerLogs />}
 
 					{connectedDeviceId && (
-						<View style={styles.audioControls}>
+						<View className="mt-2.5">
 							<TouchableOpacity
-								style={[
-									styles.button,
-									isListeningAudio ? styles.buttonWarning : null,
-								]}
+								className={
+									isListeningAudio
+										? "bg-[#FF9500] py-3 px-5 rounded-lg items-center shadow-sm"
+										: "bg-[#007AFF] py-3 px-5 rounded-lg items-center shadow-sm"
+								}
 								onPress={
 									isListeningAudio ? stopAudioListener : startAudioListener
 								}
 							>
-								<Text style={styles.buttonText}>
+								<Text className="text-white text-base font-semibold">
 									{isListeningAudio
 										? "Stop Audio Listener"
 										: "Start Audio Listener"}
@@ -140,8 +145,8 @@ export default function Home() {
 								showIf={isListeningAudio}
 							/>
 							{isListeningAudio && (
-								<View style={styles.statsContainer}>
-									<Text style={styles.statsText}>
+								<View className="mt-2.5 p-2 bg-[#f8f8f8] rounded-md items-center">
+									<Text className="text-sm text-[#555] font-medium">
 										Audio chunks saved: {savedAudioCount}
 									</Text>
 								</View>
@@ -154,98 +159,3 @@ export default function Home() {
 		</SafeAreaView>
 	);
 }
-
-const styles = StyleSheet.create({
-	container: {
-		flex: 1,
-		backgroundColor: "#f5f5f5",
-	},
-	content: {
-		padding: 20,
-		paddingTop: Platform.OS === "android" ? 40 : 0,
-		paddingBottom: 200,
-	},
-	title: {
-		fontSize: 24,
-		fontWeight: "bold",
-		marginBottom: 20,
-		color: "#333",
-		textAlign: "center",
-	},
-	section: {
-		marginBottom: 25,
-		padding: 15,
-		backgroundColor: "white",
-		borderRadius: 10,
-		shadowColor: "#000",
-		shadowOffset: { width: 0, height: 1 },
-		shadowOpacity: 0.1,
-		shadowRadius: 3,
-		elevation: 2,
-	},
-	sectionTitle: {
-		fontSize: 18,
-		fontWeight: "600",
-		marginBottom: 15,
-		color: "#333",
-	},
-	button: {
-		backgroundColor: "#007AFF",
-		paddingVertical: 12,
-		paddingHorizontal: 20,
-		borderRadius: 8,
-		alignItems: "center",
-		elevation: 2,
-		shadowColor: "#000",
-		shadowOffset: { width: 0, height: 1 },
-		shadowOpacity: 0.1,
-		shadowRadius: 2,
-	},
-	buttonWarning: {
-		backgroundColor: "#FF9500",
-	},
-	buttonText: {
-		color: "white",
-		fontSize: 16,
-		fontWeight: "600",
-	},
-	codecContainer: {
-		marginTop: 15,
-		padding: 12,
-		backgroundColor: "#f0f0f0",
-		borderRadius: 8,
-		alignItems: "center",
-	},
-	codecTitle: {
-		fontSize: 14,
-		fontWeight: "500",
-		color: "#555",
-	},
-	codecValue: {
-		fontSize: 18,
-		fontWeight: "bold",
-		color: "#007AFF",
-		marginTop: 5,
-	},
-	audioControls: {
-		marginTop: 10,
-	},
-	pillContainer: {
-		alignItems: "center",
-		marginBottom: 10,
-		gap: 8,
-		flexDirection: "row",
-	},
-	statsContainer: {
-		marginTop: 10,
-		padding: 8,
-		backgroundColor: "#f8f8f8",
-		borderRadius: 6,
-		alignItems: "center",
-	},
-	statsText: {
-		fontSize: 14,
-		color: "#555",
-		fontWeight: "500",
-	},
-});

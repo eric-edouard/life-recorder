@@ -2,7 +2,7 @@ import { omiDeviceManager } from "@/src/services/OmiDeviceManager/OmiDeviceManag
 import { use$ } from "@legendapp/state/react";
 import type React from "react";
 import { useEffect, useRef, useState } from "react";
-import { Animated, StyleSheet, Text, TouchableOpacity } from "react-native";
+import { Animated, Text, TouchableOpacity } from "react-native";
 import { State } from "react-native-ble-plx";
 
 type ConnectionPillProps = {
@@ -138,38 +138,23 @@ export const ConnectionPill: React.FC<ConnectionPillProps> = ({ onPress }) => {
 	const { dotColor, text, animateOpacity } = getStatusInfo();
 
 	return (
-		<TouchableOpacity style={styles.container} onPress={onPress}>
+		<TouchableOpacity
+			className="flex-row items-center bg-black/5 py-1.5 px-3 rounded-2xl self-start"
+			onPress={onPress}
+		>
 			<Animated.View
 				style={[
-					styles.dot,
-					{ backgroundColor: dotColor },
+					{
+						backgroundColor: dotColor,
+						width: 10,
+						height: 10,
+						borderRadius: 5,
+						marginRight: 6,
+					},
 					animateOpacity && { opacity: blinkAnim },
 				]}
 			/>
-			<Text style={styles.text}>{text}</Text>
+			<Text className="text-sm font-medium text-[#333]">{text}</Text>
 		</TouchableOpacity>
 	);
 };
-
-const styles = StyleSheet.create({
-	container: {
-		flexDirection: "row",
-		alignItems: "center",
-		backgroundColor: "rgba(0, 0, 0, 0.05)",
-		paddingVertical: 6,
-		paddingHorizontal: 12,
-		borderRadius: 16,
-		alignSelf: "flex-start",
-	},
-	dot: {
-		width: 10,
-		height: 10,
-		borderRadius: 5,
-		marginRight: 6,
-	},
-	text: {
-		fontSize: 14,
-		fontWeight: "500",
-		color: "#333",
-	},
-});

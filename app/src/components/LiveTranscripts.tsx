@@ -1,13 +1,7 @@
 import { liveTranscriptionService } from "@/src/services/liveTranscriptionService";
 import { use$ } from "@legendapp/state/react";
 import React from "react";
-import {
-	ActivityIndicator,
-	FlatList,
-	StyleSheet,
-	Text,
-	View,
-} from "react-native";
+import { ActivityIndicator, FlatList, Text, View } from "react-native";
 import { SpeechDetected } from "./SpeechDetected";
 
 type Transcript = {
@@ -31,20 +25,22 @@ export const LiveTranscripts = () => {
 	};
 
 	const renderItem = ({ item }: { item: Transcript }) => (
-		<View style={styles.transcriptItem}>
-			<Text style={styles.timestamp}>{formatTime(item.startTime)}</Text>
-			<Text style={styles.transcript}>{item.transcript}</Text>
+		<View className="mb-2.5 p-3 bg-white rounded-lg shadow-sm">
+			<Text className="text-xs text-[#666] mb-1 font-medium">
+				{formatTime(item.startTime)}
+			</Text>
+			<Text className="text-[15px] text-[#333]">{item.transcript}</Text>
 		</View>
 	);
 
 	return (
-		<View style={styles.container}>
+		<View>
 			<SpeechDetected />
-			<Text style={styles.title}>Live Transcripts</Text>
+			<Text className="text-lg font-semibold mb-3">Live Transcripts</Text>
 			{processingAudioPhase !== "3-done" ? (
-				<View style={styles.loaderContainer}>
+				<View className="flex-row items-center bg-[#f5f5f5] p-2 rounded-lg mb-2">
 					<ActivityIndicator size="small" color="#666" />
-					<Text style={styles.loaderText}>
+					<Text className="ml-2 text-[#666] text-sm">
 						{processingAudioPhase === "1-converting-to-wav"
 							? "Converting to WAV..."
 							: "Transcribing..."}
@@ -52,70 +48,19 @@ export const LiveTranscripts = () => {
 				</View>
 			) : null}
 			<FlatList
+				StickyHeaderComponent={() => <Text>StickyHeaderComponent</Text>}
+				ListHeaderComponent={() => <Text>ListHeaderComponent</Text>}
 				data={transcripts}
 				renderItem={renderItem}
 				keyExtractor={(item) => item.startTime.toString()}
-				contentContainerStyle={styles.listContent}
+				contentContainerStyle={{ paddingBottom: 20, height: "100%" }}
 				showsVerticalScrollIndicator={true}
 				ListEmptyComponent={
-					<Text style={styles.emptyMessage}>No transcripts yet</Text>
+					<Text className="text-center text-[#666] mt-5 italic">
+						No transcripts yet
+					</Text>
 				}
 			/>
 		</View>
 	);
 };
-
-const styles = StyleSheet.create({
-	container: {
-		// borderWidth: 1,
-	},
-	title: {
-		fontSize: 18,
-		fontWeight: "600",
-		marginBottom: 12,
-	},
-	listContent: {
-		paddingBottom: 20,
-		height: "100%",
-	},
-	transcriptItem: {
-		marginBottom: 10,
-		padding: 12,
-		backgroundColor: "white",
-		borderRadius: 8,
-		shadowColor: "#000",
-		shadowOffset: { width: 0, height: 1 },
-		shadowOpacity: 0.1,
-		shadowRadius: 2,
-		elevation: 1,
-	},
-	timestamp: {
-		fontSize: 12,
-		color: "#666",
-		marginBottom: 4,
-		fontWeight: "500",
-	},
-	transcript: {
-		fontSize: 15,
-		color: "#333",
-	},
-	emptyMessage: {
-		textAlign: "center",
-		color: "#666",
-		marginTop: 20,
-		fontStyle: "italic",
-	},
-	loaderContainer: {
-		flexDirection: "row",
-		alignItems: "center",
-		backgroundColor: "#f5f5f5",
-		padding: 8,
-		borderRadius: 8,
-		marginBottom: 8,
-	},
-	loaderText: {
-		marginLeft: 8,
-		color: "#666",
-		fontSize: 14,
-	},
-});

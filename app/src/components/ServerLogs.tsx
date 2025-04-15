@@ -2,7 +2,7 @@ import { serverLogsService } from "@/src/services/serverLogsService";
 import type { ServerLog } from "@/src/shared/socketEvents";
 import { use$ } from "@legendapp/state/react";
 import React, { useEffect } from "react";
-import { FlatList, Platform, StyleSheet, Text, View } from "react-native";
+import { FlatList, Platform, Text, View } from "react-native";
 
 export const ServerLogs = () => {
 	const logs = use$(serverLogsService.logs$);
@@ -36,24 +36,31 @@ export const ServerLogs = () => {
 	};
 
 	const renderLogItem = ({ item: log }: { item: ServerLog }) => (
-		<View style={styles.logEntry}>
-			<Text style={styles.timestamp}>{formatTimestamp(log.timestamp)}</Text>
-			<Text style={[styles.logText, { color: getLogColor(log.type) }]}>
+		<View className="flex-row mb-1 py-0.5">
+			<Text className="text-[#555555] text-[9px] mr-2">
+				{formatTimestamp(log.timestamp)}
+			</Text>
+			<Text
+				className={`flex-1 text-[11px] font-['${Platform.OS === "ios" ? "Menlo" : "monospace"}']`}
+				style={{ color: getLogColor(log.type) }}
+			>
 				{log.message}
 			</Text>
 		</View>
 	);
 
 	const renderEmptyComponent = () => (
-		<Text style={styles.emptyText}>No logs yet...</Text>
+		<Text className="text-[#555555] italic text-center mt-5">
+			No logs yet...
+		</Text>
 	);
 
 	return (
-		<View style={styles.container}>
+		<View className="h-[280px] bg-[#1E1E1E] rounded-lg overflow-hidden my-2.5">
 			<FlatList
 				inverted
-				style={styles.flatList}
-				contentContainerStyle={styles.logContainer}
+				className="flex-1"
+				contentContainerStyle={{ padding: 8, flexGrow: 1 }}
 				data={logs.toReversed()}
 				renderItem={renderLogItem}
 				keyExtractor={(log, index) => `${log.timestamp}-${index}`}
@@ -62,46 +69,3 @@ export const ServerLogs = () => {
 		</View>
 	);
 };
-
-const styles = StyleSheet.create({
-	container: {
-		height: 280,
-		backgroundColor: "#1E1E1E",
-		borderRadius: 8,
-		overflow: "hidden",
-		marginVertical: 10,
-	},
-	headerText: {
-		color: "#FFFFFF",
-		fontWeight: "600",
-		fontSize: 14,
-	},
-	flatList: {
-		flex: 1,
-	},
-	logContainer: {
-		padding: 8,
-		flexGrow: 1,
-	},
-	logEntry: {
-		flexDirection: "row",
-		marginBottom: 4,
-		paddingVertical: 2,
-	},
-	timestamp: {
-		color: "#555555",
-		fontSize: 9,
-		marginRight: 8,
-	},
-	logText: {
-		flex: 1,
-		fontSize: 11,
-		fontFamily: Platform.OS === "ios" ? "Menlo" : "monospace",
-	},
-	emptyText: {
-		color: "#555555",
-		fontStyle: "italic",
-		textAlign: "center",
-		marginTop: 20,
-	},
-});

@@ -1,11 +1,5 @@
 import React, { useEffect } from "react";
-import {
-	Linking,
-	Platform,
-	SafeAreaView,
-	ScrollView,
-	StyleSheet,
-} from "react-native";
+import { Linking, Platform, SafeAreaView, ScrollView } from "react-native";
 
 import DeviceList from "@/src/components/DeviceList";
 // Import components
@@ -23,8 +17,10 @@ export default function PairDevice() {
 	}, []);
 
 	return (
-		<SafeAreaView style={styles.container}>
-			<ScrollView contentContainerStyle={styles.content}>
+		<SafeAreaView className="flex-1 bg-[#f5f5f5]">
+			<ScrollView
+				className={`p-5 ${Platform.OS === "android" ? "pt-10" : ""} pb-[200px]`}
+			>
 				{/* Bluetooth Status Banner */}
 				<StatusBanner
 					bluetoothState={bluetoothState}
@@ -46,84 +42,3 @@ export default function PairDevice() {
 		</SafeAreaView>
 	);
 }
-
-const styles = StyleSheet.create({
-	container: {
-		flex: 1,
-		backgroundColor: "#f5f5f5",
-	},
-	content: {
-		padding: 20,
-		paddingTop: Platform.OS === "android" ? 40 : 0,
-		paddingBottom: 200,
-	},
-	title: {
-		fontSize: 24,
-		fontWeight: "bold",
-		marginBottom: 20,
-		color: "#333",
-		textAlign: "center",
-	},
-	section: {
-		marginBottom: 25,
-		padding: 15,
-		backgroundColor: "white",
-		borderRadius: 10,
-		shadowColor: "#000",
-		shadowOffset: { width: 0, height: 1 },
-		shadowOpacity: 0.1,
-		shadowRadius: 3,
-		elevation: 2,
-	},
-	sectionTitle: {
-		fontSize: 18,
-		fontWeight: "600",
-		marginBottom: 15,
-		color: "#333",
-	},
-	button: {
-		backgroundColor: "#007AFF",
-		paddingVertical: 12,
-		paddingHorizontal: 20,
-		borderRadius: 8,
-		alignItems: "center",
-		elevation: 2,
-		shadowColor: "#000",
-		shadowOffset: { width: 0, height: 1 },
-		shadowOpacity: 0.1,
-		shadowRadius: 2,
-	},
-	buttonWarning: {
-		backgroundColor: "#FF9500",
-	},
-	buttonText: {
-		color: "white",
-		fontSize: 16,
-		fontWeight: "600",
-	},
-	codecContainer: {
-		marginTop: 15,
-		padding: 12,
-		backgroundColor: "#f0f0f0",
-		borderRadius: 8,
-		alignItems: "center",
-	},
-	codecTitle: {
-		fontSize: 14,
-		fontWeight: "500",
-		color: "#555",
-	},
-	codecValue: {
-		fontSize: 18,
-		fontWeight: "bold",
-		color: "#007AFF",
-		marginTop: 5,
-	},
-	audioControls: {
-		marginTop: 10,
-	},
-	pillContainer: {
-		alignItems: "center",
-		marginBottom: 10,
-	},
-});

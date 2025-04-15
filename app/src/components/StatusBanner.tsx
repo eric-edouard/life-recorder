@@ -1,5 +1,5 @@
 import React from "react";
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Text, TouchableOpacity, View } from "react-native";
 import { State } from "react-native-ble-plx";
 
 interface StatusBannerProps {
@@ -41,43 +41,20 @@ const StatusBanner = ({
 	};
 
 	return (
-		<View style={styles.statusBanner}>
-			<Text style={styles.statusText}>{getBannerMessage()}</Text>
-			<TouchableOpacity style={styles.statusButton} onPress={handleAction}>
-				<Text style={styles.statusButtonText}>{getButtonText()}</Text>
+		<View className="bg-[#FF9500] p-3 rounded-lg mb-4 flex-row justify-between items-center">
+			<Text className="text-white text-sm font-medium flex-1 mr-2.5">
+				{getBannerMessage()}
+			</Text>
+			<TouchableOpacity
+				className="bg-white/30 py-1.5 px-3 rounded-md"
+				onPress={handleAction}
+			>
+				<Text className="text-white font-semibold text-xs">
+					{getButtonText()}
+				</Text>
 			</TouchableOpacity>
 		</View>
 	);
 };
-
-const styles = StyleSheet.create({
-	statusBanner: {
-		backgroundColor: "#FF9500",
-		padding: 12,
-		borderRadius: 8,
-		marginBottom: 15,
-		flexDirection: "row",
-		justifyContent: "space-between",
-		alignItems: "center",
-	},
-	statusText: {
-		color: "white",
-		fontSize: 14,
-		fontWeight: "500",
-		flex: 1,
-		marginRight: 10,
-	},
-	statusButton: {
-		backgroundColor: "rgba(255, 255, 255, 0.3)",
-		paddingVertical: 6,
-		paddingHorizontal: 12,
-		borderRadius: 6,
-	},
-	statusButtonText: {
-		color: "white",
-		fontWeight: "600",
-		fontSize: 12,
-	},
-});
 
 export default StatusBanner;
