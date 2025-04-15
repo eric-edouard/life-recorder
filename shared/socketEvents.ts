@@ -8,6 +8,7 @@ export interface ServerToClientEvents {
 	serverLog: (logData: ServerLog) => void;
 	speechStarted: () => void;
 	speechStopped: () => void;
+	transcriptionInProgress: () => void;
 	transcriptReceived: (transcript: string, startTime: number) => void;
 }
 

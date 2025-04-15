@@ -70,6 +70,8 @@ export const createAndSaveTranscript = async (
 	startTime: number,
 ): Promise<void> => {
 	console.log("Creating and saving transcript...");
+	socketService.socket?.emit("transcriptionInProgress");
+
 	const content =
 		TRANSCRIPTION_SERVICE === "ASSEMBLYAI"
 			? await transcribeWithAssemblyAi(audioBuffer)
