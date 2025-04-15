@@ -59,7 +59,12 @@ export const socketService = (() => {
 	};
 
 	return {
-		socket,
+		get socket() {
+			return socket;
+		},
+		get io() {
+			return io;
+		},
 		initialize,
 	};
 })();
