@@ -22,7 +22,6 @@ import { omiDeviceManager } from "@/src/services/OmiDeviceManager/OmiDeviceManag
 import { audioDataService } from "@/src/services/audioDataService";
 import { socketService } from "@/src/services/socketService";
 import { use$ } from "@legendapp/state/react";
-// @ts-expect-error
 import { router } from "expo-router";
 
 export default function Home() {
