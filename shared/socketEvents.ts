@@ -4,11 +4,15 @@ export type ServerLog = {
 	timestamp: number;
 };
 
+export type ProcessingAudioPhase =
+	| "1-converting-to-wav"
+	| "2-transcribing"
+	| "3-done";
 export interface ServerToClientEvents {
 	serverLog: (logData: ServerLog) => void;
 	speechStarted: () => void;
 	speechStopped: () => void;
-	transcriptionInProgress: () => void;
+	processingAudioUpdate: (phase: ProcessingAudioPhase) => void;
 	transcriptReceived: (transcript: string, startTime: number) => void;
 }
 

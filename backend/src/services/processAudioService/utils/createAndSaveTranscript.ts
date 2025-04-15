@@ -70,6 +70,8 @@ export const createAndSaveTranscript = async (
 	startTime: number,
 ): Promise<void> => {
 	console.log("Creating and saving transcript...");
+
+	socketService.socket?.emit("processingAudioUpdate", "2-transcribing");
 	const content =
 		TRANSCRIPTION_SERVICE === "ASSEMBLYAI"
 			? await transcribeWithAssemblyAi(audioBuffer)
@@ -82,6 +84,7 @@ export const createAndSaveTranscript = async (
 		return;
 	}
 
+	socketService.socket?.emit("processingAudioUpdate", "3-done");
 	socketService.socket?.emit("transcriptReceived", content, startTime);
 
 	await db.insert(memoriesTable).values({

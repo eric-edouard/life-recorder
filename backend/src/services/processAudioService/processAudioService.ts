@@ -51,13 +51,16 @@ export const processAudioService = (() => {
 				console.log(`Speech ended, audio length: ${audio.length}`);
 				isSpeechActive = false;
 				socketService.socket?.emit("speechStopped");
-				socketService.socket?.emit("transcriptionInProgress");
 
 				// Clean up Deepgram transcription session
 				if (DEEPGRAM_LIVE_TRANSCRIPTION_ENABLED) {
 					deepgramLiveTranscriptionService.stopTranscription();
 				}
 
+				socketService.socket?.emit(
+					"processingAudioUpdate",
+					"1-converting-to-wav",
+				);
 				// Convert to WAV once
 				const wavBuffer = convertFloat32ArrayToWavBuffer(audio);
 

@@ -17,8 +17,8 @@ type Transcript = {
 
 export const LiveTranscripts = () => {
 	const transcripts = use$(liveTranscriptionService.transcripts$);
-	const isTranscriptionInProgress = use$(
-		liveTranscriptionService.isTranscriptionInProgress$,
+	const processingAudioPhase = use$(
+		liveTranscriptionService.processingAudioPhase$,
 	);
 	const formatTime = (timestamp: number): string => {
 		const date = new Date(timestamp);
@@ -41,25 +41,26 @@ export const LiveTranscripts = () => {
 		<View style={styles.container}>
 			<SpeechDetected />
 			<Text style={styles.title}>Live Transcripts</Text>
-			{transcripts.length === 0 ? (
-				<Text style={styles.emptyMessage}>No transcripts yet</Text>
-			) : (
-				<>
-					{isTranscriptionInProgress ? (
-						<View style={styles.loaderContainer}>
-							<ActivityIndicator size="small" color="#666" />
-							<Text style={styles.loaderText}>Transcribing...</Text>
-						</View>
-					) : null}
-					<FlatList
-						data={transcripts}
-						renderItem={renderItem}
-						keyExtractor={(item) => item.startTime.toString()}
-						contentContainerStyle={styles.listContent}
-						showsVerticalScrollIndicator={true}
-					/>
-				</>
-			)}
+			{processingAudioPhase !== "3-done" ? (
+				<View style={styles.loaderContainer}>
+					<ActivityIndicator size="small" color="#666" />
+					<Text style={styles.loaderText}>
+						{processingAudioPhase === "1-converting-to-wav"
+							? "Converting to WAV..."
+							: "Transcribing..."}
+					</Text>
+				</View>
+			) : null}
+			<FlatList
+				data={transcripts}
+				renderItem={renderItem}
+				keyExtractor={(item) => item.startTime.toString()}
+				contentContainerStyle={styles.listContent}
+				showsVerticalScrollIndicator={true}
+				ListEmptyComponent={
+					<Text style={styles.emptyMessage}>No transcripts yet</Text>
+				}
+			/>
 		</View>
 	);
 };
