@@ -7,7 +7,10 @@ export const liveTranscriptionService = (() => {
 		[],
 	);
 
-	socketService.socket?.on("speechStarted", () => isSpeechDetected$.set(true));
+	socketService.socket?.on("speechStarted", () => {
+		console.log("speechStarted !!! ");
+		isSpeechDetected$.set(true);
+	});
 	socketService.socket?.on("speechStopped", () => isSpeechDetected$.set(false));
 
 	socketService.socket?.on("transcriptReceived", (transcript, startTime) => {

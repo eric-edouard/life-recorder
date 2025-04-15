@@ -10,7 +10,6 @@ import {
 	View,
 } from "react-native";
 
-import AudioStats from "@/src/components/AudioStats";
 import { ConnectionPill } from "@/src/components/ConnectionPill";
 import { LiveTranscripts } from "@/src/components/LiveTranscripts";
 import { ServerConnectionPill } from "@/src/components/ServerConnectionPill";
@@ -137,20 +136,17 @@ export default function Home() {
 								</Text>
 							</TouchableOpacity>
 
-							{/* Audio Stats */}
-							<AudioStats
+							{/* <AudioStats
 								audioPacketsReceived={audioPacketsReceived}
 								showIf={isListeningAudio}
 							/>
-
-							{/* Audio Save Stats */}
 							{isListeningAudio && (
 								<View style={styles.statsContainer}>
 									<Text style={styles.statsText}>
 										Audio chunks saved: {savedAudioCount}
 									</Text>
 								</View>
-							)}
+							)} */}
 						</View>
 					)}
 				</View>

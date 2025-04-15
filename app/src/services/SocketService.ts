@@ -103,7 +103,9 @@ export const socketService = (() => {
 	};
 
 	return {
-		socket,
+		get socket() {
+			return socket;
+		},
 		connectionState$,
 		getSocket,
 		getCurrentTransport,
