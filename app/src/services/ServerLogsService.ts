@@ -1,6 +1,6 @@
 import type { ServerLog } from "@/src/types/socket-events";
 import { observable } from "@legendapp/state";
-import { socketService } from "./SocketService";
+import { socketService } from "./socketService";
 
 export const serverLogsService = (() => {
 	const isListening = observable(false);

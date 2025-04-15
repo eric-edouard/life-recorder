@@ -18,9 +18,9 @@ import { ServerConnectionPill } from "@/src/components/ServerConnectionPill";
 import { ServerLogs } from "@/src/components/ServerLogs";
 // Import components
 import StatusBanner from "@/src/components/StatusBanner";
-import { audioDataService } from "@/src/services/AudioDataService";
 import { omiDeviceManager } from "@/src/services/OmiDeviceManager/OmiDeviceManager";
-import { socketService } from "@/src/services/SocketService";
+import { audioDataService } from "@/src/services/audioDataService";
+import { socketService } from "@/src/services/socketService";
 import { use$ } from "@legendapp/state/react";
 // @ts-expect-error
 import { router } from "expo-router";
