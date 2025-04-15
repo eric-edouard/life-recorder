@@ -7,6 +7,7 @@ import { createAndSaveTranscript } from "@/services/processAudioService/utils/cr
 // import { audioBufferService } from "@/services/audioBufferService"; // Removed
 import { deepgramLiveTranscriptionService } from "@/services/processAudioService/utils/deepgramLiveTranscriptionService";
 import { saveAudioToGCS } from "@/services/processAudioService/utils/saveAudioToGcs";
+import { socketService } from "@/services/socketService";
 import {
 	convertFloat32ArrayToWavBuffer,
 	convertPcmToFloat32Array,
@@ -38,6 +39,8 @@ export const processAudioService = (() => {
 				speechStartTime = lastTimestamp;
 				isSpeechActive = true;
 
+				socketService.socket?.emit("speechStarted");
+
 				// Start Deepgram live transcription when speech detected
 				if (DEEPGRAM_LIVE_TRANSCRIPTION_ENABLED) {
 					// Start the connection (it handles buffering internally)
@@ -47,6 +50,8 @@ export const processAudioService = (() => {
 			onSpeechEnd: async (audio: Float32Array) => {
 				console.log(`Speech ended, audio length: ${audio.length}`);
 				isSpeechActive = false;
+
+				socketService.socket?.emit("speechStopped");
 
 				// Clean up Deepgram transcription session
 				if (DEEPGRAM_LIVE_TRANSCRIPTION_ENABLED) {

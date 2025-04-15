@@ -4,6 +4,7 @@ import { db } from "@/db/db";
 import { memoriesTable } from "@/db/schema";
 import { assemblyAi } from "@/services/external/assemblyAi";
 import { deepgram } from "@/services/external/deepgram";
+import { socketService } from "@/services/socketService";
 
 const transcribeWithAssemblyAi = async (
 	audioBuffer: Buffer,
@@ -80,6 +81,8 @@ export const createAndSaveTranscript = async (
 		console.error("No transcription content found");
 		return;
 	}
+
+	socketService.socket?.emit("transcriptReceived", content);
 
 	await db.insert(memoriesTable).values({
 		content,
