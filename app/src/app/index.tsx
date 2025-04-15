@@ -5,7 +5,6 @@ import {
 	Linking,
 	Platform,
 	SafeAreaView,
-	ScrollView,
 	StyleSheet,
 	Text,
 	TouchableOpacity,
@@ -139,7 +138,7 @@ export default function Home() {
 
 	return (
 		<SafeAreaView style={styles.container}>
-			<ScrollView contentContainerStyle={styles.content}>
+			<View style={styles.content}>
 				<Text style={styles.title}>Life Logger</Text>
 
 				{/* Connection Pills */}
@@ -225,7 +224,7 @@ export default function Home() {
 						</View>
 					</View>
 				)}
-			</ScrollView>
+			</View>
 		</SafeAreaView>
 	);
 }
