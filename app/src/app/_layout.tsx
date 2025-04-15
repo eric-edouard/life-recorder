@@ -1,6 +1,6 @@
 // Keep this at the top of the file
 import "react-native-reanimated";
-import "./global.css";
+import "../../global.css";
 
 import { useFonts } from "expo-font";
 import { Stack } from "expo-router";

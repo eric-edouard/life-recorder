@@ -93,8 +93,7 @@ export default function Home() {
 	return (
 		<SafeAreaView style={styles.container}>
 			<View style={styles.content}>
-				<Text style={styles.title}>Life Logger</Text>
-
+				<Text className="text-4xl font-extrabold mt-8">Life Logger</Text>
 				{/* Connection Pills */}
 				<View style={styles.pillContainer}>
 					<ConnectionPill onPress={() => router.push("/pair-device")} />
