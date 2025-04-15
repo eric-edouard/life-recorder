@@ -51,6 +51,7 @@ export const processAudioService = (() => {
 				socketService.socket?.emit("speechStopped");
 				console.log("VAD misfire");
 			},
+
 			onSpeechEnd: async (audio: Float32Array) => {
 				console.log(`Speech ended, audio length: ${audio.length}`);
 				isSpeechActive = false;
@@ -76,7 +77,7 @@ export const processAudioService = (() => {
 				]);
 			},
 			preSpeechPadFrames: 10,
-			redemptionFrames: 5,
+			redemptionFrames: 4,
 			positiveSpeechThreshold: 0.6,
 			negativeSpeechThreshold: 0.6 - 0.15,
 		});

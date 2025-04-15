@@ -1,37 +1,36 @@
 import { CHANNELS, SAMPLE_RATE } from "@/constants/audioConstants";
 import ffmpeg from "ffmpeg-static";
 import { spawn } from "node:child_process";
+
 /**
  * Convert WAV buffer to MP3 using ffmpeg
  */
 export async function convertWavToMp3(wavBuffer: Buffer): Promise<Buffer> {
 	return new Promise((resolve, reject) => {
 		if (!ffmpeg) {
-			reject(new Error("ffmpeg-static not found"));
-			return;
+			return reject(new Error("ffmpeg-static not found"));
 		}
 
-		const process = spawn(
-			ffmpeg,
-			[
-				"-i",
-				"pipe:0",
-				"-f",
-				"mp3",
-				"-acodec",
-				"libmp3lame",
-				"-ab",
-				"128k",
-				"-ac",
-				String(CHANNELS),
-				"-ar",
-				String(SAMPLE_RATE),
-				"pipe:1",
-			],
-			{
-				stdio: ["pipe", "pipe", "pipe"],
-			},
-		);
+		const ffmpegArgs = [
+			"-y", // overwrite output if needed
+			"-i",
+			"pipe:0", // input from stdin
+			"-f",
+			"mp3", // output format
+			"-c:a",
+			"libmp3lame", // audio codec
+			"-b:a",
+			"32k", // target bitrate
+			"-ac",
+			String(CHANNELS), // audio channels
+			"-ar",
+			String(SAMPLE_RATE), // sample rate
+			"pipe:1", // output to stdout
+		];
+
+		const process = spawn(ffmpeg, ffmpegArgs, {
+			stdio: ["pipe", "pipe", "pipe"],
+		});
 
 		const chunks: Buffer[] = [];
 
@@ -47,13 +46,16 @@ export async function convertWavToMp3(wavBuffer: Buffer): Promise<Buffer> {
 			if (code === 0) {
 				resolve(Buffer.concat(chunks));
 			} else {
-				reject(new Error(`ffmpeg process exited with code ${code}`));
+				reject(new Error(`ffmpeg exited with code ${code}`));
 			}
 		});
 
-		if (process.stdin) {
-			process.stdin.write(wavBuffer);
-			process.stdin.end();
-		}
+		process.on("error", (err) => {
+			process.stdin?.end();
+			reject(err);
+		});
+
+		process.stdin?.write(wavBuffer);
+		process.stdin?.end();
 	});
 }
