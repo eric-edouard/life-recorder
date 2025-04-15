@@ -1,6 +1,13 @@
 import { liveTranscriptionService } from "@/src/services/liveTranscriptionService";
 import { use$ } from "@legendapp/state/react";
-import { FlatList, StyleSheet, Text, View } from "react-native";
+import React from "react";
+import {
+	ActivityIndicator,
+	FlatList,
+	StyleSheet,
+	Text,
+	View,
+} from "react-native";
 import { SpeechDetected } from "./SpeechDetected";
 
 type Transcript = {
@@ -10,7 +17,9 @@ type Transcript = {
 
 export const LiveTranscripts = () => {
 	const transcripts = use$(liveTranscriptionService.transcripts$);
-
+	const isTranscriptionInProgress = use$(
+		liveTranscriptionService.isTranscriptionInProgress$,
+	);
 	const formatTime = (timestamp: number): string => {
 		const date = new Date(timestamp);
 		return date.toLocaleTimeString([], {
@@ -35,13 +44,21 @@ export const LiveTranscripts = () => {
 			{transcripts.length === 0 ? (
 				<Text style={styles.emptyMessage}>No transcripts yet</Text>
 			) : (
-				<FlatList
-					data={transcripts}
-					renderItem={renderItem}
-					keyExtractor={(item) => item.startTime.toString()}
-					contentContainerStyle={styles.listContent}
-					showsVerticalScrollIndicator={true}
-				/>
+				<>
+					{isTranscriptionInProgress ? (
+						<View style={styles.loaderContainer}>
+							<ActivityIndicator size="small" color="#666" />
+							<Text style={styles.loaderText}>Transcribing...</Text>
+						</View>
+					) : null}
+					<FlatList
+						data={transcripts}
+						renderItem={renderItem}
+						keyExtractor={(item) => item.startTime.toString()}
+						contentContainerStyle={styles.listContent}
+						showsVerticalScrollIndicator={true}
+					/>
+				</>
 			)}
 		</View>
 	);
@@ -86,5 +103,18 @@ const styles = StyleSheet.create({
 		color: "#666",
 		marginTop: 20,
 		fontStyle: "italic",
+	},
+	loaderContainer: {
+		flexDirection: "row",
+		alignItems: "center",
+		backgroundColor: "#f5f5f5",
+		padding: 8,
+		borderRadius: 8,
+		marginBottom: 8,
+	},
+	loaderText: {
+		marginLeft: 8,
+		color: "#666",
+		fontSize: 14,
 	},
 });

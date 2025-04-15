@@ -49,9 +49,9 @@ export const audioDataService = (() => {
 				(success: boolean) => {
 					if (success) {
 						savedAudioCount += packetsToSend.length;
-						console.log(
-							`Successfully sent ${packetsToSend.length} audio packets`,
-						);
+						// console.log(
+						// 	`Successfully sent ${packetsToSend.length} audio packets`,
+						// );
 					} else {
 						console.error("Failed to send audio data, will retry later");
 						// Re-add the packets to the buffer for retry

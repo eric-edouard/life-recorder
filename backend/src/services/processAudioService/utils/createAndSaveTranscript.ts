@@ -70,6 +70,8 @@ export const createAndSaveTranscript = async (
 	startTime: number,
 ): Promise<void> => {
 	console.log("Creating and saving transcript...");
+	console.log(">>>>>>>> socketService.socket", socketService.socket);
+
 	socketService.socket?.emit("transcriptionInProgress");
 
 	const content =
