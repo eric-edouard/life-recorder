@@ -18,64 +18,67 @@ import {
 } from "./constants";
 import { BleAudioCodec, type OmiDevice } from "./types";
 
-export class OmiDeviceManager {
+export const omiDeviceManager = (() => {
 	// Observable state using Legend State
-	public bluetoothState$ = observable(State.Unknown);
-	public permissionGranted$ = observable(false);
-	public scanning$ = observable(false);
-	public devices$ = observable<OmiDevice[]>([]);
-	public connectedDeviceId$ = observable<string | null>(null);
-	public isConnecting$ = observable(false);
+	const bluetoothState$ = observable(State.Unknown);
+	const permissionGranted$ = observable(false);
+	const scanning$ = observable(false);
+	const devices$ = observable<OmiDevice[]>([]);
+	const connectedDeviceId$ = observable<string | null>(null);
+	const isConnecting$ = observable(false);
 
 	// BLE Manager
-	private bleManager: BleManager;
-	private bleSubscription: Subscription;
-	private stopScanCallback: () => void = () => {};
-	private _connectedDevice: Device | null = null;
+	const bleManager = new BleManager();
+	let bleSubscription: Subscription;
+	let stopScanCallback: () => void = () => {};
+	let _connectedDevice: Device | null = null;
 
-	constructor() {
+	// Initialize
+	const initialize = () => {
 		console.log("OmiDeviceManager: initializing");
-		this.bleManager = new BleManager();
 
 		// Monitor Bluetooth state changes
-		this.bleSubscription = this.bleManager.onStateChange((state) => {
-			this.bluetoothState$.set(state);
+		bleSubscription = bleManager.onStateChange((state) => {
+			bluetoothState$.set(state);
 			if (state === State.PoweredOn) {
 				// Bluetooth is on, now we can request permission
-				this.requestBluetoothPermission();
+				requestBluetoothPermission();
 			}
 		}, true);
 
 		// Auto-start scanning when Bluetooth is on and permissions granted
 		when(
 			() =>
-				this.permissionGranted$.get() === true &&
-				this.bluetoothState$.get() === State.PoweredOn,
-			() => setTimeout(() => this.startScan(), 0),
+				permissionGranted$.get() === true &&
+				bluetoothState$.get() === State.PoweredOn,
+			() => setTimeout(() => startScan(), 0),
 		);
-	}
-
-	setConnectedDevice = (device: Device | null) => {
-		this._connectedDevice = device;
-		this.connectedDeviceId$.set(device?.id || null);
 	};
 
-	getConnectedDevice = (): Device | null => {
-		return this._connectedDevice;
+	// Run initialization
+	initialize();
+
+	const setConnectedDevice = (device: Device | null) => {
+		_connectedDevice = device;
+		connectedDeviceId$.set(device?.id || null);
+	};
+
+	const getConnectedDevice = (): Device | null => {
+		return _connectedDevice;
 	};
 
 	/**
 	 * Request Bluetooth permission from the user
 	 * @returns Boolean indicating if permission was requested successfully
 	 */
-	requestBluetoothPermission = () => {
+	const requestBluetoothPermission = () => {
 		console.log("OmiDeviceManager: requestBluetoothPermission");
 		try {
 			if (Platform.OS === "ios") {
-				this.bleManager.startDeviceScan(null, null, (error) => {
+				bleManager.startDeviceScan(null, null, (error) => {
 					if (error) {
 						console.error("Permission error:", error);
-						this.permissionGranted$.set(false);
+						permissionGranted$.set(false);
 						Alert.alert(
 							"Bluetooth Permission",
 							"Please enable Bluetooth permission in your device settings to use this feature.",
@@ -88,20 +91,20 @@ export class OmiDeviceManager {
 							],
 						);
 					} else {
-						this.permissionGranted$.set(true);
+						permissionGranted$.set(true);
 					}
 					// Stop scanning immediately after permission check
-					this.bleManager.stopDeviceScan();
+					bleManager.stopDeviceScan();
 					return true;
 				});
 			} else if (Platform.OS === "android") {
 				// On Android, we need to check for location and bluetooth permissions
 				try {
 					// This will trigger the permission dialog
-					this.bleManager.startDeviceScan(null, null, (error) => {
+					bleManager.startDeviceScan(null, null, (error) => {
 						if (error) {
 							console.error("Permission error:", error);
-							this.permissionGranted$.set(false);
+							permissionGranted$.set(false);
 							Alert.alert(
 								"Bluetooth Permission",
 								"Please enable Bluetooth and Location permissions in your device settings to use this feature.",
@@ -114,21 +117,21 @@ export class OmiDeviceManager {
 								],
 							);
 						} else {
-							this.permissionGranted$.set(true);
+							permissionGranted$.set(true);
 						}
 						// Stop scanning immediately after permission check
-						this.bleManager.stopDeviceScan();
+						bleManager.stopDeviceScan();
 						return true;
 					});
 				} catch (error) {
 					console.error("Error requesting permissions:", error);
-					this.permissionGranted$.set(false);
+					permissionGranted$.set(false);
 				}
 			}
 			return false;
 		} catch (error) {
 			console.error("Error in requestBluetoothPermission:", error);
-			this.permissionGranted$.set(false);
+			permissionGranted$.set(false);
 			return false;
 		}
 	};
@@ -136,14 +139,14 @@ export class OmiDeviceManager {
 	/**
 	 * Start scanning for Omi devices
 	 */
-	startScan = () => {
+	const startScan = () => {
 		console.log("OmiDeviceManager: startScan");
 
 		// Get previously connected device ID
 		const deviceId = storage.get("connectedDeviceId");
 
 		// Check if Bluetooth is on and permission is granted
-		if (this.bluetoothState$.peek() !== State.PoweredOn) {
+		if (bluetoothState$.peek() !== State.PoweredOn) {
 			Alert.alert(
 				"Bluetooth is Off",
 				"Please turn on Bluetooth to scan for devices.",
@@ -155,17 +158,17 @@ export class OmiDeviceManager {
 			return;
 		}
 
-		if (!this.permissionGranted$.peek()) {
+		if (!permissionGranted$.peek()) {
 			console.warn("OmiDeviceManager: startScan: permissionGranted is false");
-			this.requestBluetoothPermission();
+			requestBluetoothPermission();
 			return;
 		}
 
 		// Set scanning state
-		this.scanning$.set(true);
+		scanning$.set(true);
 
 		// Start the BLE scan
-		this.bleManager.startDeviceScan(null, null, (error, device) => {
+		bleManager.startDeviceScan(null, null, (error, device) => {
 			if (error) {
 				console.error("Scan error:", error);
 				return;
@@ -179,7 +182,7 @@ export class OmiDeviceManager {
 				};
 
 				// Add to devices list if not already there
-				this.devices$.set((prev) => {
+				devices$.set((prev) => {
 					// Check if device already exists
 					if (prev.some((d) => d.id === omiDevice.id)) {
 						return prev;
@@ -187,7 +190,7 @@ export class OmiDeviceManager {
 
 					// Auto-connect to previously connected device
 					if (deviceId && omiDevice.id === deviceId) {
-						this.connectToDevice(omiDevice.id);
+						connectToDevice(omiDevice.id);
 					}
 
 					return [...prev, omiDevice];
@@ -197,25 +200,25 @@ export class OmiDeviceManager {
 
 		// Auto-stop after 30 seconds
 		const timeoutId = setTimeout(() => {
-			this.stopScan();
+			stopScan();
 		}, 30000);
 
 		// Store stop scan callback
-		this.stopScanCallback = () => {
+		stopScanCallback = () => {
 			clearTimeout(timeoutId);
-			this.bleManager.stopDeviceScan();
+			bleManager.stopDeviceScan();
 		};
 	};
 
 	/**
 	 * Stop scanning for devices
 	 */
-	stopScan = () => {
+	const stopScan = () => {
 		console.log("OmiDeviceManager: stopScan");
-		this.scanning$.set(false);
-		if (this.stopScanCallback) {
-			this.stopScanCallback();
-			this.stopScanCallback = () => {};
+		scanning$.set(false);
+		if (stopScanCallback) {
+			stopScanCallback();
+			stopScanCallback = () => {};
 		}
 	};
 
@@ -223,28 +226,28 @@ export class OmiDeviceManager {
 	 * Connect to an Omi device
 	 * @param deviceId The device ID to connect to
 	 */
-	connectToDevice = async (deviceId: string) => {
+	const connectToDevice = async (deviceId: string) => {
 		console.log("OmiDeviceManager: connectToDevice", deviceId);
 
-		if (this.isConnecting$.peek()) {
+		if (isConnecting$.peek()) {
 			console.log("Already connecting to a device");
 			return false;
 		}
 
 		// First check if we're already connected to a device
-		if (this._connectedDevice) {
+		if (_connectedDevice) {
 			// Disconnect from the current device first
-			await this.disconnectFromDevice();
+			await disconnectFromDevice();
 		}
 
-		this.isConnecting$.set(true);
+		isConnecting$.set(true);
 
 		try {
 			// Connect to the device with MTU request for Android
 			const connectionOptions =
 				Platform.OS === "android" ? { requestMTU: 512 } : undefined;
 
-			const device = await this.bleManager.connectToDevice(
+			const device = await bleManager.connectToDevice(
 				deviceId,
 				connectionOptions,
 			);
@@ -256,28 +259,28 @@ export class OmiDeviceManager {
 			// Discover services and characteristics
 			await device.discoverAllServicesAndCharacteristics();
 
-			this.setConnectedDevice(device);
+			setConnectedDevice(device);
 
 			// Store connected device ID
 			storage.set("connectedDeviceId", deviceId);
 
 			// Set up disconnection listener
 			device.onDisconnected(() => {
-				this.setConnectedDevice(null);
+				setConnectedDevice(null);
 				storage.set("connectedDeviceId", null);
 			});
 
 			// Auto-stop scanning when connected successfully
-			if (this.scanning$.peek()) {
-				this.stopScan();
+			if (scanning$.peek()) {
+				stopScan();
 			}
 
-			this.isConnecting$.set(false);
+			isConnecting$.set(false);
 			return true;
 		} catch (error) {
 			console.error("Connection error:", error);
-			this.isConnecting$.set(false);
-			this.setConnectedDevice(null);
+			isConnecting$.set(false);
+			setConnectedDevice(null);
 			Alert.alert("Connection Error", String(error));
 			return false;
 		}
@@ -286,11 +289,11 @@ export class OmiDeviceManager {
 	/**
 	 * Disconnect from the currently connected device
 	 */
-	disconnectFromDevice = async () => {
+	const disconnectFromDevice = async () => {
 		console.log("OmiDeviceManager: disconnectFromDevice");
-		if (this._connectedDevice) {
-			await this._connectedDevice.cancelConnection();
-			this.setConnectedDevice(null);
+		if (_connectedDevice) {
+			await _connectedDevice.cancelConnection();
+			setConnectedDevice(null);
 			storage.set("connectedDeviceId", null);
 		}
 	};
@@ -299,22 +302,22 @@ export class OmiDeviceManager {
 	 * Check if connected to a device
 	 * @returns True if connected
 	 */
-	isConnected = (): boolean => {
-		return this._connectedDevice !== null;
+	const isConnected = (): boolean => {
+		return _connectedDevice !== null;
 	};
 
 	/**
 	 * Get the audio codec used by the device
 	 * @returns Promise that resolves with the audio codec
 	 */
-	getAudioCodec = async (): Promise<BleAudioCodec> => {
-		if (!this._connectedDevice) {
+	const getAudioCodec = async (): Promise<BleAudioCodec> => {
+		if (!_connectedDevice) {
 			throw new Error("Device not connected");
 		}
 
 		try {
 			// Get the Omi service
-			const services = await this._connectedDevice.services();
+			const services = await _connectedDevice.services();
 			const omiService = services.find(
 				(service) =>
 					service.uuid.toLowerCase() === OMI_SERVICE_UUID.toLowerCase(),
@@ -382,16 +385,16 @@ export class OmiDeviceManager {
 	 * @param onAudioBytesReceived Callback function that receives processed audio bytes
 	 * @returns Promise that resolves with a subscription that can be used to stop listening
 	 */
-	startAudioBytesListener = async (
+	const startAudioBytesListener = async (
 		onAudioBytesReceived: (processedBytes: number[]) => void,
 	): Promise<Subscription | null> => {
-		if (!this._connectedDevice) {
+		if (!_connectedDevice) {
 			throw new Error("Device not connected");
 		}
 
 		try {
 			// Get the Omi service
-			const services = await this._connectedDevice.services();
+			const services = await _connectedDevice.services();
 			const omiService = services?.find(
 				(service) =>
 					service.uuid.toLowerCase() === OMI_SERVICE_UUID.toLowerCase(),
@@ -472,7 +475,7 @@ export class OmiDeviceManager {
 	 * Stop listening for audio bytes
 	 * @param subscription The subscription returned by startAudioBytesListener
 	 */
-	stopAudioBytesListener = async (
+	const stopAudioBytesListener = async (
 		subscription: Subscription,
 	): Promise<void> => {
 		if (subscription) {
@@ -484,14 +487,14 @@ export class OmiDeviceManager {
 	 * Get the current battery level from the device
 	 * @returns Promise that resolves with the battery level percentage (0-100)
 	 */
-	getBatteryLevel = async (): Promise<number> => {
-		if (!this._connectedDevice) {
+	const getBatteryLevel = async (): Promise<number> => {
+		if (!_connectedDevice) {
 			throw new Error("Device not connected");
 		}
 
 		try {
 			// Get the Battery service
-			const services = await this._connectedDevice.services();
+			const services = await _connectedDevice.services();
 			const batteryService = services?.find(
 				(service) =>
 					service.uuid.toLowerCase() === BATTERY_SERVICE_UUID.toLowerCase(),
@@ -537,12 +540,29 @@ export class OmiDeviceManager {
 	/**
 	 * Clean up resources
 	 */
-	destroy = () => {
+	const destroy = () => {
 		console.log("OmiDeviceManager: destroy");
-		this.bleSubscription.remove();
-		this.bleManager.destroy();
+		bleSubscription.remove();
+		bleManager.destroy();
 	};
-}
 
-// Singleton instance export
-export const omiDeviceManager = new OmiDeviceManager();
+	return {
+		bluetoothState$,
+		permissionGranted$,
+		scanning$,
+		devices$,
+		connectedDeviceId$,
+		isConnecting$,
+		requestBluetoothPermission,
+		startScan,
+		stopScan,
+		connectToDevice,
+		disconnectFromDevice,
+		isConnected,
+		getAudioCodec,
+		startAudioBytesListener,
+		stopAudioBytesListener,
+		getBatteryLevel,
+		destroy,
+	};
+})();

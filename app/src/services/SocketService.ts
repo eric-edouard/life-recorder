@@ -9,100 +9,104 @@ export enum SocketConnectionState {
 	CONNECTED = "connected",
 }
 
-export class SocketService {
+export const socketService = (() => {
 	// Observable for connection state
-	public connectionState$ = observable<SocketConnectionState>(
+	const connectionState$ = observable<SocketConnectionState>(
 		SocketConnectionState.DISCONNECTED,
 	);
 
-	private socketEndpoint = "life-recorder-production.up.railway.app";
-	private socket: TypedSocket | null = null;
-
-	constructor() {
-		this.initializeSocket();
-	}
-
-	/**
-	 * Get the socket instance
-	 */
-	getSocket(): TypedSocket {
-		if (!this.socket) {
-			this.initializeSocket();
-		}
-
-		// Still null? Something went wrong, but try to recover
-		if (!this.socket) {
-			throw new Error("Failed to initialize socket");
-		}
-
-		return this.socket;
-	}
+	const socketEndpoint = "life-recorder-production.up.railway.app";
+	let socket: TypedSocket | null = null;
 
 	/**
 	 * Initialize Socket.IO connection
 	 */
-	private initializeSocket = (): void => {
-		this.connectionState$.set(SocketConnectionState.CONNECTING);
+	const initializeSocket = (): void => {
+		connectionState$.set(SocketConnectionState.CONNECTING);
 
-		this.socket = io(`https://${this.socketEndpoint}`, {
+		socket = io(`https://${socketEndpoint}`, {
 			transports: ["websocket", "polling"],
 		});
 
-		this.socket.on("connect", () => {
+		socket.on("connect", () => {
 			console.log("Connected to socket server using WebSockets");
-			this.connectionState$.set(SocketConnectionState.CONNECTED);
+			connectionState$.set(SocketConnectionState.CONNECTED);
 
 			// Log the active transport method
-			if (this.socket) {
-				const transport = this.socket.io.engine.transport.name;
+			if (socket) {
+				const transport = socket.io.engine.transport.name;
 				console.log(`Active transport method: ${transport}`);
 			}
 		});
 
-		this.socket.on("disconnect", () => {
+		socket.on("disconnect", () => {
 			console.log("Disconnected from socket server");
-			this.connectionState$.set(SocketConnectionState.DISCONNECTED);
+			connectionState$.set(SocketConnectionState.DISCONNECTED);
 		});
+	};
+
+	// Initialize on creation
+	initializeSocket();
+
+	/**
+	 * Get the socket instance
+	 */
+	const getSocket = (): TypedSocket => {
+		if (!socket) {
+			initializeSocket();
+		}
+
+		// Still null? Something went wrong, but try to recover
+		if (!socket) {
+			throw new Error("Failed to initialize socket");
+		}
+
+		return socket;
 	};
 
 	/**
 	 * Get the current socket transport method
 	 * @returns The name of the current transport or null if not connected
 	 */
-	getCurrentTransport = (): string | null => {
-		if (!this.socket?.connected) {
+	const getCurrentTransport = (): string | null => {
+		if (!socket?.connected) {
 			return null;
 		}
-		return this.socket.io.engine.transport.name;
+		return socket.io.engine.transport.name;
 	};
 
 	/**
 	 * Manually reconnect to the socket server
 	 * @returns Promise that resolves to true if reconnection was initiated
 	 */
-	reconnectToServer = async (): Promise<boolean> => {
-		if (this.socket?.connected) {
+	const reconnectToServer = async (): Promise<boolean> => {
+		if (socket?.connected) {
 			console.log("Already connected to server");
 			return false;
 		}
 
 		// Disconnect existing socket if any
-		if (this.socket) {
-			this.socket.disconnect();
+		if (socket) {
+			socket.disconnect();
 		}
 
 		// Reinitialize socket connection
-		this.initializeSocket();
+		initializeSocket();
 		return true;
 	};
 
 	/**
 	 * Check if socket is connected
 	 */
-	isConnected(): boolean {
-		return this.socket?.connected ?? false;
-	}
-}
+	const isConnected = (): boolean => {
+		return socket?.connected ?? false;
+	};
 
-// Singleton instance export
-export const socketService = new SocketService();
+	return {
+		connectionState$,
+		getSocket,
+		getCurrentTransport,
+		reconnectToServer,
+		isConnected,
+	};
+})();
