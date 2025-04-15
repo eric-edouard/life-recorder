@@ -82,7 +82,7 @@ export const createAndSaveTranscript = async (
 		return;
 	}
 
-	socketService.socket?.emit("transcriptReceived", content);
+	socketService.socket?.emit("transcriptReceived", content, startTime);
 
 	await db.insert(memoriesTable).values({
 		content,

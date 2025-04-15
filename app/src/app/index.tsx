@@ -12,6 +12,7 @@ import {
 
 import AudioStats from "@/src/components/AudioStats";
 import { ConnectionPill } from "@/src/components/ConnectionPill";
+import { LiveTranscripts } from "@/src/components/LiveTranscripts";
 import { ServerConnectionPill } from "@/src/components/ServerConnectionPill";
 import { ServerLogs } from "@/src/components/ServerLogs";
 // Import components
@@ -153,6 +154,7 @@ export default function Home() {
 						</View>
 					)}
 				</View>
+				<LiveTranscripts />
 			</View>
 		</SafeAreaView>
 	);

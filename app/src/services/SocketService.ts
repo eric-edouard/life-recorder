@@ -16,7 +16,7 @@ export const socketService = (() => {
 	);
 
 	const socketEndpoint = "life-recorder-production.up.railway.app";
-	let socket: TypedSocket | null = null;
+	let socket: TypedSocket | undefined;
 
 	/**
 	 * Initialize Socket.IO connection
@@ -103,6 +103,7 @@ export const socketService = (() => {
 	};
 
 	return {
+		socket,
 		connectionState$,
 		getSocket,
 		getCurrentTransport,
