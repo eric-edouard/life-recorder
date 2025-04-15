@@ -442,6 +442,10 @@ export const omiDeviceManager = (() => {
 				const subscription = audioDataStreamCharacteristic.monitor(
 					(error, characteristic) => {
 						if (error) {
+							if (error.message === "Operation was cancelled") {
+								console.log("Audio data stream notification cancelled");
+								return;
+							}
 							console.error("Audio data stream notification error:", error);
 							return;
 						}
