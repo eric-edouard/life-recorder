@@ -6,6 +6,7 @@ export type ServerLog = {
 
 export interface ServerToClientEvents {
 	serverLog: (logData: ServerLog) => void;
+	transcriptReceived: (transcript: string) => void;
 }
 
 export interface ClientToServerEvents {

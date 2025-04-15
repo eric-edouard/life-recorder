@@ -1,4 +1,3 @@
-import type { BleAudioCodec } from "@/src/services/OmiDeviceManager/types";
 import React, { useState } from "react";
 import {
 	Alert,
@@ -12,7 +11,6 @@ import {
 } from "react-native";
 
 import AudioStats from "@/src/components/AudioStats";
-import BatteryIndicator from "@/src/components/BatteryIndicator";
 import { ConnectionPill } from "@/src/components/ConnectionPill";
 import { ServerConnectionPill } from "@/src/components/ServerConnectionPill";
 import { ServerLogs } from "@/src/components/ServerLogs";
@@ -25,13 +23,11 @@ import { use$ } from "@legendapp/state/react";
 import { router } from "expo-router";
 
 export default function Home() {
-	const [codec, setCodec] = useState<BleAudioCodec | null>(null);
 	const connectedDeviceId = use$(omiDeviceManager.connectedDeviceId$);
 	const bluetoothState = use$(omiDeviceManager.bluetoothState$);
 	const [isListeningAudio, setIsListeningAudio] = useState<boolean>(false);
 	const [showServerLogs, setShowServerLogs] = useState<boolean>(false);
 	const [audioPacketsReceived, setAudioPacketsReceived] = useState<number>(0);
-	const [batteryLevel, setBatteryLevel] = useState<number>(-1);
 	// Audio saving statistics
 	const [savedAudioCount, setSavedAudioCount] = useState<number>(0);
 
@@ -79,47 +75,6 @@ export default function Home() {
 		}
 	};
 
-	const getAudioCodec = async () => {
-		try {
-			if (!connectedDeviceId || !omiDeviceManager.isConnected()) {
-				Alert.alert("Not Connected", "Please connect to a device first");
-				return;
-			}
-
-			try {
-				const codecValue = await omiDeviceManager.getAudioCodec();
-				setCodec(codecValue);
-			} catch (error) {
-				console.error("Get codec error:", error);
-
-				Alert.alert("Error", `Failed to get audio codec: ${error}`);
-			}
-		} catch (error) {
-			console.error("Unexpected error:", error);
-			Alert.alert("Error", `An unexpected error occurred: ${error}`);
-		}
-	};
-
-	const getBatteryLevel = async () => {
-		try {
-			if (!connectedDeviceId || !omiDeviceManager.isConnected()) {
-				Alert.alert("Not Connected", "Please connect to a device first");
-				return;
-			}
-
-			try {
-				const level = await omiDeviceManager.getBatteryLevel();
-				setBatteryLevel(level);
-			} catch (error) {
-				console.error("Get battery level error:", error);
-				Alert.alert("Error", `Failed to get battery level: ${error}`);
-			}
-		} catch (error) {
-			console.error("Unexpected error:", error);
-			Alert.alert("Error", `An unexpected error occurred: ${error}`);
-		}
-	};
-
 	const handleServerReconnect = async () => {
 		try {
 			const initiated = await socketService.reconnectToServer();
@@ -162,38 +117,13 @@ export default function Home() {
 					</TouchableOpacity>
 
 					{showServerLogs && <ServerLogs />}
-				</View>
 
-				{connectedDeviceId && (
-					<View style={styles.section}>
-						<Text style={styles.sectionTitle}>Device Functions</Text>
-						<TouchableOpacity style={styles.button} onPress={getAudioCodec}>
-							<Text style={styles.buttonText}>Get Audio Codec</Text>
-						</TouchableOpacity>
-
-						{codec && (
-							<View style={styles.codecContainer}>
-								<Text style={styles.codecTitle}>Current Audio Codec:</Text>
-								<Text style={styles.codecValue}>{codec}</Text>
-							</View>
-						)}
-
-						<TouchableOpacity
-							style={[styles.button, { marginTop: 15 }]}
-							onPress={getBatteryLevel}
-						>
-							<Text style={styles.buttonText}>Get Battery Level</Text>
-						</TouchableOpacity>
-
-						{/* Battery Indicator */}
-						<BatteryIndicator batteryLevel={batteryLevel} />
-
+					{connectedDeviceId && (
 						<View style={styles.audioControls}>
 							<TouchableOpacity
 								style={[
 									styles.button,
 									isListeningAudio ? styles.buttonWarning : null,
-									{ marginTop: 15 },
 								]}
 								onPress={
 									isListeningAudio ? stopAudioListener : startAudioListener
@@ -221,8 +151,8 @@ export default function Home() {
 								</View>
 							)}
 						</View>
-					</View>
-				)}
+					)}
+				</View>
 			</View>
 		</SafeAreaView>
 	);
