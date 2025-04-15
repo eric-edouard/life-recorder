@@ -12,7 +12,6 @@ export const liveTranscriptionService = (() => {
 	socketService.socket?.on("speechStopped", () => isSpeechDetected$.set(false));
 
 	socketService.socket?.on("transcriptionInProgress", () => {
-		console.log(">>>>>> transcriptionInProgress");
 		isTranscriptionInProgress$.set(true);
 	});
 

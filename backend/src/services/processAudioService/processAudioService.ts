@@ -39,7 +39,6 @@ export const processAudioService = (() => {
 				speechStartTime = lastTimestamp;
 				isSpeechActive = true;
 
-				console.log(">>>>>>>>>> socketService.socket", socketService.socket);
 				socketService.socket?.emit("speechStarted");
 
 				// Start Deepgram live transcription when speech detected
@@ -51,8 +50,8 @@ export const processAudioService = (() => {
 			onSpeechEnd: async (audio: Float32Array) => {
 				console.log(`Speech ended, audio length: ${audio.length}`);
 				isSpeechActive = false;
-
 				socketService.socket?.emit("speechStopped");
+				socketService.socket?.emit("transcriptionInProgress");
 
 				// Clean up Deepgram transcription session
 				if (DEEPGRAM_LIVE_TRANSCRIPTION_ENABLED) {
