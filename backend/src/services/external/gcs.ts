@@ -1,5 +1,7 @@
 import { Storage } from "@google-cloud/storage";
 
+export const RECORDINGS_FOLDER = "audio_recordings";
+
 export function initializeGoogleCloudStorage(): Storage {
 	// Check if we have base64-encoded credentials in environment variable
 	if (!process.env.GCS_SERVICE_ACCOUNT_BASE64) {

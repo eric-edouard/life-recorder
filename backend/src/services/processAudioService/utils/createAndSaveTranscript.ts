@@ -1,12 +1,13 @@
 import { CHANNELS, SAMPLE_RATE } from "@/constants/audioConstants";
 import { db } from "@/db/db";
-import { memoriesTable } from "@/db/schema";
+import { utterancesTable } from "@/db/schema";
 import { deepgram } from "@/services/external/deepgram";
 import { socketService } from "@/services/socketService";
+import type { SyncPrerecordedResponse } from "@deepgram/sdk";
 
 const transcribeWithDeepgram = async (
 	audioBuffer: Buffer,
-): Promise<string | undefined> => {
+): Promise<SyncPrerecordedResponse | undefined> => {
 	const transcription = await deepgram.listen.prerecorded.transcribeFile(
 		audioBuffer,
 		{
@@ -31,30 +32,46 @@ const transcribeWithDeepgram = async (
 		return;
 	}
 
-	return transcription.result.results.channels[0].alternatives[0].transcript;
+	return transcription.result;
 };
+
 export const createAndSaveTranscript = async (
+	id: string,
 	audioBuffer: Buffer,
 	startTime: number,
 ): Promise<void> => {
 	console.log("Creating and saving transcript...");
 
 	socketService.socket?.emit("processingAudioUpdate", "2-transcribing");
-	const content = await transcribeWithDeepgram(audioBuffer);
+	const result = await transcribeWithDeepgram(audioBuffer);
 	socketService.socket?.emit("processingAudioUpdate", "3-done");
-	console.log("Transcription content: ", content);
 
-	if (!content) {
+	const utterances = result?.results.utterances;
+	const transcript = result?.results.channels[0].alternatives[0].transcript;
+
+	console.log("Transcription content: ", transcript);
+
+	if (!utterances || !transcript) {
 		console.error("No transcription content found");
 		return;
 	}
 
-	socketService.socket?.emit("transcriptReceived", content, startTime);
+	socketService.socket?.emit("transcriptReceived", transcript, startTime);
 
-	await db.insert(memoriesTable).values({
-		content,
-		createdAt: new Date(startTime),
-	});
+	await Promise.all(
+		utterances.map(async (u) => {
+			await db.insert(utterancesTable).values({
+				id,
+				fileId: id,
+				start: u.start,
+				end: u.end,
+				transcript: u.transcript,
+				confidence: u.confidence,
+				createdAt: new Date(startTime),
+				words: u.words,
+			});
+		}),
+	);
 
 	console.log("Transcript created and saved !");
 };

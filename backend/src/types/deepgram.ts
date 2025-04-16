@@ -1,3 +1,5 @@
+import type { SyncPrerecordedResponse } from "@deepgram/sdk";
+
 export interface DeepgramResult {
 	type: string;
 	channel_index: number[];
@@ -39,3 +41,5 @@ export interface ModelInfo {
 	version: string;
 	arch: string;
 }
+
+export type Utterance = SyncPrerecordedResponse["results"]["utterances"];

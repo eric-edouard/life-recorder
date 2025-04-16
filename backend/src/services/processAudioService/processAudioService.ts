@@ -12,6 +12,8 @@ import {
 	convertFloat32ArrayToWavBuffer,
 	convertPcmToFloat32Array,
 } from "@/utils/audioUtils";
+import { generateReadableUUID } from "@/utils/generateReadableUUID";
+import { getWavBufferDuration } from "@/utils/getWavBufferDuration";
 import { OpusEncoder } from "@discordjs/opus";
 import { RealTimeVAD } from "@ericedouard/vad-node-realtime";
 
@@ -41,9 +43,7 @@ export const processAudioService = (() => {
 
 				socketService.socket?.emit("speechStarted");
 
-				// Start Deepgram live transcription when speech detected
 				if (DEEPGRAM_LIVE_TRANSCRIPTION_ENABLED) {
-					// Start the connection (it handles buffering internally)
 					deepgramLiveTranscriptionService.startTranscription();
 				}
 			},
@@ -57,7 +57,6 @@ export const processAudioService = (() => {
 				isSpeechActive = false;
 				socketService.socket?.emit("speechStopped");
 
-				// Clean up Deepgram transcription session
 				if (DEEPGRAM_LIVE_TRANSCRIPTION_ENABLED) {
 					deepgramLiveTranscriptionService.stopTranscription();
 				}
@@ -66,13 +65,15 @@ export const processAudioService = (() => {
 					"processingAudioUpdate",
 					"1-converting-to-wav",
 				);
-				// Convert to WAV once
+
 				const wavBuffer = convertFloat32ArrayToWavBuffer(audio);
+				const durationMs = getWavBufferDuration(wavBuffer);
+				const readableId = generateReadableUUID(speechStartTime, durationMs);
 
 				await Promise.all([
-					createAndSaveTranscript(wavBuffer, speechStartTime),
+					createAndSaveTranscript(readableId, wavBuffer, speechStartTime),
 					SAVE_RECORDINGS_TO_GCS_ENABLED
-						? saveAudioToGCS(wavBuffer, speechStartTime)
+						? saveAudioToGCS(readableId, wavBuffer, speechStartTime, durationMs)
 						: Promise.resolve(),
 				]);
 			},
