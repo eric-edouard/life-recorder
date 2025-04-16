@@ -5,7 +5,7 @@ export function getSpeakerEmbedding(audioFilePath: string): Promise<number[]> {
 	return new Promise((resolve, reject) => {
 		const scriptPath = path.resolve(
 			__dirname,
-			"../../resemblyzer/resemblyzer.py",
+			"../../resemblyzer/create_embedding.py",
 		);
 		const pythonProcess = spawn("python3", [scriptPath, audioFilePath]);
 
