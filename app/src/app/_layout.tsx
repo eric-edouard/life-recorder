@@ -2,7 +2,7 @@
 import "react-native-reanimated";
 import "../../global.css";
 
-import { ThemeProvider } from "@/src/providers/ThemeProvider";
+import { ThemeProvider } from "@/src/contexts/ThemeProvider";
 import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
@@ -31,7 +31,6 @@ export default function RootLayout() {
 			<Stack>
 				<Stack.Screen name="(tabs)" options={{ headerShown: false }} />
 				<Stack.Screen name="modal" options={{ presentation: "modal" }} />
-				{/* <Stack.Screen name="index" options={{ headerShown: false }} /> */}
 				<Stack.Screen
 					name="pair-device"
 					options={{ title: "Pair Device", headerBackTitle: "Home" }}

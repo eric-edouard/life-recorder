@@ -1,10 +1,10 @@
+import { useListScroll } from "@/src/contexts/ListScrollContext";
 import { liveTranscriptionService } from "@/src/services/liveTranscriptionService";
 import { use$ } from "@legendapp/state/react";
 import React, { type ReactNode } from "react";
-import { ActivityIndicator, FlatList, View } from "react-native";
+import { ActivityIndicator, Animated, FlatList, View } from "react-native";
 import { SpeechDetected } from "./SpeechDetected";
 import { Text } from "./Text";
-
 type Transcript = {
 	transcript: string;
 	startTime: number;
@@ -15,6 +15,7 @@ type LiveTranscriptsProps = {
 };
 
 export const LiveTranscripts = ({ headerComponent }: LiveTranscriptsProps) => {
+	const { scrollAnimatedValue } = useListScroll();
 	const transcripts = use$(liveTranscriptionService.transcripts$);
 	const processingAudioPhase = use$(
 		liveTranscriptionService.processingAudioPhase$,
@@ -39,7 +40,7 @@ export const LiveTranscripts = ({ headerComponent }: LiveTranscriptsProps) => {
 	);
 
 	const TranscriptHeader = () => (
-		<View>
+		<View className="">
 			{headerComponent}
 			<SpeechDetected />
 			<Text className="text-lg font-semibold mb-3">Live Transcripts</Text>
@@ -58,12 +59,16 @@ export const LiveTranscripts = ({ headerComponent }: LiveTranscriptsProps) => {
 
 	return (
 		<FlatList
-			stickyHeaderIndices={[0]}
+			onScroll={Animated.event(
+				[{ nativeEvent: { contentOffset: { y: scrollAnimatedValue } } }],
+				{ useNativeDriver: false },
+			)}
+			style={{ flex: 1 }}
+			// stickyHeaderIndices={[0]}
 			ListHeaderComponent={TranscriptHeader}
 			data={transcripts}
 			renderItem={renderItem}
 			keyExtractor={(item) => item.startTime.toString()}
-			contentContainerStyle={{ paddingBottom: 20 }}
 			showsVerticalScrollIndicator={true}
 			ListEmptyComponent={
 				<Text className="text-center text-[#666] mt-5 italic">

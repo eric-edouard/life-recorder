@@ -1,31 +1,22 @@
 import { Text } from "@/src/components/Text";
 import React, { useState } from "react";
-import {
-	Alert,
-	Linking,
-	Platform,
-	SafeAreaView,
-	TouchableOpacity,
-	View,
-} from "react-native";
+import { Alert, Linking, TouchableOpacity, View } from "react-native";
 
 import { ConnectionPill } from "@/src/components/ConnectionPill";
 import { LiveTranscripts } from "@/src/components/LiveTranscripts";
+import { ScreenHeader } from "@/src/components/ScreenHeader";
 import { ServerConnectionPill } from "@/src/components/ServerConnectionPill";
-// Import components
 import StatusBanner from "@/src/components/StatusBanner";
+import { ListScrollProvider } from "@/src/contexts/ListScrollContext";
 import { omiDeviceManager } from "@/src/services/OmiDeviceManager/OmiDeviceManager";
 import { audioDataService } from "@/src/services/audioDataService";
 import { socketService } from "@/src/services/socketService";
 import { use$ } from "@legendapp/state/react";
 import { router } from "expo-router";
-
 const HeaderContent = () => {
 	const connectedDeviceId = use$(omiDeviceManager.connectedDeviceId$);
 	const bluetoothState = use$(omiDeviceManager.bluetoothState$);
 	const [isListeningAudio, setIsListeningAudio] = useState<boolean>(false);
-	const [showServerLogs, setShowServerLogs] = useState<boolean>(false);
-
 	const startAudioListener = async () => {
 		try {
 			if (!connectedDeviceId || !omiDeviceManager.isConnected()) {
@@ -68,13 +59,9 @@ const HeaderContent = () => {
 		}
 	};
 
-	const toggleServerLogs = () => {
-		setShowServerLogs(!showServerLogs);
-	};
-
 	return (
-		<View>
-			<Text className="text-4xl font-extrabold mt-8">Life Logger</Text>
+		<View className={"p-5 pt-safe-offset-3"}>
+			<Text className="text-5xl font-extrabold mt-10">Life Logger</Text>
 			{/* Connection Pills */}
 			<View className="flex-row items-center mb-2.5 gap-2">
 				<ConnectionPill onPress={() => router.push("/pair-device")} />
@@ -87,68 +74,35 @@ const HeaderContent = () => {
 				onRequestPermission={omiDeviceManager.requestBluetoothPermission}
 				onOpenSettings={() => Linking.openSettings()}
 			/>
-
-			{/* Server Logs Section */}
-			<View className="mb-6 p-4 bg-white rounded-lg shadow-sm">
-				{/* <TouchableOpacity
-					className={`bg-[#007AFF] py-3 px-5 rounded-lg items-center shadow-sm`}
-					onPress={toggleServerLogs}
-				>
-					<Text className="text-white text-base font-semibold">
-						{showServerLogs ? "Close Server Logs" : "Open Server Logs"}
-					</Text>
-				</TouchableOpacity>
-
-				{showServerLogs && <ServerLogs />} */}
-
-				{connectedDeviceId && (
-					<View className="mt-2.5">
-						<TouchableOpacity
-							className={
-								isListeningAudio
-									? "bg-[#FF9500] py-3 px-5 rounded-lg items-center shadow-sm"
-									: "bg-[#007AFF] py-3 px-5 rounded-lg items-center shadow-sm"
-							}
-							onPress={
-								isListeningAudio ? stopAudioListener : startAudioListener
-							}
-						>
-							<Text className="text-white text-base font-semibold">
-								{isListeningAudio
-									? "Stop Audio Listener"
-									: "Start Audio Listener"}
-							</Text>
-						</TouchableOpacity>
-
-						{/* <AudioStats
-							audioPacketsReceived={audioPacketsReceived}
-							showIf={isListeningAudio}
-						/>
-						{isListeningAudio && (
-							<View className="mt-2.5 p-2 bg-[#f8f8f8] rounded-md items-center">
-								<Text className="text-sm text-[#555] font-medium">
-									Audio chunks saved: {savedAudioCount}
-								</Text>
-							</View>
-						)} */}
-					</View>
-				)}
-			</View>
+			{connectedDeviceId && (
+				<View className="mt-2.5">
+					<TouchableOpacity
+						className={
+							isListeningAudio
+								? "bg-[#FF9500] py-3 px-5 rounded-lg items-center shadow-sm"
+								: "bg-[#007AFF] py-3 px-5 rounded-lg items-center shadow-sm"
+						}
+						onPress={isListeningAudio ? stopAudioListener : startAudioListener}
+					>
+						<Text className="text-white text-base font-semibold">
+							{isListeningAudio
+								? "Stop Audio Listener"
+								: "Start Audio Listener"}
+						</Text>
+					</TouchableOpacity>
+				</View>
+			)}
 		</View>
 	);
 };
 
 export default function Home() {
 	return (
-		<SafeAreaView
-			className={`flex-1 bg-background`}
-			// style={{ backgroundColor: PlatformColor("systemRed") }}
-		>
-			<View
-				className={`p-5 ${Platform.OS === "android" ? "pt-10" : ""} flex-1`}
-			>
+		<ListScrollProvider>
+			<View className={`flex-1 bg-background`}>
 				<LiveTranscripts headerComponent={<HeaderContent />} />
+				<ScreenHeader />
 			</View>
-		</SafeAreaView>
+		</ListScrollProvider>
 	);
 }

@@ -17,7 +17,7 @@ export const colorThemes = {
 		"--background": "#000000", // systemBackground
 		"--background-muted": "#1C1C1E", // secondarySystemBackground
 		"--background-subtle": "#2C2C2E", // tertiarySystemBackground
-		"--foreground": "#FFFFFF", // label
+		"--foreground": "#F2F2F7", // label
 		"--foreground-muted": "#EBEBF5", // secondaryLabel
 		"--foreground-subtle": "#EBEBF599", // tertiaryLabel
 		"--primary": "#0A84FF", // systemBlue (dark)

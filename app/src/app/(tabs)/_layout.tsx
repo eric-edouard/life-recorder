@@ -15,12 +15,12 @@ export default function TabLayout() {
 				headerShown: false,
 				animation: "fade",
 				tabBarStyle: {
+					borderTopWidth: 0,
 					position: "absolute",
 				},
 				tabBarBackground: () => (
 					<BlurView
-						tint={colorScheme === "dark" ? "dark" : "light"}
-						intensity={80}
+						intensity={100}
 						style={{
 							...StyleSheet.absoluteFillObject,
 							backgroundColor: "transparent",
