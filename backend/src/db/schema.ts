@@ -15,10 +15,11 @@ export const utterancesTable = pgTable("utterances", {
 	end: real("end").notNull(),
 	transcript: text("transcript").notNull(),
 	confidence: real("confidence").notNull(),
-	speaker: integer("speaker"),
+	non_identified_speaker: integer("non_identified_speaker"),
 	words: jsonb("words").notNull(),
 	location: text(),
 	latitude: decimal({ precision: 10, scale: 8 }),
 	longitude: decimal({ precision: 11, scale: 8 }),
 	createdAt: timestamp("created_at").defaultNow().notNull(),
+	speaker: integer("speaker"),
 });

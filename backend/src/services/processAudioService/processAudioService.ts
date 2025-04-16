@@ -68,12 +68,12 @@ export const processAudioService = (() => {
 
 				const wavBuffer = convertFloat32ArrayToWavBuffer(audio);
 				const durationMs = getWavBufferDuration(wavBuffer);
-				const readableId = generateReadableUUID(speechStartTime, durationMs);
+				const fileId = generateReadableUUID(speechStartTime, durationMs);
 
 				await Promise.all([
-					createAndSaveTranscript(readableId, wavBuffer, speechStartTime),
+					createAndSaveTranscript(fileId, wavBuffer, speechStartTime),
 					SAVE_RECORDINGS_TO_GCS_ENABLED
-						? saveAudioToGCS(readableId, wavBuffer, speechStartTime, durationMs)
+						? saveAudioToGCS(fileId, wavBuffer, speechStartTime, durationMs)
 						: Promise.resolve(),
 				]);
 			},

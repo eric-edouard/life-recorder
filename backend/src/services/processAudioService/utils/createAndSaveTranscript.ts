@@ -3,6 +3,7 @@ import { db } from "@/db/db";
 import { utterancesTable } from "@/db/schema";
 import { deepgram } from "@/services/external/deepgram";
 import { socketService } from "@/services/socketService";
+import { generateUtteranceId } from "@/utils/generateUtteranceId";
 import type { SyncPrerecordedResponse } from "@deepgram/sdk";
 
 const transcribeWithDeepgram = async (
@@ -36,7 +37,7 @@ const transcribeWithDeepgram = async (
 };
 
 export const createAndSaveTranscript = async (
-	id: string,
+	fileId: string,
 	audioBuffer: Buffer,
 	startTime: number,
 ): Promise<void> => {
@@ -52,26 +53,27 @@ export const createAndSaveTranscript = async (
 	console.log("Transcription content: ", transcript);
 
 	if (!utterances || !transcript) {
-		console.error("No transcription content found");
+		console.error("Missing transcript or utterances", { result });
 		return;
 	}
 
 	socketService.socket?.emit("transcriptReceived", transcript, startTime);
 
 	await Promise.all(
-		utterances.map(async (u) => {
-			await db.insert(utterancesTable).values({
-				id,
-				fileId: id,
+		utterances.map((u) =>
+			db.insert(utterancesTable).values({
+				id: generateUtteranceId(startTime, u.start, u.end),
+				fileId,
 				start: u.start,
 				end: u.end,
 				transcript: u.transcript,
 				confidence: u.confidence,
 				createdAt: new Date(startTime),
 				words: u.words,
-			});
-		}),
+				non_identified_speaker: u.speaker,
+			}),
+		),
 	);
 
-	console.log("Transcript created and saved !");
+	console.log(`Saved ${utterances.length} utterances`);
 };
