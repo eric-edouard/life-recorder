@@ -1,14 +1,13 @@
 import { Card } from "@/src/components/Card";
+import { DeviceSignalStrength } from "@/src/components/DeviceSignalStrength";
 import { useThemeColor } from "@/src/contexts/ThemeContext";
 import { useDeviceBatteryLevel } from "@/src/hooks/useDeviceBatteryLevel";
-import { useDeviceRssi } from "@/src/hooks/useDeviceRssi";
 import { omiDeviceManager } from "@/src/services/OmiDeviceManager/OmiDeviceManager";
-import { Computed, Memo, use$ } from "@legendapp/state/react";
+import { Computed, use$ } from "@legendapp/state/react";
 import React, { useEffect, useRef } from "react";
 import { Animated, View } from "react-native";
 import { State } from "react-native-ble-plx";
 import { Text } from "./Text";
-
 type DeviceCardProps = {
 	onPress: () => void;
 };
@@ -25,7 +24,6 @@ export const DeviceCard = ({ onPress }: DeviceCardProps) => {
 	const scanning = use$(omiDeviceManager.scanning$);
 	const isConnecting = use$(omiDeviceManager.isConnecting$);
 	const devices = use$(omiDeviceManager.devices$);
-	const rssi$ = useDeviceRssi();
 	const batteryLevel$ = useDeviceBatteryLevel();
 
 	// Get the currently connected device (if any)
@@ -155,13 +153,7 @@ export const DeviceCard = ({ onPress }: DeviceCardProps) => {
 					<Text className="text-base font-semibold text-foreground mb-1">
 						{connectedDevice.name}
 					</Text>
-					<Memo>
-						{() => (
-							<Text className="text-xs text-foreground-muted">
-								Signal: {rssi$.get()} dBm
-							</Text>
-						)}
-					</Memo>
+					<DeviceSignalStrength />
 				</>
 			) : (
 				<Text className="text-base font-medium text-foreground-subtle">

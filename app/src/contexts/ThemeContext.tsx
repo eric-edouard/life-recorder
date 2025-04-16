@@ -29,8 +29,12 @@ export const ThemeProvider = ({ children }: ThemeProviderProps) => {
 	);
 };
 
+export const useThemeColors = () => {
+	const { theme } = useContext(ThemeContext);
+	return theme === "light" ? lightColors : darkColors;
+};
+
 export const useThemeColor = (color: ColorName) => {
 	const { theme } = useContext(ThemeContext);
-
 	return theme === "light" ? lightColors[color] : darkColors[color];
 };

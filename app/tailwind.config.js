@@ -20,9 +20,7 @@ module.exports = {
 		},
 	},
 	plugins: [],
-
 };
-
 
 // import { vars } from "nativewind";
 

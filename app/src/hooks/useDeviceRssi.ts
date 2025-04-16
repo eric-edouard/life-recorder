@@ -1,27 +1,31 @@
 import { useAppState } from "@/src/hooks/useAppState";
 import { omiDeviceManager } from "@/src/services/OmiDeviceManager/OmiDeviceManager";
-import { use$, useObservable } from "@legendapp/state/react";
-import { useEffect } from "react";
+import type { SignalStrength } from "@/src/utils/rssiToSignalStrength";
+import { rssiToSignalStrength } from "@/src/utils/rssiToSignalStrength";
 
-export const useDeviceRssi = () => {
+import { use$ } from "@legendapp/state/react";
+import { useEffect, useState } from "react";
+
+export const useDeviceSignalStrength = () => {
 	const appState = useAppState();
-	const rssi$ = useObservable<number | null>(null);
 	const connectedDeviceId = use$(omiDeviceManager.connectedDeviceId$);
+	const [signalStrength, setSignalStrength] = useState<SignalStrength | null>(
+		null,
+	);
 
 	// Fetch battery level
 	const fetchRssi = async () => {
 		if (connectedDeviceId) {
 			try {
 				const rssi = await omiDeviceManager.getConnectedDeviceRssi();
-				console.log(">>>> Refresshed rssi", rssi);
 				if (rssi) {
-					rssi$.set(rssi);
+					setSignalStrength(rssiToSignalStrength(rssi));
 				}
 			} catch (error) {
 				console.error("Error fetching battery level:", error);
 			}
 		} else {
-			rssi$.set(null);
+			setSignalStrength(null);
 		}
 	};
 
@@ -36,10 +40,10 @@ export const useDeviceRssi = () => {
 			// Clean up interval when disconnected or component unmounts
 			return () => {
 				clearInterval(intervalId);
-				rssi$.set(null);
+				setSignalStrength(null);
 			};
 		}
 	}, [connectedDeviceId, appState]);
 
-	return rssi$;
+	return signalStrength;
 };
