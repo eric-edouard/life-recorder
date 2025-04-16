@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { Alert, Linking, TouchableOpacity, View } from "react-native";
 
 import { BackendStatusCard } from "@/src/components/BackendStatusCard";
-import { DeviceCard } from "@/src/components/DeviceCard";
+import { DeviceCard } from "@/src/components/DeviceCard/DeviceCard";
 import { LiveTranscripts } from "@/src/components/LiveTranscripts";
 import { ScreenHeader } from "@/src/components/ScreenHeader";
 import { ServerConnectionPill } from "@/src/components/ServerConnectionPill";

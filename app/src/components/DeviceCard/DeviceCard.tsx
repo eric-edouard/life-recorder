@@ -1,13 +1,14 @@
 import { Card } from "@/src/components/Card";
-import { DeviceSignalStrength } from "@/src/components/DeviceSignalStrength";
+import { DeviceBatteryLevel } from "@/src/components/DeviceCard/DeviceBatteryLevel";
+import { DeviceSignalStrength } from "@/src/components/DeviceCard/DeviceSignalStrength";
 import { useThemeColor } from "@/src/contexts/ThemeContext";
 import { useDeviceBatteryLevel } from "@/src/hooks/useDeviceBatteryLevel";
 import { omiDeviceManager } from "@/src/services/OmiDeviceManager/OmiDeviceManager";
-import { Computed, use$ } from "@legendapp/state/react";
+import { use$ } from "@legendapp/state/react";
 import React, { useEffect, useRef } from "react";
 import { Animated, View } from "react-native";
 import { State } from "react-native-ble-plx";
-import { Text } from "./Text";
+import { Text } from "../Text";
 type DeviceCardProps = {
 	onPress: () => void;
 };
@@ -117,6 +118,9 @@ export const DeviceCard = ({ onPress }: DeviceCardProps) => {
 
 	return (
 		<Card onPress={onPress} className="flex-1">
+			<Text className="text-base font-semibold text-foreground mb-1">
+				{connectedDevice?.name ?? "No device connected"}
+			</Text>
 			<View className="flex-row items-center justify-between mb-2">
 				<View className="flex-row items-center">
 					<Animated.View
@@ -137,31 +141,9 @@ export const DeviceCard = ({ onPress }: DeviceCardProps) => {
 					</Text>
 				</View>
 
-				<Computed>
-					{() =>
-						batteryLevel$.get() !== null && connectedDeviceId ? (
-							<Text className="text-sm font-medium text-foreground-subtle">
-								{batteryLevel$.get()}%
-							</Text>
-						) : null
-					}
-				</Computed>
+				<DeviceBatteryLevel />
 			</View>
-
-			{connectedDevice ? (
-				<>
-					<Text className="text-base font-semibold text-foreground mb-1">
-						{connectedDevice.name}
-					</Text>
-					<DeviceSignalStrength />
-				</>
-			) : (
-				<Text className="text-base font-medium text-foreground-subtle">
-					{bluetoothState === State.PoweredOn
-						? "No device connected"
-						: "Enable Bluetooth to connect"}
-				</Text>
-			)}
+			<DeviceSignalStrength />
 		</Card>
 	);
 };
