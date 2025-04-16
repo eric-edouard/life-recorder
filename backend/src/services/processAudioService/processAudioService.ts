@@ -76,7 +76,7 @@ export const processAudioService = (() => {
 						: Promise.resolve(),
 				]);
 			},
-			preSpeechPadFrames: 10,
+			preSpeechPadFrames: 4,
 			redemptionFrames: 4,
 			positiveSpeechThreshold: 0.6,
 			negativeSpeechThreshold: 0.6 - 0.15,
