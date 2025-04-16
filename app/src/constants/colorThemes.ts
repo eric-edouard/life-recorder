@@ -35,7 +35,7 @@ export const darkColors: Record<ColorName, string> = {
 	"--background-level-1": "#1C1C1E", // secondarySystemBackground
 	"--background-level-2": "#2C2C2E", // tertiarySystemBackground
 	"--foreground": "#F2F2F7", // label
-	"--foreground-level-1": "#EBEBF5", // secondaryLabel
+	"--foreground-level-1": "#D1D1D1", // secondaryLabel
 	"--foreground-level-2": "#EBEBF599", // tertiaryLabel
 	"--foreground-level-3": "#EBEBF566", // quaternaryLabel
 	"--primary": "#0A84FF", // systemBlue (dark)

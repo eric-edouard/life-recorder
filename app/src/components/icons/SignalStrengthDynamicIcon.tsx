@@ -1,30 +1,19 @@
+import type { ColorName } from "@/src/constants/colorThemes";
 import { useThemeColors } from "@/src/contexts/ThemeContext";
 import type { SignalStrength } from "@/src/utils/rssiToSignalStrength";
 import { Wifi, WifiHigh, WifiLow, WifiZero } from "lucide-react-native";
+import type React from "react";
 import { View } from "react-native";
 
-type Props = {
-	strength: SignalStrength | null;
-};
-
-const getIcon = (
-	strength: SignalStrength | null,
-	color: string,
-	noColor: string,
-	size: number,
-) => {
-	switch (strength) {
-		case "excellent":
-			return <Wifi color={color} size={size} />;
-		case "good":
-			return <WifiHigh color={color} size={size} />;
-		case "moderate":
-			return <WifiLow color={color} size={size} />;
-		case "poor":
-			return <WifiZero color={color} size={size} />;
-		default:
-			return <Wifi color={noColor} size={size} />;
-	}
+const SIGNAL_CONFIG: Record<
+	SignalStrength | "unknown",
+	{ icon: React.ElementType; color: ColorName }
+> = {
+	excellent: { icon: Wifi, color: "--green" },
+	good: { icon: WifiHigh, color: "--green" },
+	moderate: { icon: WifiLow, color: "--yellow" },
+	poor: { icon: WifiZero, color: "--red" },
+	unknown: { icon: Wifi, color: "--foreground" }, // Default case
 };
 
 type SignalStrengthDynamicIconProps = {
@@ -37,21 +26,20 @@ export const SignalStrengthDynamicIcon = ({
 	size = 16,
 }: SignalStrengthDynamicIconProps) => {
 	const colors = useThemeColors();
+	const config = strength ? SIGNAL_CONFIG[strength] : SIGNAL_CONFIG.unknown;
+	const SignalIcon = config.icon;
+
 	return (
-		<View className="" style={{ marginTop: -(size / 3) }}>
+		<View className="" style={{ marginTop: -(size / 6) }}>
 			<Wifi
-				color={colors["--background-level-2"]}
+				color={colors["--foreground"]}
 				size={size}
 				style={{
 					position: "absolute",
+					opacity: 0.5,
 				}}
 			/>
-			{getIcon(
-				strength,
-				colors["--foreground"],
-				colors["--background-level-2"],
-				size,
-			)}
+			<SignalIcon color={colors[config.color ?? "--foreground"]} size={size} />
 		</View>
 	);
 };

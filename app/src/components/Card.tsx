@@ -50,7 +50,7 @@ export const Card = ({
 		>
 			<Animated.View
 				className={twMerge(
-					"bg-background-level-1 p-4 rounded-2xl flex-1",
+					"bg-background-level-1 p-3 rounded-2xl flex-1",
 					className,
 				)}
 				style={[

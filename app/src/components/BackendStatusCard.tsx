@@ -15,7 +15,7 @@ export const BackendStatusCard = ({ onPress }: BackendStatusCardProps) => {
 	const blinkAnim = useRef(new Animated.Value(1)).current;
 
 	return (
-		<Card onPress={onPress} containerClassName="flex-1">
+		<Card onPress={onPress} containerClassName="">
 			<Text className="text-base font-semibold text-foreground mb-1">
 				Backend Status
 			</Text>

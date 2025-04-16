@@ -103,21 +103,22 @@ export const DeviceConnectionStatus = () => {
 	const { dotColor, text, animateOpacity } = getStatusInfo();
 
 	return (
-		<View className="flex-row items-center">
-			<Animated.View
-				style={[
-					{
-						backgroundColor: dotColor,
-						width: 10,
-						height: 10,
-						borderRadius: 5,
-						marginRight: 8,
-						opacity: 0.8,
-					},
-					animateOpacity && { opacity: blinkAnim },
-				]}
-			/>
-			<Text className="text-md font-normal text-foreground">{text}</Text>
+		<View className="flex-row items-center gap-2">
+			<View className="flex-row justify-center items-center w-6 ">
+				<Animated.View
+					style={[
+						{
+							backgroundColor: dotColor,
+							width: 10,
+							height: 10,
+							borderRadius: 5,
+							opacity: 0.8,
+						},
+						animateOpacity && { opacity: blinkAnim },
+					]}
+				/>
+			</View>
+			<Text className="font-normal text-foreground-level-1 ">{text}</Text>
 		</View>
 	);
 };
