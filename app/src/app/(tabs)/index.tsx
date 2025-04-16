@@ -2,10 +2,11 @@ import { Text } from "@/src/components/Text";
 import React, { useState } from "react";
 import { Alert, Linking, TouchableOpacity, View } from "react-native";
 
+import { AnimatedScreenHeader } from "@/src/components/AnimatedScreenHeader";
+import { AnimatedScreenTitle } from "@/src/components/AnimatedScreenTitle";
 import { BackendStatusCard } from "@/src/components/BackendStatusCard";
 import { DeviceCard } from "@/src/components/DeviceCard/DeviceCard";
 import { LiveTranscripts } from "@/src/components/LiveTranscripts";
-import { ScreenHeader } from "@/src/components/ScreenHeader";
 import { ServerConnectionPill } from "@/src/components/ServerConnectionPill";
 import StatusBanner from "@/src/components/StatusBanner";
 import { ListScrollProvider } from "@/src/contexts/ListScrollContext";
@@ -63,8 +64,8 @@ const HeaderContent = () => {
 
 	return (
 		<View className={"p-5 pt-safe-offset-3"}>
-			<Text className="text-3xl font-extrabold mt-10 mb-4">Life Logger</Text>
-			<View className="flex-row gap-5">
+			<AnimatedScreenTitle />
+			<View className="flex-row gap-3">
 				<DeviceCard onPress={() => router.push("/pair-device")} />
 				<BackendStatusCard onPress={() => router.push("/pair-device")} />
 			</View>
@@ -107,7 +108,7 @@ export default function Home() {
 		<ListScrollProvider>
 			<View className={`flex-1 bg-background`}>
 				<LiveTranscripts headerComponent={<HeaderContent />} />
-				<ScreenHeader />
+				<AnimatedScreenHeader />
 			</View>
 		</ListScrollProvider>
 	);

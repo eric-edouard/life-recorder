@@ -1,7 +1,11 @@
 import { SignalStrengthDynamicIcon } from "@/src/components/icons/SignalStrengthDynamicIcon";
 import { useDeviceSignalStrength } from "@/src/hooks/useDeviceRssi";
 
-export const DeviceSignalStrength = () => {
+type DeviceSignalStrengthProps = {
+	size?: number;
+};
+
+export const DeviceSignalStrength = ({ size }: DeviceSignalStrengthProps) => {
 	const signalStrength = useDeviceSignalStrength();
-	return <SignalStrengthDynamicIcon strength={signalStrength} />;
+	return <SignalStrengthDynamicIcon strength={signalStrength} size={size} />;
 };

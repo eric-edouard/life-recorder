@@ -6,7 +6,7 @@ export const DeviceBatteryLevel = () => {
 	const batteryLevel = useDeviceBatteryLevel();
 
 	return batteryLevel !== null ? (
-		<Text className="text-sm font-medium text-foreground-subtle">
+		<Text className="text-sm font-medium text-foreground-level-2">
 			{batteryLevel}%
 		</Text>
 	) : null;

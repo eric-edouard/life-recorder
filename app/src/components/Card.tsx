@@ -6,14 +6,17 @@ import {
 	type StyleProp,
 	type ViewStyle,
 } from "react-native";
+import { twMerge } from "tailwind-merge";
 
 export const Card = ({
 	children,
+	containerClassName,
 	className,
 	onPress,
 	style,
 }: {
 	children: React.ReactNode;
+	containerClassName?: string;
 	className?: string;
 	onPress?: () => void;
 	style?: StyleProp<ViewStyle>;
@@ -43,10 +46,13 @@ export const Card = ({
 			onPress={onPress}
 			onPressIn={handlePressIn}
 			onPressOut={handlePressOut}
-			className={className}
+			className={containerClassName}
 		>
 			<Animated.View
-				className={"bg-background-level-1 p-4 rounded-2xl flex-1"}
+				className={twMerge(
+					"bg-background-level-1 p-4 rounded-2xl flex-1",
+					className,
+				)}
 				style={[
 					{
 						borderCurve: "continuous",

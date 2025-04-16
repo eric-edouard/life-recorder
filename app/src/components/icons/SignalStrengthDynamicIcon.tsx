@@ -10,6 +10,7 @@ type Props = {
 const getIcon = (
 	strength: SignalStrength | null,
 	color: string,
+	noColor: string,
 	size: number,
 ) => {
 	switch (strength) {
@@ -22,22 +23,35 @@ const getIcon = (
 		case "poor":
 			return <WifiZero color={color} size={size} />;
 		default:
-			return null;
+			return <Wifi color={noColor} size={size} />;
 	}
 };
 
-export const SignalStrengthDynamicIcon = ({ strength }: Props) => {
+type SignalStrengthDynamicIconProps = {
+	strength: SignalStrength | null;
+	size?: number;
+};
+
+export const SignalStrengthDynamicIcon = ({
+	strength,
+	size = 16,
+}: SignalStrengthDynamicIconProps) => {
 	const colors = useThemeColors();
 	return (
-		<View style={{ width: 22, height: 22 }}>
+		<View className="" style={{ marginTop: -(size / 3) }}>
 			<Wifi
 				color={colors["--background-level-2"]}
-				size={20}
+				size={size}
 				style={{
 					position: "absolute",
 				}}
 			/>
-			{getIcon(strength, colors["--foreground"], 20)}
+			{getIcon(
+				strength,
+				colors["--foreground"],
+				colors["--background-level-2"],
+				size,
+			)}
 		</View>
 	);
 };
