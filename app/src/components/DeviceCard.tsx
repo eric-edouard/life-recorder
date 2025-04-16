@@ -1,7 +1,10 @@
 import { Card } from "@/src/components/Card";
+import { useThemeColor } from "@/src/contexts/ThemeContext";
+import { useDeviceBatteryLevel } from "@/src/hooks/useDeviceBatteryLevel";
+import { useDeviceRssi } from "@/src/hooks/useDeviceRssi";
 import { omiDeviceManager } from "@/src/services/OmiDeviceManager/OmiDeviceManager";
-import { use$ } from "@legendapp/state/react";
-import React, { useEffect, useRef, useState } from "react";
+import { Computed, Memo, use$ } from "@legendapp/state/react";
+import React, { useEffect, useRef } from "react";
 import { Animated, View } from "react-native";
 import { State } from "react-native-ble-plx";
 import { Text } from "./Text";
@@ -11,8 +14,10 @@ type DeviceCardProps = {
 };
 
 export const DeviceCard = ({ onPress }: DeviceCardProps) => {
+	const green = useThemeColor("--green");
+	const yellow = useThemeColor("--yellow");
+	const red = useThemeColor("--red");
 	const blinkAnim = useRef(new Animated.Value(1)).current;
-	const [batteryLevel, setBatteryLevel] = useState<number | null>(null);
 
 	// Get state directly from omiDeviceManager
 	const bluetoothState = use$(omiDeviceManager.bluetoothState$);
@@ -20,44 +25,13 @@ export const DeviceCard = ({ onPress }: DeviceCardProps) => {
 	const scanning = use$(omiDeviceManager.scanning$);
 	const isConnecting = use$(omiDeviceManager.isConnecting$);
 	const devices = use$(omiDeviceManager.devices$);
+	const rssi$ = useDeviceRssi();
+	const batteryLevel$ = useDeviceBatteryLevel();
 
 	// Get the currently connected device (if any)
 	const connectedDevice = devices.find(
 		(device) => device.id === connectedDeviceId,
 	);
-
-	// Fetch battery level
-	const fetchBatteryLevel = async () => {
-		if (connectedDeviceId) {
-			try {
-				const level = await omiDeviceManager.getBatteryLevel();
-				if (level >= 0) {
-					setBatteryLevel(level);
-				}
-			} catch (error) {
-				console.error("Error fetching battery level:", error);
-			}
-		} else {
-			setBatteryLevel(null);
-		}
-	};
-
-	// Fetch battery level when connected and every 30 seconds
-	useEffect(() => {
-		if (connectedDeviceId) {
-			// Fetch immediately when connected
-			fetchBatteryLevel();
-
-			// Set up interval to fetch every 30 seconds
-			const intervalId = setInterval(fetchBatteryLevel, 30000);
-
-			// Clean up interval when disconnected or component unmounts
-			return () => {
-				clearInterval(intervalId);
-				setBatteryLevel(null);
-			};
-		}
-	}, [connectedDeviceId]);
 
 	// Start blinking animation when scanning or connecting
 	useEffect(() => {
@@ -109,7 +83,7 @@ export const DeviceCard = ({ onPress }: DeviceCardProps) => {
 		// Connected to a device
 		if (connectedDeviceId) {
 			return {
-				dotColor: "#34C759", // Green
+				dotColor: green, // Green
 				text: "Connected",
 				animateOpacity: false,
 			};
@@ -127,7 +101,7 @@ export const DeviceCard = ({ onPress }: DeviceCardProps) => {
 		// Scanning for devices
 		if (scanning) {
 			return {
-				dotColor: "#FFCC00", // Yellow
+				dotColor: yellow, // Yellow
 				text: "Scanning ...",
 				animateOpacity: true,
 			};
@@ -135,7 +109,7 @@ export const DeviceCard = ({ onPress }: DeviceCardProps) => {
 
 		// Not connected
 		return {
-			dotColor: "#FF3B30", // Red
+			dotColor: red, // Red
 			text: "Not connected",
 			animateOpacity: false,
 		};
@@ -155,31 +129,42 @@ export const DeviceCard = ({ onPress }: DeviceCardProps) => {
 								height: 10,
 								borderRadius: 5,
 								marginRight: 8,
+								opacity: 0.8,
 							},
 							animateOpacity && { opacity: blinkAnim },
 						]}
 					/>
-					<Text className="text-sm font-medium text-[#333]">{text}</Text>
+					<Text className="text-sm font-medium text-foreground-subtle">
+						{text}
+					</Text>
 				</View>
 
-				{batteryLevel !== null && connectedDeviceId && (
-					<Text className="text-sm font-medium text-[#333]">
-						{batteryLevel}%
-					</Text>
-				)}
+				<Computed>
+					{() =>
+						batteryLevel$.get() !== null && connectedDeviceId ? (
+							<Text className="text-sm font-medium text-foreground-subtle">
+								{batteryLevel$.get()}%
+							</Text>
+						) : null
+					}
+				</Computed>
 			</View>
 
 			{connectedDevice ? (
 				<>
-					<Text className="text-base font-semibold text-[#333] mb-1">
+					<Text className="text-base font-semibold text-foreground mb-1">
 						{connectedDevice.name}
 					</Text>
-					<Text className="text-xs text-[#666]">
-						Signal: {connectedDevice.rssi} dBm
-					</Text>
+					<Memo>
+						{() => (
+							<Text className="text-xs text-foreground-muted">
+								Signal: {rssi$.get()} dBm
+							</Text>
+						)}
+					</Memo>
 				</>
 			) : (
-				<Text className="text-base font-medium text-[#333]">
+				<Text className="text-base font-medium text-foreground-subtle">
 					{bluetoothState === State.PoweredOn
 						? "No device connected"
 						: "Enable Bluetooth to connect"}

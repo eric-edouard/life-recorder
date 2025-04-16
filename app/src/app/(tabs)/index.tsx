@@ -2,6 +2,7 @@ import { Text } from "@/src/components/Text";
 import React, { useState } from "react";
 import { Alert, Linking, TouchableOpacity, View } from "react-native";
 
+import { BackendStatusCard } from "@/src/components/BackendStatusCard";
 import { DeviceCard } from "@/src/components/DeviceCard";
 import { LiveTranscripts } from "@/src/components/LiveTranscripts";
 import { ScreenHeader } from "@/src/components/ScreenHeader";
@@ -65,7 +66,7 @@ const HeaderContent = () => {
 			<Text className="text-3xl font-extrabold mt-10 mb-4">Life Logger</Text>
 			<View className="flex-row gap-5">
 				<DeviceCard onPress={() => router.push("/pair-device")} />
-				<DeviceCard onPress={() => router.push("/pair-device")} />
+				<BackendStatusCard onPress={() => router.push("/pair-device")} />
 			</View>
 			{/* Connection Pills */}
 			<View className="flex-row items-center mb-2.5 gap-2">

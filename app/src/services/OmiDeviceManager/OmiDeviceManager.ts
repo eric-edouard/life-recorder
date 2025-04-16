@@ -63,10 +63,6 @@ export const omiDeviceManager = (() => {
 		connectedDeviceId$.set(device?.id || null);
 	};
 
-	const getConnectedDevice = (): Device | null => {
-		return _connectedDevice;
-	};
-
 	/**
 	 * Request Bluetooth permission from the user
 	 * @returns Boolean indicating if permission was requested successfully
@@ -257,7 +253,9 @@ export const omiDeviceManager = (() => {
 			}
 
 			// Discover services and characteristics
-			await device.discoverAllServicesAndCharacteristics();
+			const characteristics =
+				await device.discoverAllServicesAndCharacteristics();
+			// console.log("Characteristics:", characteristics);
 
 			setConnectedDevice(device);
 
@@ -284,6 +282,14 @@ export const omiDeviceManager = (() => {
 			Alert.alert("Connection Error", String(error));
 			return false;
 		}
+	};
+
+	const getConnectedDeviceRssi = async () => {
+		if (_connectedDevice) {
+			const device = await bleManager.readRSSIForDevice(_connectedDevice.id);
+			return device.rssi;
+		}
+		return null;
 	};
 
 	/**
@@ -561,6 +567,7 @@ export const omiDeviceManager = (() => {
 		startScan,
 		stopScan,
 		connectToDevice,
+		getConnectedDeviceRssi,
 		disconnectFromDevice,
 		isConnected,
 		getAudioCodec,
