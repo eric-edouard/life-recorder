@@ -2,7 +2,7 @@ import { Text } from "@/src/components/Text";
 import React, { useState } from "react";
 import { Alert, Linking, TouchableOpacity, View } from "react-native";
 
-import { ConnectionPill } from "@/src/components/ConnectionPill";
+import { DeviceCard } from "@/src/components/DeviceCard";
 import { LiveTranscripts } from "@/src/components/LiveTranscripts";
 import { ScreenHeader } from "@/src/components/ScreenHeader";
 import { ServerConnectionPill } from "@/src/components/ServerConnectionPill";
@@ -13,6 +13,7 @@ import { audioDataService } from "@/src/services/audioDataService";
 import { socketService } from "@/src/services/socketService";
 import { use$ } from "@legendapp/state/react";
 import { router } from "expo-router";
+
 const HeaderContent = () => {
 	const connectedDeviceId = use$(omiDeviceManager.connectedDeviceId$);
 	const bluetoothState = use$(omiDeviceManager.bluetoothState$);
@@ -61,10 +62,14 @@ const HeaderContent = () => {
 
 	return (
 		<View className={"p-5 pt-safe-offset-3"}>
-			<Text className="text-5xl font-extrabold mt-10">Life Logger</Text>
+			<Text className="text-3xl font-extrabold mt-10 mb-4">Life Logger</Text>
+			<View className="flex-row gap-5">
+				<DeviceCard onPress={() => router.push("/pair-device")} />
+				<DeviceCard onPress={() => router.push("/pair-device")} />
+			</View>
 			{/* Connection Pills */}
 			<View className="flex-row items-center mb-2.5 gap-2">
-				<ConnectionPill onPress={() => router.push("/pair-device")} />
+				{/* <ConnectionPill onPress={() => router.push("/pair-device")} /> */}
 				<ServerConnectionPill onPress={handleServerReconnect} />
 			</View>
 

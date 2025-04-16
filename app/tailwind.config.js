@@ -7,8 +7,8 @@ module.exports = {
 		extend: {
 			colors: {
 				background: "var(--background)",
-				"background-muted": "var(--background-muted)",
-				"background-subtle": "var(--background-subtle)",
+				"background-level-1": "var(--background-level-1)",
+				"background-level-2": "var(--background-level-2)",
 				foreground: "var(--foreground)",
 				"foreground-muted": "var(--foreground-muted)",
 				"foreground-subtle": "var(--foreground-subtle)",

@@ -1,7 +1,11 @@
-import { colorThemes } from "@/src/constants/colorThemes";
-// import { useColorScheme } from "nativewind";
+import {
+	type ColorName,
+	colorThemes,
+	darkColors,
+	lightColors,
+} from "@/src/constants/colorThemes";
 import type React from "react";
-import { createContext } from "react";
+import { createContext, useContext } from "react";
 import { View, useColorScheme } from "react-native";
 
 interface ThemeProviderProps {
@@ -23,4 +27,10 @@ export const ThemeProvider = ({ children }: ThemeProviderProps) => {
 			</View>
 		</ThemeContext.Provider>
 	);
+};
+
+export const useThemeColor = (color: ColorName) => {
+	const { theme } = useContext(ThemeContext);
+
+	return theme === "light" ? lightColors[color] : darkColors[color];
 };
