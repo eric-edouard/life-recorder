@@ -12,7 +12,7 @@ import { extractSegmentsFromWavBuffer } from "@/utils/audio/extractSegmentsFromW
 import { getWavBufferDuration } from "@/utils/audio/getWavBufferDuration";
 import { generateReadableUUID } from "@/utils/generateReadableUUID";
 
-export const handleSpeechEndAudio = async (
+export const processFinalizedSpeechChunk = async (
 	audio: Float32Array,
 	speechStartTime: number,
 ) => {
@@ -29,69 +29,66 @@ export const handleSpeechEndAudio = async (
 		wavBuffer,
 		speechStartTime,
 	);
-
 	if (!utterances) return;
 
-	// Group utterance segments by speaker index provided by Deepgram
-	const utterancesBySpeaker = new Map<
+	// Group utterance time segments by speaker index provided by Deepgram
+	const segmentsBySpeakerIndex = new Map<
 		number,
 		{ start: number; end: number }[]
 	>();
-
 	for (const u of utterances) {
 		if (u.speaker === undefined) continue;
-		const list = utterancesBySpeaker.get(u.speaker) ?? [];
+		const list = segmentsBySpeakerIndex.get(u.speaker) ?? [];
 		list.push({ start: u.start, end: u.end });
-		utterancesBySpeaker.set(u.speaker, list);
+		segmentsBySpeakerIndex.set(u.speaker, list);
 	}
 
-	// To collect all enriched utterances with proper speaker IDs
-	const allUtterancesWithSpeakerId: UtteranceWithSpeakerId[] = [];
+	// Collect all utterances with resolved speaker IDs
+	const speakerResolvedUtterances: UtteranceWithSpeakerId[] = [];
 
-	// For each detected speaker group, generate an embedding and match to known speakers
-	for (const [speakerIndex, segments] of utterancesBySpeaker.entries()) {
-		// Merge adjacent segments and extract audio
+	for (const [speakerIndex, segments] of segmentsBySpeakerIndex.entries()) {
+		// Merge adjacent or close segments and extract their audio
 		const merged = mergeSpeechSegments(segments);
 		const speakerBuffer = extractSegmentsFromWavBuffer(wavBuffer, merged);
 		if (!speakerBuffer) continue;
 
-		// Get embedding and duration for the current speaker's speech
+		// Generate speaker embedding and calculate duration
 		const embedding = await getSpeakerEmbeddingFromBuffer(speakerBuffer);
 		const duration = getWavBufferDuration(speakerBuffer) / 1000;
 
-		// Try to match this speaker to an existing one in the DB
-		const match = await findMatchingSpeaker(embedding);
+		// Try to match this speaker to one already in the DB
+		const matchedSpeaker = await findMatchingSpeaker(embedding);
 
 		let speakerId: string;
 
-		if (match) {
-			console.log("🔁 Recognized speaker:", match.name);
-			speakerId = match.id;
+		if (matchedSpeaker) {
+			console.log("🔁 Recognized speaker:", matchedSpeaker.name);
+			speakerId = matchedSpeaker.id;
 
-			// If the new segment is longer, update stored embedding
-			if (duration > (match.duration ?? 0)) {
+			// If this utterance is longer, update the stored embedding
+			if (duration > (matchedSpeaker.duration ?? 0)) {
 				await updateSpeakerEmbedding(speakerId, embedding, duration);
 				console.log(
-					`📈 Updated speaker ${speakerId} embedding from ${match.duration}s to ${duration}s`,
+					`📈 Updated speaker ${speakerId} embedding from ${matchedSpeaker.duration}s to ${duration}s`,
 				);
 			}
 		} else {
-			// Insert this as a brand new speaker in DB
+			// Speaker not recognized — create a new entry in the DB
 			speakerId = await insertNewSpeaker(embedding, duration);
 			console.log(`🆕 Inserted new speaker ${speakerId}`);
 		}
 
-		// Attach the resolved speakerId to the current speaker's utterances
-		const enriched = utterances
+		// Attach speakerId to all utterances from this speaker group
+		const resolvedUtterances = utterances
 			.filter((u) => u.speaker === speakerIndex)
 			.map((u) => ({ ...u, speakerId }));
 
-		allUtterancesWithSpeakerId.push(...enriched);
+		speakerResolvedUtterances.push(...resolvedUtterances);
 	}
 
-	// Apply all speaker updates to the utterances table in one go
-	await updateUtterancesWithSpeaker(allUtterancesWithSpeakerId);
+	// Perform a single DB update for all resolved utterances
+	await updateUtterancesWithSpeaker(speakerResolvedUtterances);
 
-	// Optionally save the audio file to GCS
+	// Save the audio file to GCS if enabled
 	await saveAudioToGCS(fileId, wavBuffer, speechStartTime, durationMs);
 };
