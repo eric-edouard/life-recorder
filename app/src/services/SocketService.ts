@@ -1,3 +1,4 @@
+import { backendUrl } from "@/src/constants/backendUrl";
 import type { TypedSocket } from "@/src/types/socket-events";
 import { observable } from "@legendapp/state";
 import { io } from "socket.io-client";
@@ -15,7 +16,7 @@ export const socketService = (() => {
 		SocketConnectionState.DISCONNECTED,
 	);
 
-	const socketEndpoint = "life-recorder-production.up.railway.app";
+	const socketEndpoint = backendUrl; // "life-recorder-production.up.railway.app";
 	let socket: TypedSocket | undefined;
 
 	/**
@@ -24,7 +25,7 @@ export const socketService = (() => {
 	const initializeSocket = (): void => {
 		connectionState$.set(SocketConnectionState.CONNECTING);
 
-		socket = io(`https://${socketEndpoint}`, {
+		socket = io(`${socketEndpoint}`, {
 			transports: ["websocket", "polling"],
 		});
 
