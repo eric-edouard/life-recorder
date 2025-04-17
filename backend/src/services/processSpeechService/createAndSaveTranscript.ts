@@ -22,6 +22,7 @@ const transcribeWithDeepgram = async (
 			diarize: true,
 			smart_format: true,
 			filler_words: true,
+			utterances: true,
 		},
 	);
 
@@ -73,6 +74,7 @@ export const createAndSaveTranscript = async (
 				createdAt: new Date(startTime),
 				words: u.words,
 				non_identified_speaker: u.speaker,
+				// language
 			}),
 		),
 	);
