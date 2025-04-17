@@ -66,7 +66,7 @@ export const LiveTranscripts = ({ headerComponent }: LiveTranscriptsProps) => {
 			style={{ flex: 1 }}
 			// stickyHeaderIndices={[0]}
 			ListHeaderComponent={TranscriptHeader}
-			data={transcripts}
+			data={transcripts.toReversed()}
 			renderItem={renderItem}
 			keyExtractor={(item) => item.startTime.toString()}
 			showsVerticalScrollIndicator={true}
