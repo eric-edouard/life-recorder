@@ -13,7 +13,7 @@ export const audioDataService = (() => {
 		| ((packetsReceived: number, savedCount: number) => void)
 		| null = null;
 	let isSending = false;
-	const sendInterval = 1000;
+	const sendInterval = 50;
 
 	/**
 	 * Send collected audio packets via socket.io
