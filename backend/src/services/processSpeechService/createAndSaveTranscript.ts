@@ -50,15 +50,12 @@ export const createAndSaveTranscript = async (
 	socketService.socket?.emit("processingAudioUpdate", "3-done");
 
 	const utterances = result?.results.utterances;
-	const transcript = result?.results.channels[0].alternatives[0].transcript;
+	const transcript = result?.results.channels[0].alternatives[0].p;
 
 	console.log("Transcription content: ", transcript);
 
 	if (!utterances || !transcript) {
-		console.error(
-			"Missing transcript or utterances",
-			JSON.stringify(result, null, 2),
-		);
+		console.error("Missing transcript or utterances", JSON.stringify(result));
 		return;
 	}
 
