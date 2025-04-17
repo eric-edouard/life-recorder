@@ -50,7 +50,7 @@ export const createAndSaveTranscript = async (
 	socketService.socket?.emit("processingAudioUpdate", "3-done");
 
 	const utterances = result?.results.utterances;
-	const transcript = result?.results.channels[0].alternatives[0].p;
+	const transcript = result?.results.channels[0].alternatives[0].transcript;
 
 	console.log("Transcription content: ", transcript);
 
