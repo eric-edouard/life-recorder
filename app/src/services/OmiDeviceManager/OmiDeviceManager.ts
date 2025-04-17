@@ -265,7 +265,6 @@ export const omiDeviceManager = (() => {
 			// Set up disconnection listener
 			device.onDisconnected(() => {
 				setConnectedDevice(null);
-				storage.set("connectedDeviceId", null);
 			});
 
 			// Auto-stop scanning when connected successfully

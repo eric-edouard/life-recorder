@@ -16,7 +16,7 @@ export const socketService = (() => {
 		SocketConnectionState.DISCONNECTED,
 	);
 
-	const socketEndpoint = backendUrl; // "life-recorder-production.up.railway.app";
+	const socketEndpoint = backendUrl; // "https://life-recorder-production.up.railway.app";
 	let socket: TypedSocket | undefined;
 
 	/**
