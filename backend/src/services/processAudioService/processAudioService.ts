@@ -13,6 +13,7 @@ import {
 	convertPcmToFloat32Array,
 } from "@/utils/audioUtils";
 import { generateReadableUUID } from "@/utils/generateReadableUUID";
+import { getSpeakerEmbeddingFromBuffer } from "@/utils/getSpeakerEmbeddingFromBuffer";
 import { getWavBufferDuration } from "@/utils/getWavBufferDuration";
 import { OpusEncoder } from "@discordjs/opus";
 import { RealTimeVAD } from "@ericedouard/vad-node-realtime";
@@ -69,6 +70,7 @@ export const processAudioService = (() => {
 				const wavBuffer = convertFloat32ArrayToWavBuffer(audio);
 				const durationMs = getWavBufferDuration(wavBuffer);
 				const fileId = generateReadableUUID(speechStartTime, durationMs);
+				const embedding = await getSpeakerEmbeddingFromBuffer(wavBuffer);
 
 				await Promise.all([
 					createAndSaveTranscript(fileId, wavBuffer, speechStartTime),
