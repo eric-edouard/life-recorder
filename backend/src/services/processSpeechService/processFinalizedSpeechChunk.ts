@@ -46,6 +46,7 @@ export const processFinalizedSpeechChunk = async (
 	// Collect all utterances with resolved speaker IDs
 	const speakerResolvedUtterances: UtteranceWithSpeakerId[] = [];
 
+	let isMatch = false;
 	for (const [speakerIndex, segments] of segmentsBySpeakerIndex.entries()) {
 		// Merge adjacent or close segments and extract their audio
 		const merged = mergeSpeechSegments(segments);
@@ -62,6 +63,7 @@ export const processFinalizedSpeechChunk = async (
 		let speakerId: string;
 
 		if (matchedSpeaker) {
+			isMatch = true;
 			console.log("🔁 Recognized speaker:", matchedSpeaker.name);
 			speakerId = matchedSpeaker.id;
 
@@ -86,9 +88,13 @@ export const processFinalizedSpeechChunk = async (
 		speakerResolvedUtterances.push(...resolvedUtterances);
 	}
 
-	// Perform a single DB update for all resolved utterances
-	await updateUtterancesWithSpeaker(speakerResolvedUtterances);
-	console.log("🔄 Updated utterances with speaker IDs");
+	if (isMatch) {
+		// Perform a single DB update for all resolved utterances
+		await updateUtterancesWithSpeaker(speakerResolvedUtterances);
+		console.log("🔄 Updated utterances with speaker IDs");
+	} else {
+		console.log("🔄 No matches found");
+	}
 
 	// Save the audio file to GCS if enabled
 	await saveAudioToGCS(fileId, wavBuffer, speechStartTime, durationMs);

@@ -20,6 +20,7 @@ export const utterancesTable = pgTable("utterances", {
 	speaker: text("speaker").references(() => speakersTable.id),
 	non_identified_speaker: integer("non_identified_speaker"),
 	words: jsonb("words").notNull(),
+	languages: text("languages").array(),
 	createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 

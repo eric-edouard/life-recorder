@@ -54,6 +54,7 @@ export const createAndSaveTranscript = async (
 	const transcript = result?.results.channels[0].alternatives[0].transcript;
 
 	console.log("Transcription content: ", transcript);
+	console.log("Transcription result: ", JSON.stringify(result));
 
 	if (!utterances || !transcript) {
 		console.error("Missing transcript or utterances", JSON.stringify(result));
@@ -74,7 +75,8 @@ export const createAndSaveTranscript = async (
 				createdAt: new Date(startTime),
 				words: u.words,
 				non_identified_speaker: u.speaker,
-				// language
+				// Deepgram does return this in  the data but it's not typed by their SDK
+				languages: (u as Utterance & { languages: string[] }).languages,
 			}),
 		),
 	);

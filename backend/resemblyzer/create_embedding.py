@@ -16,7 +16,7 @@ def main():
         sys.exit(1)
 
     wav = preprocess_wav(audio_path)
-    encoder = VoiceEncoder()
+    encoder = VoiceEncoder(verbose=False)
     embed = encoder.embed_utterance(wav)
 
     # Convert numpy array to list for JSON serialization

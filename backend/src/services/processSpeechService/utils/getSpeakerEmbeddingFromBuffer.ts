@@ -12,7 +12,7 @@ export async function getSpeakerEmbeddingFromBuffer(
 
 	const scriptPath = path.resolve(
 		__dirname,
-		"../../resemblyzer/resemblyzer.py", // or your new script name
+		"../../../../resemblyzer/create_embedding.py",
 	);
 
 	return new Promise((resolve, reject) => {
