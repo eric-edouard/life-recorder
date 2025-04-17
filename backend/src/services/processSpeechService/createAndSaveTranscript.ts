@@ -55,7 +55,10 @@ export const createAndSaveTranscript = async (
 	console.log("Transcription content: ", transcript);
 
 	if (!utterances || !transcript) {
-		console.error("Missing transcript or utterances", { result });
+		console.error(
+			"Missing transcript or utterances",
+			JSON.stringify(result, null, 2),
+		);
 		return;
 	}
 
