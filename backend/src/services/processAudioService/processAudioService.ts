@@ -1,7 +1,7 @@
 import { CHANNELS, SAMPLE_RATE } from "@/constants/audioConstants";
 import { DEEPGRAM_LIVE_TRANSCRIPTION_ENABLED } from "@/constants/features";
 import { deepgramLiveTranscriptionService } from "@/services/processAudioService/utils/deepgramLiveTranscriptionService";
-import { handleSpeechEndAudio } from "@/services/processSpeechService/handleSpeechEndAudio";
+import { processFinalizedSpeechChunk } from "@/services/processSpeechService/processFinalizedSpeechChunk";
 import { socketService } from "@/services/socketService";
 import { convertPcmToFloat32Array } from "@/utils/audio/audioUtils";
 import { OpusEncoder } from "@discordjs/opus";
@@ -56,7 +56,7 @@ export const processAudioService = (() => {
 					"1-converting-to-wav",
 				);
 
-				handleSpeechEndAudio(audio, speechStartTime);
+				processFinalizedSpeechChunk(audio, speechStartTime);
 			},
 			preSpeechPadFrames: 4,
 			redemptionFrames: 4,
