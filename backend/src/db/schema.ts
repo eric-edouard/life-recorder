@@ -1,5 +1,4 @@
 import {
-	decimal,
 	integer,
 	jsonb,
 	pgTable,
@@ -9,17 +8,26 @@ import {
 } from "drizzle-orm/pg-core";
 
 export const utterancesTable = pgTable("utterances", {
-	id: text("id").primaryKey(),
-	fileId: text("file_id").notNull(),
-	start: real("start").notNull(),
-	end: real("end").notNull(),
+	id: text("id").primaryKey(), // custom readable UUID for the utterance
+	fileId: text("file_id").notNull(), // foreign key linking to the audio file record
+	start: real("start").notNull(), // start time in seconds
+	end: real("end").notNull(), // end time in seconds
 	transcript: text("transcript").notNull(),
 	confidence: real("confidence").notNull(),
+	// This field now references the speakers table. It can be null if not identified
+	speaker: text("speaker").references(() => speakersTable.id),
 	non_identified_speaker: integer("non_identified_speaker"),
 	words: jsonb("words").notNull(),
-	location: text(),
-	latitude: decimal({ precision: 10, scale: 8 }),
-	longitude: decimal({ precision: 11, scale: 8 }),
 	createdAt: timestamp("created_at").defaultNow().notNull(),
-	speaker: integer("speaker"),
+});
+
+export const speakersTable = pgTable("speakers", {
+	// Use a custom readable ID. It could be generated similarly (or auto-increment if you prefer)
+	id: text("id").primaryKey(),
+	// Optional human-readable name
+	name: text("name"),
+	// Embedding vector from Resemblyzer – stored as JSON array of numbers
+	embedding: jsonb("embedding").notNull(),
+	// Automatically add created time
+	createdAt: timestamp("created_at").defaultNow().notNull(),
 });

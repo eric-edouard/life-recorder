@@ -42,4 +42,7 @@ export interface ModelInfo {
 	arch: string;
 }
 
-export type Utterance = SyncPrerecordedResponse["results"]["utterances"];
+export type Utterances = SyncPrerecordedResponse["results"]["utterances"];
+export type Utterance = NonNullable<
+	SyncPrerecordedResponse["results"]["utterances"]
+>[number];
