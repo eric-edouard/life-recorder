@@ -51,7 +51,8 @@
 				}
 			],
 			"react-native-ble-plx",
-			"expo-av"
+			"expo-av",
+			"react-native-vad"
 		],
 		"experiments": {
 			"typedRoutes": true
