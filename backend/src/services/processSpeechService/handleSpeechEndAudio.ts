@@ -88,6 +88,7 @@ export const processFinalizedSpeechChunk = async (
 
 	// Perform a single DB update for all resolved utterances
 	await updateUtterancesWithSpeaker(speakerResolvedUtterances);
+	console.log("🔄 Updated utterances with speaker IDs");
 
 	// Save the audio file to GCS if enabled
 	await saveAudioToGCS(fileId, wavBuffer, speechStartTime, durationMs);
