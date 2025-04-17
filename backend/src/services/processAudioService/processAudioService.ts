@@ -26,6 +26,7 @@ export const processAudioService = (() => {
 	async function initVAD(): Promise<void> {
 		console.log("[VAD] initializing vad");
 		streamVAD = await RealTimeVAD.new({
+			model: "v5",
 			onSpeechStart: () => {
 				console.log("Speech started");
 				speechStartTime = lastTimestamp;
@@ -43,7 +44,9 @@ export const processAudioService = (() => {
 			},
 
 			onSpeechEnd: async (audio: Float32Array) => {
-				console.log(`Speech ended, audio length: ${audio.length}`);
+				console.log(
+					`Speech ended, audio duration: ${audio.length / SAMPLE_RATE} seconds`,
+				);
 				isSpeechActive = false;
 				socketService.socket?.emit("speechStopped");
 
@@ -58,22 +61,9 @@ export const processAudioService = (() => {
 
 				processFinalizedSpeechChunk(audio, speechStartTime);
 			},
-			preSpeechPadFrames: 4,
-			redemptionFrames: 4,
-			positiveSpeechThreshold: 0.6,
-			negativeSpeechThreshold: 0.6 - 0.15,
+			minSpeechFrames: 3,
+			redemptionFrames: 8,
 		});
-		/*
-			const defaultFrameProcessorOptions: FrameProcessorOptions = {
-				positiveSpeechThreshold: 0.5,
-				negativeSpeechThreshold: 0.5 - 0.15,
-				preSpeechPadFrames: 1,
-				redemptionFrames: 8,
-				frameSamples: 1536,
-				minSpeechFrames: 3,
-				submitUserSpeechOnPause: false,
-			};
-		*/
 
 		streamVAD.start();
 		console.log("[VAD] vad initialized");
