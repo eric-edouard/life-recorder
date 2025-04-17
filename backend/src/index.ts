@@ -1,6 +1,4 @@
 import "dotenv/config";
-// Register module aliases
-import "module-alias/register";
 
 import { routes } from "@/routes";
 import { socketService } from "@/services/socketService";
