@@ -1,20 +1,9 @@
 import { CHANNELS, SAMPLE_RATE } from "@/constants/audioConstants";
-import {
-	DEEPGRAM_LIVE_TRANSCRIPTION_ENABLED,
-	SAVE_RECORDINGS_TO_GCS_ENABLED,
-} from "@/constants/features";
-import { createAndSaveTranscript } from "@/services/processAudioService/utils/createAndSaveTranscript";
-// import { audioBufferService } from "@/services/audioBufferService"; // Removed
+import { DEEPGRAM_LIVE_TRANSCRIPTION_ENABLED } from "@/constants/features";
 import { deepgramLiveTranscriptionService } from "@/services/processAudioService/utils/deepgramLiveTranscriptionService";
-import { saveAudioToGCS } from "@/services/processAudioService/utils/saveAudioToGcs";
+import { handleSpeechEndAudio } from "@/services/processSpeechService/handleSpeechEndAudio";
 import { socketService } from "@/services/socketService";
-import {
-	convertFloat32ArrayToWavBuffer,
-	convertPcmToFloat32Array,
-} from "@/utils/audioUtils";
-import { generateReadableUUID } from "@/utils/generateReadableUUID";
-import { getSpeakerEmbeddingFromBuffer } from "@/utils/getSpeakerEmbeddingFromBuffer";
-import { getWavBufferDuration } from "@/utils/getWavBufferDuration";
+import { convertPcmToFloat32Array } from "@/utils/audio/audioUtils";
 import { OpusEncoder } from "@discordjs/opus";
 import { RealTimeVAD } from "@ericedouard/vad-node-realtime";
 
@@ -67,17 +56,7 @@ export const processAudioService = (() => {
 					"1-converting-to-wav",
 				);
 
-				const wavBuffer = convertFloat32ArrayToWavBuffer(audio);
-				const durationMs = getWavBufferDuration(wavBuffer);
-				const fileId = generateReadableUUID(speechStartTime, durationMs);
-				const embedding = await getSpeakerEmbeddingFromBuffer(wavBuffer);
-
-				await Promise.all([
-					createAndSaveTranscript(fileId, wavBuffer, speechStartTime),
-					SAVE_RECORDINGS_TO_GCS_ENABLED
-						? saveAudioToGCS(fileId, wavBuffer, speechStartTime, durationMs)
-						: Promise.resolve(),
-				]);
+				handleSpeechEndAudio(audio, speechStartTime);
 			},
 			preSpeechPadFrames: 4,
 			redemptionFrames: 4,

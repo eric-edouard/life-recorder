@@ -1,15 +1,17 @@
 import {
+	index,
 	integer,
 	jsonb,
 	pgTable,
 	real,
 	text,
 	timestamp,
+	vector,
 } from "drizzle-orm/pg-core";
 
 export const utterancesTable = pgTable("utterances", {
 	id: text("id").primaryKey(), // custom readable UUID for the utterance
-	fileId: text("file_id").notNull(), // foreign key linking to the audio file record
+	fileId: text("file_id"), // foreign key linking to the audio file record
 	start: real("start").notNull(), // start time in seconds
 	end: real("end").notNull(), // end time in seconds
 	transcript: text("transcript").notNull(),
@@ -21,13 +23,20 @@ export const utterancesTable = pgTable("utterances", {
 	createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
-export const speakersTable = pgTable("speakers", {
-	// Use a custom readable ID. It could be generated similarly (or auto-increment if you prefer)
-	id: text("id").primaryKey(),
-	// Optional human-readable name
-	name: text("name"),
-	// Embedding vector from Resemblyzer – stored as JSON array of numbers
-	embedding: jsonb("embedding").notNull(),
-	// Automatically add created time
-	createdAt: timestamp("created_at").defaultNow().notNull(),
-});
+export const speakersTable = pgTable(
+	"speakers",
+	{
+		id: text("id").primaryKey(),
+		name: text("name"),
+		embedding: vector("embedding", { dimensions: 256 }),
+		duration: real("duration").notNull().default(0),
+		createdAt: timestamp("created_at").defaultNow().notNull(),
+		updatedAt: timestamp("updated_at").defaultNow().notNull(),
+	},
+	(table) => [
+		index("embeddingIndex").using(
+			"hnsw",
+			table.embedding.op("vector_cosine_ops"),
+		),
+	],
+);

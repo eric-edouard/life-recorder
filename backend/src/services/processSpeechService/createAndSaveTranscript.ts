@@ -1,8 +1,10 @@
 import { CHANNELS, SAMPLE_RATE } from "@/constants/audioConstants";
+import { SAVE_RECORDINGS_TO_GCS_ENABLED } from "@/constants/features";
 import { db } from "@/db/db";
 import { utterancesTable } from "@/db/schema";
 import { deepgram } from "@/services/external/deepgram";
 import { socketService } from "@/services/socketService";
+import type { Utterance } from "@/types/deepgram";
 import { generateUtteranceId } from "@/utils/generateUtteranceId";
 import type { SyncPrerecordedResponse } from "@deepgram/sdk";
 
@@ -40,7 +42,7 @@ export const createAndSaveTranscript = async (
 	fileId: string,
 	audioBuffer: Buffer,
 	startTime: number,
-): Promise<void> => {
+): Promise<Utterance[] | undefined> => {
 	console.log("Creating and saving transcript...");
 
 	socketService.socket?.emit("processingAudioUpdate", "2-transcribing");
@@ -63,7 +65,7 @@ export const createAndSaveTranscript = async (
 		utterances.map((u) =>
 			db.insert(utterancesTable).values({
 				id: generateUtteranceId(startTime, u.start, u.end),
-				fileId,
+				fileId: SAVE_RECORDINGS_TO_GCS_ENABLED ? fileId : undefined,
 				start: u.start,
 				end: u.end,
 				transcript: u.transcript,
@@ -76,4 +78,5 @@ export const createAndSaveTranscript = async (
 	);
 
 	console.log(`Saved ${utterances.length} utterances`);
+	return utterances;
 };

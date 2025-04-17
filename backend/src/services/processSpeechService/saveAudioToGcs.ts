@@ -1,3 +1,4 @@
+import { SAVE_RECORDINGS_TO_GCS_ENABLED } from "@/constants/features";
 import { RECORDINGS_FOLDER, gcsBucket } from "@/services/external/gcs";
 import { convertWavToMp3 } from "@/services/processAudioService/utils/convertWavToMp3";
 
@@ -33,6 +34,10 @@ export const saveAudioToGCS = async (
 	startTime: number,
 	durationMs: number,
 ): Promise<void> => {
+	if (!SAVE_RECORDINGS_TO_GCS_ENABLED) {
+		return;
+	}
+
 	try {
 		// Convert WAV to MP3
 		const mp3Buffer = await convertWavToMp3(wavBuffer);
