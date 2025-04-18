@@ -1,4 +1,4 @@
-import { socketService } from "@/src/services/socketService1";
+import { socketService } from "@/src/services/socketService";
 import type { ProcessingAudioPhase } from "@/src/shared/socketEvents";
 import { observable } from "@legendapp/state";
 

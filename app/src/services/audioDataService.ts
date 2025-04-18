@@ -1,6 +1,6 @@
 import type { Subscription } from "react-native-ble-plx";
 import { omiDeviceManager } from "./OmiDeviceManager/OmiDeviceManager";
-import { socketService } from "./socketService1";
+import { socketService } from "./socketService";
 
 export const audioDataService = (() => {
 	let audioPacketsReceived = 0;
