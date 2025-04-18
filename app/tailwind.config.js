@@ -26,20 +26,20 @@ module.exports = {
 			 * Debug utilities
 			 */
 			addComponents({
-				'.d': {
-					borderWidth: '1px',
-					borderColor: 'var(--red)',
-					borderStyle: 'solid',
+				".d": {
+					borderWidth: "1px",
+					borderColor: "var(--red)",
+					borderStyle: "solid",
 				},
-				'.d1': {
-					borderWidth: '1px',
-					borderColor: 'var(--primary)',
-					borderStyle: 'solid',
+				".d1": {
+					borderWidth: "1px",
+					borderColor: "var(--primary)",
+					borderStyle: "solid",
 				},
-				'.d2': {
-					borderWidth: '1px',
-					borderColor: 'var(--yellow)',
-					borderStyle: 'solid',
+				".d2": {
+					borderWidth: "1px",
+					borderColor: "var(--yellow)",
+					borderStyle: "solid",
 				},
 			});
 		},
