@@ -5,14 +5,15 @@
 		"version": "1.0.0",
 		"orientation": "portrait",
 		"icon": "./assets/images/icon.png",
-		"scheme": "myapp",
+		"scheme": "life-recorder",
 		"userInterfaceStyle": "automatic",
 		"newArchEnabled": true,
+		"splash": {
+			"backgroundColor": "#000000",
+			"image": "./assets/images/splash-icon.png"
+		},
 		"ios": {
-			"splash": {
-				"backgroundColor": "#000000",
-				"image": "./assets/images/splash-icon.png"
-			},
+			"backgroundColor": "#000000",
 			"supportsTablet": false,
 			"bundleIdentifier": "com.eamilhat.life-recorder",
 			"appleTeamId": "6A3W99PM43"
@@ -43,7 +44,7 @@
 					"image": "./assets/images/splash-icon.png",
 					"imageWidth": 200,
 					"resizeMode": "contain",
-					"backgroundColor": "#ffffff"
+					"backgroundColor": "#000000"
 				}
 			],
 			"expo-font",
