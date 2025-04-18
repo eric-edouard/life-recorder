@@ -82,6 +82,8 @@ export default ({ config }: ConfigContext) => ({
 				{
 					locationAlwaysAndWhenInUsePermission:
 						"Allow $(PRODUCT_NAME) to use your location.",
+					isIosBackgroundLocationEnabled: true,
+					isAndroidForegroundServiceEnabled: true,
 				},
 			],
 			"react-native-ble-plx",
