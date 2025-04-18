@@ -1,43 +1,47 @@
 import { Card } from "@/src/components/Card";
 import { Text } from "@/src/components/Text";
-import {
-	PermissionStatus,
-	useBackgroundPermissions,
-	useForegroundPermissions,
-} from "expo-location";
+import { PermissionStatus } from "expo-location";
+import type React from "react";
+import { useEffect, useState } from "react";
 import { Linking } from "react-native";
+import {
+	checkPermissions,
+	requestPermissions,
+	startBackgroundLocation,
+} from "../services/locationService";
 
-export const LocationPermissionsBanner = () => {
-	const [backgroundPermission, requestBackgroundPermission] =
-		useBackgroundPermissions();
-	const [foregroundPermission, requestForegroundPermission] =
-		useForegroundPermissions();
+export const LocationPermissionsBanner: React.FC = () => {
+	const [permissions, setPermissions] = useState<{
+		foreground: PermissionStatus | null;
+		background: PermissionStatus | null;
+	}>({ foreground: null, background: null });
+
+	useEffect(() => {
+		checkPermissions().then(({ foreground, background }) => {
+			setPermissions({ foreground, background });
+		});
+	}, []);
 
 	const handlePress = async () => {
-		if (foregroundPermission?.status !== PermissionStatus.GRANTED) {
-			const result = await requestForegroundPermission();
-			if (result.status !== PermissionStatus.GRANTED) {
-				Linking.openSettings();
-				return;
-			}
+		const ok = await requestPermissions();
+		if (!ok) {
+			Linking.openSettings();
+			return;
 		}
-		if (backgroundPermission?.status !== PermissionStatus.GRANTED) {
-			const result = await requestBackgroundPermission();
-			if (result.status !== PermissionStatus.GRANTED) {
-				Linking.openSettings();
-			}
-		}
+		await startBackgroundLocation();
+		const { foreground, background } = await checkPermissions();
+		setPermissions({ foreground, background });
 	};
 
 	if (
-		foregroundPermission?.status === PermissionStatus.GRANTED &&
-		backgroundPermission?.status === PermissionStatus.GRANTED
+		permissions.foreground === PermissionStatus.GRANTED &&
+		permissions.background === PermissionStatus.GRANTED
 	) {
 		return null;
 	}
 
 	const message =
-		foregroundPermission?.status !== PermissionStatus.GRANTED
+		permissions.foreground !== PermissionStatus.GRANTED
 			? "Location permission is required to keep recording when the app is backgrounded."
 			: "Background location permission is required to keep recording when the app is backgrounded.";
 
