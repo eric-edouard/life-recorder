@@ -5,9 +5,9 @@
 	"scripts": {
 		"sync-shared": "cp -r ../shared/* src/shared/ && cp -r ../shared/* ../backend/src/shared/",
 		"watch-shared": "nodemon --watch ../shared --ext '*' --exec 'npm run sync-shared'",
+		"prebuild:dev": "APP_VARIANT=development npm run sync-shared && npx expo prebuild --platform ios --clean",
 		"prebuild": "npm run sync-shared && npx expo prebuild --platform ios --clean",
-		"start": "npm-run-all --parallel watch-shared expo-start",
-		"expo-start": "npm run sync-shared && expo start",
+		"start": "APP_VARIANT=development npm-run-all --parallel watch-shared expo-start",
 		"reset-project": "node ./scripts/reset-project.js",
 		"android": "expo run:android",
 		"ios": "expo run:ios --device",
