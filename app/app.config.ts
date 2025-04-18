@@ -1,7 +1,6 @@
 import type { ConfigContext } from "expo/config";
 
 const IS_DEV = process.env.APP_VARIANT === "development";
-const IS_PREVIEW = process.env.APP_VARIANT === "preview";
 
 const getUniqueIdentifier = () => {
 	if (IS_DEV) {
