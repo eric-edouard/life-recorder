@@ -22,40 +22,49 @@ export async function convertWavToMp3(wavBuffer: Buffer): Promise<Buffer> {
 			"-b:a",
 			"32k", // target bitrate
 			"-ac",
-			String(CHANNELS), // audio channels
+			String(CHANNELS),
 			"-ar",
-			String(SAMPLE_RATE), // sample rate
+			String(SAMPLE_RATE),
 			"pipe:1", // output to stdout
 		];
 
-		const process = spawn(ffmpeg, ffmpegArgs, {
+		const proc = spawn(ffmpeg, ffmpegArgs, {
 			stdio: ["pipe", "pipe", "pipe"],
 		});
 
-		const chunks: Buffer[] = [];
+		const outChunks: Buffer[] = [];
+		const errChunks: Buffer[] = [];
 
-		process.stdout?.on("data", (chunk: Buffer) => {
-			chunks.push(chunk);
+		// collect stdout
+		proc.stdout?.on("data", (chunk: Buffer) => {
+			outChunks.push(chunk);
 		});
 
-		process.stderr?.on("data", (data: Buffer) => {
-			console.log(`ffmpeg stderr: ${data.toString()}`);
+		// collect stderr (but don't log immediately)
+		proc.stderr?.on("data", (chunk: Buffer) => {
+			errChunks.push(chunk);
 		});
 
-		process.on("close", (code: number | null) => {
+		proc.on("close", (code: number | null) => {
 			if (code === 0) {
-				resolve(Buffer.concat(chunks));
+				resolve(Buffer.concat(outChunks));
 			} else {
-				reject(new Error(`ffmpeg exited with code ${code}`));
+				const errMsg = Buffer.concat(errChunks).toString().trim();
+				reject(
+					new Error(
+						`ffmpeg exited with code ${code}${errMsg ? `: ${errMsg}` : ""}`,
+					),
+				);
 			}
 		});
 
-		process.on("error", (err) => {
-			process.stdin?.end();
+		proc.on("error", (err) => {
+			proc.stdin?.end();
 			reject(err);
 		});
 
-		process.stdin?.write(wavBuffer);
-		process.stdin?.end();
+		// kick it off
+		proc.stdin?.write(wavBuffer);
+		proc.stdin?.end();
 	});
 }
