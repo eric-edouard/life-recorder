@@ -1,7 +1,7 @@
 import {
 	SocketConnectionState,
 	socketService,
-} from "@/src/services/socketService";
+} from "@/src/services/socketService1";
 import { use$ } from "@legendapp/state/react";
 import type React from "react";
 import { useEffect, useRef } from "react";

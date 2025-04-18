@@ -1,1 +1,1 @@
-export const backendUrl = "https://life-recorder.loca.lt";
+export const backendUrl = process.env.EXPO_PUBLIC_BACKEND_URL;

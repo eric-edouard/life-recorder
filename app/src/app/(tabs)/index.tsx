@@ -11,8 +11,8 @@ import { ServerConnectionPill } from "@/src/components/ServerConnectionPill";
 import StatusBanner from "@/src/components/StatusBanner";
 import { ListScrollProvider } from "@/src/contexts/ListScrollContext";
 import { omiDeviceManager } from "@/src/services/OmiDeviceManager/OmiDeviceManager";
-import { audioDataService } from "@/src/services/audioDataService";
-import { socketService } from "@/src/services/socketService";
+import { audioDataService } from "@/src/services/audioDataService1";
+import { socketService } from "@/src/services/socketService1";
 import { use$ } from "@legendapp/state/react";
 import { router } from "expo-router";
 

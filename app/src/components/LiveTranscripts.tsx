@@ -1,5 +1,5 @@
 import { useListScroll } from "@/src/contexts/ListScrollContext";
-import { liveTranscriptionService } from "@/src/services/liveTranscriptionService";
+import { liveTranscriptionService } from "@/src/services/liveTranscriptionService1";
 import { use$ } from "@legendapp/state/react";
 import React, { type ReactNode } from "react";
 import { ActivityIndicator, Animated, FlatList, View } from "react-native";

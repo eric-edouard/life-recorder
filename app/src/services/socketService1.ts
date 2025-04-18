@@ -16,7 +16,6 @@ export const socketService = (() => {
 		SocketConnectionState.DISCONNECTED,
 	);
 
-	const socketEndpoint = backendUrl; // "https://life-recorder-production.up.railway.app";
 	let socket: TypedSocket | undefined;
 
 	/**
@@ -25,7 +24,7 @@ export const socketService = (() => {
 	const initializeSocket = (): void => {
 		connectionState$.set(SocketConnectionState.CONNECTING);
 
-		socket = io(`${socketEndpoint}`, {
+		socket = io(backendUrl, {
 			transports: ["websocket", "polling"],
 		});
 
