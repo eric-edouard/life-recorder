@@ -2,7 +2,7 @@
 import "react-native-reanimated";
 import "../../global.css";
 
-import "./src/tasks/locationTask";
+import "@/src/tasks/locationTask";
 
 import { ThemeProvider } from "@/src/contexts/ThemeContext";
 import { useFonts } from "expo-font";
