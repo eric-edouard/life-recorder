@@ -17,7 +17,10 @@
 			"backgroundColor": "#000000",
 			"supportsTablet": false,
 			"bundleIdentifier": "com.eamilhat.life-recorder",
-			"appleTeamId": "6A3W99PM43"
+			"appleTeamId": "6A3W99PM43",
+			"infoPlist": {
+				"ITSAppUsesNonExemptEncryption": false
+			}
 		},
 		"android": {
 			"adaptiveIcon": {
@@ -62,6 +65,14 @@
 		],
 		"experiments": {
 			"typedRoutes": true
+		},
+		"extra": {
+			"router": {
+				"origin": false
+			},
+			"eas": {
+				"projectId": "a8942c44-d410-474f-84f6-1756e6df48ca"
+			}
 		}
 	}
 }
