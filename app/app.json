@@ -8,24 +8,24 @@
 		"scheme": "life-recorder",
 		"userInterfaceStyle": "automatic",
 		"newArchEnabled": true,
-		"splash": {
-			"image": "./assets/images/splash-icon.png",
-			"resizeMode": "contain",
-			"backgroundColor": "#000000"
-		},
 		"ios": {
-			"backgroundColor": "#000000",
+			"backgroundColor": "#FFFFFF",
 			"supportsTablet": false,
 			"bundleIdentifier": "com.eamilhat.life-recorder",
 			"appleTeamId": "6A3W99PM43",
 			"infoPlist": {
 				"ITSAppUsesNonExemptEncryption": false
+			},
+			"icon": {
+				"light": "./assets/images/ios-light.png",
+				"dark": "./assets/images/ios-dark.png",
+				"tinted": "./assets/images/ios-tinted.png"
 			}
 		},
 		"android": {
 			"adaptiveIcon": {
 				"foregroundImage": "./assets/images/adaptive-icon.png",
-				"backgroundColor": "#000000"
+				"backgroundColor": "#FFFFFF"
 			},
 			"permissions": [
 				"android.permission.RECORD_AUDIO",
@@ -45,10 +45,14 @@
 			[
 				"expo-splash-screen",
 				{
-					"image": "./assets/images/splash-icon.png",
+					"image": "./assets/images/splash-icon-light.png",
 					"imageWidth": 200,
 					"resizeMode": "contain",
-					"backgroundColor": "#000000"
+					"backgroundColor": "#FFFFFF",
+					"dark": {
+						"image": "./assets/images/splash-icon-dark.png",
+						"backgroundColor": "#000000"
+					}
 				}
 			],
 			"expo-font",
