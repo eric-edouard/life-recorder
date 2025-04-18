@@ -8,6 +8,7 @@
 		"prebuild:dev": "APP_VARIANT=development npm run sync-shared && npx expo prebuild --platform ios --clean",
 		"prebuild": "npm run sync-shared && npx expo prebuild --platform ios --clean",
 		"start": "APP_VARIANT=development npm-run-all --parallel watch-shared expo-start",
+		"expo-start": "expo start",
 		"reset-project": "node ./scripts/reset-project.js",
 		"android": "expo run:android",
 		"ios": "expo run:ios --device",

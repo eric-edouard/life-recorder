@@ -86,6 +86,12 @@ export default ({ config }: ConfigContext) => ({
 					isAndroidForegroundServiceEnabled: true,
 				},
 			],
+			[
+				"expo-notifications",
+				{
+					enableBackgroundRemoteNotifications: true,
+				},
+			],
 			"react-native-ble-plx",
 			"expo-av",
 			"react-native-vad",

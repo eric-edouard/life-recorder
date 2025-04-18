@@ -1,9 +1,9 @@
 import React, { useEffect } from "react";
 import { Linking, Platform, SafeAreaView, ScrollView } from "react-native";
 
-import DeviceList from "@/src/components/DeviceList";
 // Import components
-import StatusBanner from "@/src/components/StatusBanner";
+import StatusBanner from "@/src/components/BlutoothPermissionsbanner";
+import DeviceList from "@/src/components/DeviceList";
 import { omiDeviceManager } from "@/src/services/OmiDeviceManager/OmiDeviceManager";
 import { use$ } from "@legendapp/state/react";
 

@@ -5,10 +5,11 @@ import { Alert, Linking, TouchableOpacity, View } from "react-native";
 import { AnimatedScreenHeader } from "@/src/components/AnimatedScreenHeader";
 import { AnimatedScreenTitle } from "@/src/components/AnimatedScreenTitle";
 import { BackendStatusCard } from "@/src/components/BackendStatusCard";
+import StatusBanner from "@/src/components/BlutoothPermissionsbanner";
 import { DeviceCard } from "@/src/components/DeviceCard/DeviceCard";
 import { LiveTranscripts } from "@/src/components/LiveTranscripts";
+import { LocationPermissionsBanner } from "@/src/components/LocationPermissionsBanner";
 import { ServerConnectionPill } from "@/src/components/ServerConnectionPill";
-import StatusBanner from "@/src/components/StatusBanner";
 import { ListScrollProvider } from "@/src/contexts/ListScrollContext";
 import { omiDeviceManager } from "@/src/services/OmiDeviceManager/OmiDeviceManager";
 import { audioDataService } from "@/src/services/audioDataService";
@@ -65,6 +66,7 @@ const HeaderContent = () => {
 	return (
 		<View className={"p-5 pt-safe-offset-3"}>
 			<AnimatedScreenTitle />
+			<LocationPermissionsBanner />
 			<View className="flex-row gap-3">
 				<DeviceCard onPress={() => router.push("/pair-device")} />
 				<BackendStatusCard onPress={() => router.push("/pair-device")} />
