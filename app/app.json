@@ -9,14 +9,18 @@
 		"userInterfaceStyle": "automatic",
 		"newArchEnabled": true,
 		"ios": {
-			"supportsTablet": true,
+			"splash": {
+				"backgroundColor": "#000000",
+				"image": "./assets/images/splash-icon.png"
+			},
+			"supportsTablet": false,
 			"bundleIdentifier": "com.eamilhat.life-recorder",
 			"appleTeamId": "6A3W99PM43"
 		},
 		"android": {
 			"adaptiveIcon": {
 				"foregroundImage": "./assets/images/adaptive-icon.png",
-				"backgroundColor": "#ffffff"
+				"backgroundColor": "#000000"
 			},
 			"permissions": [
 				"android.permission.RECORD_AUDIO",
