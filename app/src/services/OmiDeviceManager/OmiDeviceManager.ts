@@ -18,10 +18,14 @@ import {
 } from "./constants";
 import { BleAudioCodec, type OmiDevice } from "./types";
 
-const MY_DEVICE = "D65CD59F-3E9A-4BF0-016E-141BB478E1B8";
+// const MY_DEVICE = "D65CD59F-3E9A-4BF0-016E-141BB478E1B8";
 
 export const omiDeviceManager = (() => {
-	// Observable state using Legend State
+	const _bleManager = new BleManager();
+	let _bleSubscription: Subscription;
+	let _stopScanCallback: () => void = () => {};
+	let _connectedDevice: Device | null = null;
+
 	const bluetoothState$ = observable(State.Unknown);
 	const permissionGranted$ = observable(false);
 	const scanning$ = observable(false);
@@ -29,26 +33,15 @@ export const omiDeviceManager = (() => {
 	const connectedDeviceId$ = observable<string | null>(null);
 	const isConnecting$ = observable(false);
 
-	// BLE Manager
-	const bleManager = new BleManager();
-	let bleSubscription: Subscription;
-	let stopScanCallback: () => void = () => {};
-	let _connectedDevice: Device | null = null;
-
-	// Initialize
 	const initialize = () => {
-		console.log("OmiDeviceManager: initializing");
-
-		// Monitor Bluetooth state changes
-		bleSubscription = bleManager.onStateChange((state) => {
+		_bleSubscription = _bleManager.onStateChange((state) => {
 			bluetoothState$.set(state);
 			if (state === State.PoweredOn) {
 				// Bluetooth is on, now we can request permission
-				requestBluetoothPermission();
+				_requestBluetoothPermission();
 			}
 		}, true);
 
-		// Auto-start scanning when Bluetooth is on and permissions granted
 		when(
 			() =>
 				permissionGranted$.get() === true &&
@@ -57,7 +50,6 @@ export const omiDeviceManager = (() => {
 		);
 	};
 
-	// Run initialization
 	initialize();
 
 	const setConnectedDevice = (device: Device | null) => {
@@ -69,68 +61,32 @@ export const omiDeviceManager = (() => {
 	 * Request Bluetooth permission from the user
 	 * @returns Boolean indicating if permission was requested successfully
 	 */
-	const requestBluetoothPermission = () => {
-		console.log("OmiDeviceManager: requestBluetoothPermission");
+	const _requestBluetoothPermission = () => {
 		try {
-			if (Platform.OS === "ios") {
-				bleManager.startDeviceScan(null, null, (error) => {
-					if (error) {
-						console.error("Permission error:", error);
-						permissionGranted$.set(false);
-						Alert.alert(
-							"Bluetooth Permission",
-							"Please enable Bluetooth permission in your device settings to use this feature.",
-							[
-								{ text: "Cancel", style: "cancel" },
-								{
-									text: "Open Settings",
-									onPress: () => Linking.openSettings(),
-								},
-							],
-						);
-					} else {
-						permissionGranted$.set(true);
-					}
-					// Stop scanning immediately after permission check
-					bleManager.stopDeviceScan();
-					return true;
-				});
-			} else if (Platform.OS === "android") {
-				// On Android, we need to check for location and bluetooth permissions
-				try {
-					// This will trigger the permission dialog
-					bleManager.startDeviceScan(null, null, (error) => {
-						if (error) {
-							console.error("Permission error:", error);
-							permissionGranted$.set(false);
-							Alert.alert(
-								"Bluetooth Permission",
-								"Please enable Bluetooth and Location permissions in your device settings to use this feature.",
-								[
-									{ text: "Cancel", style: "cancel" },
-									{
-										text: "Open Settings",
-										onPress: () => Linking.openSettings(),
-									},
-								],
-							);
-						} else {
-							permissionGranted$.set(true);
-						}
-						// Stop scanning immediately after permission check
-						bleManager.stopDeviceScan();
-						return true;
-					});
-				} catch (error) {
-					console.error("Error requesting permissions:", error);
+			_bleManager.startDeviceScan(null, null, (error) => {
+				if (error) {
+					console.error("Permission error:", error);
 					permissionGranted$.set(false);
+					Alert.alert(
+						"Bluetooth Permission",
+						"Please enable Bluetooth permission in your device settings to use this feature.",
+						[
+							{ text: "Cancel", style: "cancel" },
+							{
+								text: "Open Settings",
+								onPress: () => Linking.openSettings(),
+							},
+						],
+					);
+				} else {
+					permissionGranted$.set(true);
 				}
-			}
-			return false;
+				// Stop scanning immediately after permission check
+				_bleManager.stopDeviceScan();
+			});
 		} catch (error) {
-			console.error("Error in requestBluetoothPermission:", error);
+			console.error("Error in _requestBluetoothPermission:", error);
 			permissionGranted$.set(false);
-			return false;
 		}
 	};
 
@@ -141,7 +97,7 @@ export const omiDeviceManager = (() => {
 		console.log("OmiDeviceManager: startScan");
 
 		// Get previously connected device ID
-		const deviceId = MY_DEVICE; // storage.get("connectedDeviceId");
+		const deviceId = storage.get("connectedDeviceId");
 
 		// Check if Bluetooth is on and permission is granted
 		if (bluetoothState$.peek() !== State.PoweredOn) {
@@ -158,7 +114,7 @@ export const omiDeviceManager = (() => {
 
 		if (!permissionGranted$.peek()) {
 			console.warn("OmiDeviceManager: startScan: permissionGranted is false");
-			requestBluetoothPermission();
+			_requestBluetoothPermission();
 			return;
 		}
 
@@ -166,7 +122,7 @@ export const omiDeviceManager = (() => {
 		scanning$.set(true);
 
 		// Start the BLE scan
-		bleManager.startDeviceScan(null, {}, (error, device) => {
+		_bleManager.startDeviceScan(null, {}, (error, device) => {
 			if (error) {
 				console.error("Scan error:", error);
 				return;
@@ -202,9 +158,9 @@ export const omiDeviceManager = (() => {
 		}, 30000);
 
 		// Store stop scan callback
-		stopScanCallback = () => {
+		_stopScanCallback = () => {
 			clearTimeout(timeoutId);
-			bleManager.stopDeviceScan();
+			_bleManager.stopDeviceScan();
 		};
 	};
 
@@ -214,9 +170,9 @@ export const omiDeviceManager = (() => {
 	const stopScan = () => {
 		console.log("OmiDeviceManager: stopScan");
 		scanning$.set(false);
-		if (stopScanCallback) {
-			stopScanCallback();
-			stopScanCallback = () => {};
+		if (_stopScanCallback) {
+			_stopScanCallback();
+			_stopScanCallback = () => {};
 		}
 	};
 
@@ -245,7 +201,7 @@ export const omiDeviceManager = (() => {
 			const connectionOptions =
 				Platform.OS === "android" ? { requestMTU: 512 } : undefined;
 
-			const device = await bleManager.connectToDevice(
+			const device = await _bleManager.connectToDevice(
 				deviceId,
 				connectionOptions,
 			);
@@ -287,7 +243,7 @@ export const omiDeviceManager = (() => {
 
 	const getConnectedDeviceRssi = async () => {
 		if (_connectedDevice) {
-			const device = await bleManager.readRSSIForDevice(_connectedDevice.id);
+			const device = await _bleManager.readRSSIForDevice(_connectedDevice.id);
 			return device.rssi;
 		}
 		return null;
@@ -553,8 +509,8 @@ export const omiDeviceManager = (() => {
 	 */
 	const destroy = () => {
 		console.log("OmiDeviceManager: destroy");
-		bleSubscription.remove();
-		bleManager.destroy();
+		_bleSubscription.remove();
+		_bleManager.destroy();
 	};
 
 	return {
@@ -564,7 +520,6 @@ export const omiDeviceManager = (() => {
 		devices$,
 		connectedDeviceId$,
 		isConnecting$,
-		requestBluetoothPermission,
 		startScan,
 		stopScan,
 		connectToDevice,
