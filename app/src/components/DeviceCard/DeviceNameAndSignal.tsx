@@ -1,6 +1,6 @@
 import { DeviceSignalStrength } from "@/src/components/DeviceCard/DeviceSignalStrength";
 import { Text } from "@/src/components/Text";
-import { omiDeviceManager } from "@/src/services/OmiDeviceManager/OmiDeviceManager";
+import { omiDeviceManager } from "@/src/services/deviceService/deviceService";
 import { use$ } from "@legendapp/state/react";
 import { View } from "react-native";
 

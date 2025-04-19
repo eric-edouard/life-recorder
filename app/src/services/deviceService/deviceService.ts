@@ -1,4 +1,4 @@
-import { requestBluetoothPermissions } from "@/src/services/OmiDeviceManager/requestBluetoothPermissions";
+import { requestBluetoothPermissions } from "@/src/services/deviceService/requestBluetoothPermissions";
 import { storage } from "@/src/services/storage";
 import { observable, when } from "@legendapp/state";
 import { Alert, Linking, Platform } from "react-native";
@@ -39,7 +39,7 @@ export const omiDeviceManager = (() => {
 			bluetoothState$.set(state);
 			if (state === State.PoweredOn) {
 				// Bluetooth is on, now we can request permission
-				_requestBluetoothPermission();
+				requestBluetoothPermission();
 			}
 		}, true);
 
@@ -58,7 +58,7 @@ export const omiDeviceManager = (() => {
 		connectedDeviceId$.set(device?.id || null);
 	};
 
-	const _requestBluetoothPermission = () =>
+	const requestBluetoothPermission = () =>
 		requestBluetoothPermissions(_bleManager, (granted) =>
 			permissionGranted$.set(granted),
 		);
@@ -77,7 +77,7 @@ export const omiDeviceManager = (() => {
 		}
 
 		if (!permissionGranted$.peek()) {
-			_requestBluetoothPermission();
+			requestBluetoothPermission();
 			return;
 		}
 
@@ -223,10 +223,6 @@ export const omiDeviceManager = (() => {
 		}
 	};
 
-	/**
-	 * Get the audio codec used by the device
-	 * @returns Promise that resolves with the audio codec
-	 */
 	const getAudioCodec = async (): Promise<BleAudioCodec> => {
 		if (!_connectedDevice) {
 			throw new Error("Device not connected");
@@ -470,9 +466,11 @@ export const omiDeviceManager = (() => {
 		devices$,
 		connectedDeviceId$,
 		isConnecting$,
+		requestBluetoothPermission,
 		startScan,
 		stopScan,
 		connectToDevice,
+		isConnected: () => _connectedDevice !== null,
 		getConnectedDeviceRssi,
 		disconnectFromDevice,
 		getAudioCodec,

@@ -4,7 +4,7 @@ import { Linking, Platform, SafeAreaView, ScrollView } from "react-native";
 // Import components
 import StatusBanner from "@/src/components/BlutoothPermissionsbanner";
 import DeviceList from "@/src/components/DeviceList";
-import { omiDeviceManager } from "@/src/services/OmiDeviceManager/OmiDeviceManager";
+import { omiDeviceManager } from "@/src/services/deviceService/deviceService";
 import { use$ } from "@legendapp/state/react";
 
 export default function PairDevice() {

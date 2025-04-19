@@ -1,5 +1,5 @@
 import type { Subscription } from "react-native-ble-plx";
-import { omiDeviceManager } from "./OmiDeviceManager/OmiDeviceManager";
+import { omiDeviceManager } from "./deviceService/deviceService";
 import { socketService } from "./socketService";
 
 export const audioDataService = (() => {
@@ -75,7 +75,7 @@ export const audioDataService = (() => {
 	const startAudioCollection = async (
 		statsUpdateCallback?: (packetsReceived: number, savedCount: number) => void,
 	): Promise<boolean> => {
-		if (!omiDeviceManager.isConnected()) {
+		if (!omiDeviceManager.connectedDeviceId$.peek()) {
 			console.error("Cannot start audio collection: Device not connected");
 			return false;
 		}

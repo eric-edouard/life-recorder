@@ -1,5 +1,5 @@
 import { useAppState } from "@/src/hooks/useAppState";
-import { omiDeviceManager } from "@/src/services/OmiDeviceManager/OmiDeviceManager";
+import { omiDeviceManager } from "@/src/services/deviceService/deviceService";
 import { use$ } from "@legendapp/state/react";
 import { useEffect, useState } from "react";
 

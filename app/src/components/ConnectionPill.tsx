@@ -1,4 +1,4 @@
-import { omiDeviceManager } from "@/src/services/OmiDeviceManager/OmiDeviceManager";
+import { omiDeviceManager } from "@/src/services/deviceService/deviceService";
 import { use$ } from "@legendapp/state/react";
 import type React from "react";
 import { useEffect, useRef, useState } from "react";

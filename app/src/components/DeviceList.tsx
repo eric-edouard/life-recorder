@@ -1,10 +1,10 @@
-import type { OmiDevice } from "@/src/services/OmiDeviceManager/types";
+import type { BluetoothDevice } from "@/src/services/deviceService/types";
 import React from "react";
 import { TouchableOpacity, View } from "react-native";
 import { Text } from "./Text";
 
 interface DeviceListProps {
-	devices: OmiDevice[];
+	devices: BluetoothDevice[];
 	connected: boolean;
 	connectedDeviceId: string | null;
 	onConnect: (deviceId: string) => void;

@@ -1,5 +1,5 @@
 import { useThemeColor } from "@/src/contexts/ThemeContext";
-import { omiDeviceManager } from "@/src/services/OmiDeviceManager/OmiDeviceManager";
+import { omiDeviceManager } from "@/src/services/deviceService/deviceService";
 import { use$ } from "@legendapp/state/react";
 import React, { useEffect, useRef } from "react";
 import { Animated, View } from "react-native";
