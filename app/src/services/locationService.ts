@@ -1,51 +1,46 @@
 // src/services/locationService.ts
 import { LOCATION_TASK_NAME } from "@/src/tasks/locationTask";
 import * as Location from "expo-location";
-import { PermissionStatus } from "expo-location";
+import { useBackgroundPermissions } from "expo-location";
+import { useEffect } from "react";
 
-export async function requestPermissions(): Promise<boolean> {
-	const { status: fgStatus } =
-		await Location.requestForegroundPermissionsAsync();
-	if (fgStatus !== PermissionStatus.GRANTED) return false;
-
-	const { status: bgStatus } =
-		await Location.requestBackgroundPermissionsAsync();
-	if (bgStatus !== PermissionStatus.GRANTED) return false;
-
-	return true;
-}
-
-export async function startBackgroundLocation(): Promise<void> {
+export const startBackgroundLocation = async (): Promise<void> => {
 	const hasTask =
 		await Location.hasStartedLocationUpdatesAsync(LOCATION_TASK_NAME);
 	if (hasTask) return;
 
+	console.log("Starting background location");
 	await Location.startLocationUpdatesAsync(LOCATION_TASK_NAME, {
-		accuracy: Location.Accuracy.BestForNavigation,
+		accuracy: Location.Accuracy.Balanced,
 		timeInterval: 5 * 60 * 1000, // every 5 minutes
-		distanceInterval: 0, // regardless of movement
-		showsBackgroundLocationIndicator: true, // iOS indicator
+		distanceInterval: 100, // regardless of movement
+		showsBackgroundLocationIndicator: false, // iOS indicator
 		foregroundService: {
 			notificationTitle: "App is recording location",
 			notificationBody: "Your app is running in the background",
 			notificationColor: "#FF0000",
 		},
 	});
-}
+	console.log("Background location started");
+};
 
-export async function stopBackgroundLocation(): Promise<void> {
+export const stopBackgroundLocation = async (): Promise<void> => {
 	const hasTask =
 		await Location.hasStartedLocationUpdatesAsync(LOCATION_TASK_NAME);
 	if (hasTask) {
 		await Location.stopLocationUpdatesAsync(LOCATION_TASK_NAME);
 	}
-}
+};
 
-export async function checkPermissions(): Promise<{
-	foreground: PermissionStatus;
-	background: PermissionStatus;
-}> {
-	const fg = await Location.getForegroundPermissionsAsync();
-	const bg = await Location.getBackgroundPermissionsAsync();
-	return { foreground: fg.status, background: bg.status };
-}
+export const useStartBackgroundLocation = () => {
+	const [backgroundPermission, requestBackgroundPermission] =
+		useBackgroundPermissions();
+
+	useEffect(() => {
+		if (backgroundPermission?.status === Location.PermissionStatus.GRANTED) {
+			startBackgroundLocation();
+		}
+	}, [backgroundPermission?.status, requestBackgroundPermission]);
+
+	return null;
+};

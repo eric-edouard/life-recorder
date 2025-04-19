@@ -92,7 +92,15 @@ export default ({ config }: ConfigContext) => ({
 					enableBackgroundRemoteNotifications: true,
 				},
 			],
-			"react-native-ble-plx",
+			[
+				"react-native-ble-plx",
+				{
+					isBackgroundEnabled: true,
+					modes: ["peripheral", "central"],
+					bluetoothAlwaysPermission:
+						"Allow $(PRODUCT_NAME) to connect to bluetooth devices",
+				},
+			],
 			"expo-av",
 			"react-native-vad",
 		],

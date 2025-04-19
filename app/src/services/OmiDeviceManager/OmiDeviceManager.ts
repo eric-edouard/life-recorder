@@ -18,6 +18,8 @@ import {
 } from "./constants";
 import { BleAudioCodec, type OmiDevice } from "./types";
 
+const MY_DEVICE = "D65CD59F-3E9A-4BF0-016E-141BB478E1B8";
+
 export const omiDeviceManager = (() => {
 	// Observable state using Legend State
 	const bluetoothState$ = observable(State.Unknown);
@@ -139,7 +141,7 @@ export const omiDeviceManager = (() => {
 		console.log("OmiDeviceManager: startScan");
 
 		// Get previously connected device ID
-		const deviceId = storage.get("connectedDeviceId");
+		const deviceId = MY_DEVICE; // storage.get("connectedDeviceId");
 
 		// Check if Bluetooth is on and permission is granted
 		if (bluetoothState$.peek() !== State.PoweredOn) {
@@ -164,7 +166,7 @@ export const omiDeviceManager = (() => {
 		scanning$.set(true);
 
 		// Start the BLE scan
-		bleManager.startDeviceScan(null, null, (error, device) => {
+		bleManager.startDeviceScan(null, {}, (error, device) => {
 			if (error) {
 				console.error("Scan error:", error);
 				return;
