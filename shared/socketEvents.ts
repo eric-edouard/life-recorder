@@ -23,4 +23,5 @@ export interface ClientToServerEvents {
 	) => void;
 	startLogForwarding: (callback: (success: boolean) => void) => void;
 	stopLogForwarding: (callback: (success: boolean) => void) => void;
+	ping: (nb: number) => void;
 }
