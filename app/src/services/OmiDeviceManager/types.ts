@@ -1,6 +1,4 @@
-/**
- * Types for the Omi React Native SDK
- */
+import type { Base64, UUID } from "react-native-ble-plx";
 
 export enum BleAudioCodec {
 	PCM16 = "pcm16",
@@ -15,11 +13,19 @@ export enum DeviceConnectionState {
 	CONNECTING = "connecting",
 	DISCONNECTING = "disconnecting",
 }
-
-export interface OmiDevice {
+export interface BluetoothDevice {
 	id: string;
 	name: string;
-	rssi: number;
+	rssi: number | null;
+	rawScanRecord: Base64;
+	manufacturerData: Base64 | null;
+	serviceData: { [uuid: string]: Base64 } | null;
+	serviceUUIDs: UUID[] | null;
+	localName: string | null;
+	txPowerLevel: number | null;
+	solicitedServiceUUIDs: UUID[] | null;
+	isConnectable: boolean | null;
+	overflowServiceUUIDs: UUID[] | null;
 }
 
 /**

@@ -1,3 +1,4 @@
+import { requestBluetoothPermissions } from "@/src/services/OmiDeviceManager/requestBluetoothPermissions";
 import { storage } from "@/src/services/storage";
 import { observable, when } from "@legendapp/state";
 import { Alert, Linking, Platform } from "react-native";
@@ -16,20 +17,20 @@ import {
 	CODEC_ID,
 	OMI_SERVICE_UUID,
 } from "./constants";
-import { BleAudioCodec, type OmiDevice } from "./types";
+import { BleAudioCodec, type BluetoothDevice } from "./types";
 
 // const MY_DEVICE = "D65CD59F-3E9A-4BF0-016E-141BB478E1B8";
 
 export const omiDeviceManager = (() => {
 	const _bleManager = new BleManager();
 	let _bleSubscription: Subscription;
-	let _stopScanCallback: () => void = () => {};
+	let _stopScanCallback: (() => void) | null = null;
 	let _connectedDevice: Device | null = null;
 
 	const bluetoothState$ = observable(State.Unknown);
 	const permissionGranted$ = observable(false);
 	const scanning$ = observable(false);
-	const devices$ = observable<OmiDevice[]>([]);
+	const devices$ = observable<BluetoothDevice[]>([]);
 	const connectedDeviceId$ = observable<string | null>(null);
 	const isConnecting$ = observable(false);
 
@@ -57,49 +58,12 @@ export const omiDeviceManager = (() => {
 		connectedDeviceId$.set(device?.id || null);
 	};
 
-	/**
-	 * Request Bluetooth permission from the user
-	 * @returns Boolean indicating if permission was requested successfully
-	 */
-	const _requestBluetoothPermission = () => {
-		try {
-			_bleManager.startDeviceScan(null, null, (error) => {
-				if (error) {
-					console.error("Permission error:", error);
-					permissionGranted$.set(false);
-					Alert.alert(
-						"Bluetooth Permission",
-						"Please enable Bluetooth permission in your device settings to use this feature.",
-						[
-							{ text: "Cancel", style: "cancel" },
-							{
-								text: "Open Settings",
-								onPress: () => Linking.openSettings(),
-							},
-						],
-					);
-				} else {
-					permissionGranted$.set(true);
-				}
-				// Stop scanning immediately after permission check
-				_bleManager.stopDeviceScan();
-			});
-		} catch (error) {
-			console.error("Error in _requestBluetoothPermission:", error);
-			permissionGranted$.set(false);
-		}
-	};
+	const _requestBluetoothPermission = () =>
+		requestBluetoothPermissions(_bleManager, (granted) =>
+			permissionGranted$.set(granted),
+		);
 
-	/**
-	 * Start scanning for Omi devices
-	 */
 	const startScan = () => {
-		console.log("OmiDeviceManager: startScan");
-
-		// Get previously connected device ID
-		const deviceId = storage.get("connectedDeviceId");
-
-		// Check if Bluetooth is on and permission is granted
 		if (bluetoothState$.peek() !== State.PoweredOn) {
 			Alert.alert(
 				"Bluetooth is Off",
@@ -113,76 +77,83 @@ export const omiDeviceManager = (() => {
 		}
 
 		if (!permissionGranted$.peek()) {
-			console.warn("OmiDeviceManager: startScan: permissionGranted is false");
 			_requestBluetoothPermission();
 			return;
 		}
 
-		// Set scanning state
+		// Get previously connected device ID
+		const savedDeviceId = storage.get("connectedDeviceId");
+
 		scanning$.set(true);
-
 		// Start the BLE scan
-		_bleManager.startDeviceScan(null, {}, (error, device) => {
-			if (error) {
-				console.error("Scan error:", error);
-				return;
-			}
+		_bleManager.startDeviceScan(
+			savedDeviceId ? [savedDeviceId] : null,
+			{},
+			(error, foundDevice) => {
+				if (error) {
+					console.error("Scan error:", error);
+					return;
+				}
 
-			if (device?.name) {
-				const omiDevice: OmiDevice = {
-					id: device.id,
-					name: device.name,
-					rssi: device.rssi || 0,
-				};
+				if (foundDevice?.name) {
+					const device: BluetoothDevice = {
+						id: foundDevice.id,
+						name: foundDevice.name,
+						rssi: foundDevice.rssi || 0,
+						isConnectable: foundDevice.isConnectable || false,
+						overflowServiceUUIDs: foundDevice.overflowServiceUUIDs || [],
+						rawScanRecord: foundDevice.rawScanRecord,
+						manufacturerData: foundDevice.manufacturerData,
+						serviceData: foundDevice.serviceData,
+						serviceUUIDs: foundDevice.serviceUUIDs,
+						localName: foundDevice.localName,
+						txPowerLevel: foundDevice.txPowerLevel,
+						solicitedServiceUUIDs: foundDevice.solicitedServiceUUIDs,
+					};
 
-				// Add to devices list if not already there
-				devices$.set((prev) => {
-					// Check if device already exists
-					if (prev.some((d) => d.id === omiDevice.id)) {
-						return prev;
-					}
+					// Add to devices list if not already there
+					devices$.set((prevDevices) => {
+						// Check if device already exists
+						if (prevDevices.some((d) => d.id === device.id)) {
+							return prevDevices;
+						}
 
-					// Auto-connect to previously connected device
-					if (deviceId && omiDevice.id === deviceId) {
-						connectToDevice(omiDevice.id);
-					}
+						// Auto-connect to previously connected device
+						if (savedDeviceId && device.id === savedDeviceId) {
+							connectToDevice(device.id);
+						}
 
-					return [...prev, omiDevice];
-				});
-			}
-		});
+						return [...prevDevices, device];
+					});
+				}
+			},
+		);
+
+		if (savedDeviceId) {
+			// If we have a saved device ID, we contiuously connect to it
+			return;
+		}
 
 		// Auto-stop after 30 seconds
 		const timeoutId = setTimeout(() => {
 			stopScan();
 		}, 30000);
 
-		// Store stop scan callback
 		_stopScanCallback = () => {
 			clearTimeout(timeoutId);
 			_bleManager.stopDeviceScan();
 		};
 	};
 
-	/**
-	 * Stop scanning for devices
-	 */
 	const stopScan = () => {
-		console.log("OmiDeviceManager: stopScan");
 		scanning$.set(false);
 		if (_stopScanCallback) {
 			_stopScanCallback();
-			_stopScanCallback = () => {};
+			_stopScanCallback = null;
 		}
 	};
 
-	/**
-	 * Connect to an Omi device
-	 * @param deviceId The device ID to connect to
-	 */
 	const connectToDevice = async (deviceId: string) => {
-		console.log("OmiDeviceManager: connectToDevice", deviceId);
-
 		if (isConnecting$.peek()) {
 			console.log("Already connecting to a device");
 			return false;
@@ -209,11 +180,6 @@ export const omiDeviceManager = (() => {
 			if (Platform.OS === "android") {
 				console.log("Requested MTU size of 512 during connection");
 			}
-
-			// Discover services and characteristics
-			const characteristics =
-				await device.discoverAllServicesAndCharacteristics();
-			// console.log("Characteristics:", characteristics);
 
 			setConnectedDevice(device);
 
@@ -249,24 +215,12 @@ export const omiDeviceManager = (() => {
 		return null;
 	};
 
-	/**
-	 * Disconnect from the currently connected device
-	 */
 	const disconnectFromDevice = async () => {
-		console.log("OmiDeviceManager: disconnectFromDevice");
+		storage.set("connectedDeviceId", null);
 		if (_connectedDevice) {
 			await _connectedDevice.cancelConnection();
 			setConnectedDevice(null);
-			storage.set("connectedDeviceId", null);
 		}
-	};
-
-	/**
-	 * Check if connected to a device
-	 * @returns True if connected
-	 */
-	const isConnected = (): boolean => {
-		return _connectedDevice !== null;
 	};
 
 	/**
@@ -504,11 +458,7 @@ export const omiDeviceManager = (() => {
 		}
 	};
 
-	/**
-	 * Clean up resources
-	 */
 	const destroy = () => {
-		console.log("OmiDeviceManager: destroy");
 		_bleSubscription.remove();
 		_bleManager.destroy();
 	};
@@ -525,7 +475,6 @@ export const omiDeviceManager = (() => {
 		connectToDevice,
 		getConnectedDeviceRssi,
 		disconnectFromDevice,
-		isConnected,
 		getAudioCodec,
 		startAudioBytesListener,
 		stopAudioBytesListener,
