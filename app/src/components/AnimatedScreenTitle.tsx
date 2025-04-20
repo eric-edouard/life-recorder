@@ -6,7 +6,7 @@ export const AnimatedScreenTitle = () => {
 
 	return (
 		<Animated.Text
-			className="text-3xl font-extrabold mt-10 mb-4 text-foreground"
+			className="text-3xl font-extrabold mt-10 mb-4 text-label"
 			style={{
 				transform: [
 					{
@@ -19,7 +19,7 @@ export const AnimatedScreenTitle = () => {
 				transformOrigin: "left center",
 			}}
 		>
-			Life Logger
+			Life Recorder
 		</Animated.Text>
 	);
 };

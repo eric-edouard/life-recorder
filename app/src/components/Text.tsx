@@ -3,7 +3,7 @@ import { twMerge } from "tailwind-merge";
 
 export const Text = ({ children, ...props }: TextProps) => {
 	return (
-		<RNText {...props} className={twMerge("text-foreground", props.className)}>
+		<RNText {...props} className={twMerge("text-label", props.className)}>
 			{children}
 		</RNText>
 	);

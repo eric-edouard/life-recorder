@@ -9,7 +9,7 @@ type BackendStatusCardProps = {
 export const BackendStatusCard = ({ onPress }: BackendStatusCardProps) => {
 	return (
 		<Card onPress={onPress} containerClassName="">
-			<Text className="text-base font-semibold text-foreground mb-1">
+			<Text className="text-base font-semibold text-label mb-1">
 				Backend Status
 			</Text>
 		</Card>

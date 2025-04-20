@@ -1,4 +1,4 @@
-import { withUIKit } from 'react-native-uikit-colors/tailwind';
+import { withUIKit } from "react-native-uikit-colors/tailwind";
 
 /** @type {import('tailwindcss').Config} */
 module.exports = withUIKit({

@@ -18,7 +18,7 @@ export const DeviceCard = ({ onPress }: DeviceCardProps) => {
 			className="flex-1 flex-col justify-between gap-2 "
 		>
 			<View className="flex-row items-center justify-between mb-1">
-				<Text className="font-semibold text-foreground text-lg ">
+				<Text className="font-semibold text-label text-lg ">
 					Recording Device
 				</Text>
 			</View>
