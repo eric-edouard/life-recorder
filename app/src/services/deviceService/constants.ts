@@ -2,6 +2,8 @@
  * BLE UUIDs and constants for Omi device communication
  */
 
+import { BleAudioCodec } from "@/src/services/deviceService/types";
+
 // Service and characteristic UUIDs
 export const OMI_SERVICE_UUID = "19b10000-e8f2-537e-4f6c-d104768a1214";
 export const AUDIO_CODEC_CHARACTERISTIC_UUID =
@@ -19,4 +21,10 @@ export const CODEC_ID = {
 	PCM16: 0,
 	PCM8: 1,
 	OPUS: 20,
+};
+
+export const CODEC_MAP = {
+	[CODEC_ID.PCM16]: BleAudioCodec.PCM16,
+	[CODEC_ID.PCM8]: BleAudioCodec.PCM8,
+	[CODEC_ID.OPUS]: BleAudioCodec.OPUS,
 };

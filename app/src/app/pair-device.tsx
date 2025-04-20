@@ -1,19 +1,18 @@
-import React, { useEffect } from "react";
-import { Linking, Platform, SafeAreaView, ScrollView } from "react-native";
-
-// Import components
 import StatusBanner from "@/src/components/BlutoothPermissionsbanner";
 import DeviceList from "@/src/components/DeviceList";
 import { deviceService } from "@/src/services/deviceService/deviceService";
+import { scanDevicesService } from "@/src/services/deviceService/scanDevicesService";
 import { use$ } from "@legendapp/state/react";
+import React, { useEffect } from "react";
+import { Linking, Platform, SafeAreaView, ScrollView } from "react-native";
 
 export default function PairDevice() {
 	const connectedDeviceId = use$(deviceService.connectedDeviceId$);
-	const devices = use$(deviceService.devices$);
-	const bluetoothState = use$(deviceService.bluetoothState$);
+	const devices = use$(scanDevicesService.devices$);
+	const bluetoothState = use$(scanDevicesService.bluetoothState$);
 
 	useEffect(() => {
-		deviceService.startScan();
+		scanDevicesService.scanDevices();
 	}, []);
 
 	return (
@@ -24,7 +23,7 @@ export default function PairDevice() {
 				{/* Bluetooth Status Banner */}
 				<StatusBanner
 					bluetoothState={bluetoothState}
-					onRequestPermission={deviceService.requestBluetoothPermission}
+					onRequestPermission={scanDevicesService.requestBluetoothPermission}
 					onOpenSettings={() => Linking.openSettings()}
 				/>
 

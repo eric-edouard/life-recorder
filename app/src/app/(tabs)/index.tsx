@@ -13,13 +13,14 @@ import { ServerConnectionPill } from "@/src/components/ServerConnectionPill";
 import { ListScrollProvider } from "@/src/contexts/ListScrollContext";
 import { audioDataService } from "@/src/services/audioDataService";
 import { deviceService } from "@/src/services/deviceService/deviceService";
+import { scanDevicesService } from "@/src/services/deviceService/scanDevicesService";
 import { socketService } from "@/src/services/socketService";
 import { use$ } from "@legendapp/state/react";
 import { router } from "expo-router";
 
 const HeaderContent = () => {
 	const connectedDeviceId = use$(deviceService.connectedDeviceId$);
-	const bluetoothState = use$(deviceService.bluetoothState$);
+	const bluetoothState = use$(scanDevicesService.bluetoothState$);
 	const [isListeningAudio, setIsListeningAudio] = useState<boolean>(false);
 	const startAudioListener = async () => {
 		try {
@@ -80,7 +81,7 @@ const HeaderContent = () => {
 			{/* Bluetooth Status Banner */}
 			<StatusBanner
 				bluetoothState={bluetoothState}
-				onRequestPermission={deviceService.requestBluetoothPermission}
+				onRequestPermission={scanDevicesService.requestBluetoothPermission}
 				onOpenSettings={() => Linking.openSettings()}
 			/>
 			{connectedDeviceId && (

@@ -148,7 +148,7 @@ export const audioDataService = (() => {
 
 		// Stop the audio listener
 		if (audioSubscription) {
-			await deviceService.stopAudioBytesListener(audioSubscription);
+			audioSubscription.remove();
 			audioSubscription = null;
 		}
 	};

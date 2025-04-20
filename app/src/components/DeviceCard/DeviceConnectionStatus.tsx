@@ -1,11 +1,11 @@
 import { useThemeColor } from "@/src/contexts/ThemeContext";
 import { deviceService } from "@/src/services/deviceService/deviceService";
+import { scanDevicesService } from "@/src/services/deviceService/scanDevicesService";
 import { use$ } from "@legendapp/state/react";
 import React, { useEffect, useRef } from "react";
 import { Animated, View } from "react-native";
 import { State } from "react-native-ble-plx";
 import { Text } from "../Text";
-
 export const DeviceConnectionStatus = () => {
 	const green = useThemeColor("--green");
 	const yellow = useThemeColor("--yellow");
@@ -13,9 +13,9 @@ export const DeviceConnectionStatus = () => {
 	const blinkAnim = useRef(new Animated.Value(1)).current;
 
 	// Get state directly from deviceService
-	const bluetoothState = use$(deviceService.bluetoothState$);
+	const bluetoothState = use$(scanDevicesService.bluetoothState$);
 	const connectedDeviceId = use$(deviceService.connectedDeviceId$);
-	const scanning = use$(deviceService.scanning$);
+	const scanning = use$(scanDevicesService.scanning$);
 	const isConnecting = use$(deviceService.isConnecting$);
 
 	// Start blinking animation when scanning or connecting

@@ -1,7 +1,9 @@
+import { useDeviceBatteryLevel } from "@/src/hooks/useDeviceBatteryLevel";
 import { deviceService } from "@/src/services/deviceService/deviceService";
+import { scanDevicesService } from "@/src/services/deviceService/scanDevicesService";
 import { use$ } from "@legendapp/state/react";
 import type React from "react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { Animated, TouchableOpacity } from "react-native";
 import { State } from "react-native-ble-plx";
 import { Text } from "./Text";
@@ -12,46 +14,13 @@ type ConnectionPillProps = {
 
 export const ConnectionPill: React.FC<ConnectionPillProps> = ({ onPress }) => {
 	const blinkAnim = useRef(new Animated.Value(1)).current;
-	const [batteryLevel, setBatteryLevel] = useState<number | null>(null);
+	const batteryLevel = useDeviceBatteryLevel();
 
 	// Get state directly from deviceService
-	const bluetoothState = use$(deviceService.bluetoothState$);
+	const bluetoothState = use$(scanDevicesService.bluetoothState$);
 	const connectedDeviceId = use$(deviceService.connectedDeviceId$);
-	const scanning = use$(deviceService.scanning$);
+	const scanning = use$(scanDevicesService.scanning$);
 	const isConnecting = use$(deviceService.isConnecting$);
-
-	// Fetch battery level
-	const fetchBatteryLevel = async () => {
-		if (connectedDeviceId) {
-			try {
-				const level = await deviceService.getBatteryLevel();
-				if (level >= 0) {
-					setBatteryLevel(level);
-				}
-			} catch (error) {
-				console.error("Error fetching battery level:", error);
-			}
-		} else {
-			setBatteryLevel(null);
-		}
-	};
-
-	// Fetch battery level when connected and every 30 seconds
-	useEffect(() => {
-		if (connectedDeviceId) {
-			// Fetch immediately when connected
-			fetchBatteryLevel();
-
-			// Set up interval to fetch every 30 seconds
-			const intervalId = setInterval(fetchBatteryLevel, 30000);
-
-			// Clean up interval when disconnected or component unmounts
-			return () => {
-				clearInterval(intervalId);
-				setBatteryLevel(null);
-			};
-		}
-	}, [connectedDeviceId]);
 
 	// Start blinking animation when scanning or connecting
 	useEffect(() => {

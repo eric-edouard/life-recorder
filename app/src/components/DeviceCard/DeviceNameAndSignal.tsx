@@ -6,9 +6,9 @@ import { View } from "react-native";
 
 export const DeviceNameAndSignal = () => {
 	const connectedDevice = use$(
-		deviceService.devices$
-			.get()
-			.find((d) => d.id === deviceService.connectedDeviceId$.get()),
+		deviceService.connectedDeviceId$.get()
+			? deviceService.getConnectedDevice()
+			: null,
 	);
 
 	return (
