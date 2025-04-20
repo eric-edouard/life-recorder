@@ -14,12 +14,14 @@ export const PressableLayer = ({
 	className,
 	onPress,
 	style,
+	rounded = true,
 }: {
 	children: React.ReactNode;
 	containerClassName?: string;
 	className?: string;
 	onPress?: () => void;
 	style?: StyleProp<ViewStyle>;
+	rounded?: boolean;
 }) => {
 	const backgroundColor = useColor("secondarySystemGroupedBackground");
 	const pressedBackgroundColor = useColor("gray4");
@@ -51,7 +53,7 @@ export const PressableLayer = ({
 			className={containerClassName}
 		>
 			<Animated.View
-				className={twMerge("rounded-xl", className)}
+				className={twMerge(rounded && "rounded-xl", className)}
 				style={[
 					{
 						borderCurve: "continuous",
