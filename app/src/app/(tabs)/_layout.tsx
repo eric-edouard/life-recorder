@@ -1,9 +1,8 @@
-import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { BlurView } from "expo-blur";
-import { Link, Tabs } from "expo-router";
+import { Tabs } from "expo-router";
 import { SymbolView } from "expo-symbols";
 import type React from "react";
-import { Pressable, StyleSheet, useColorScheme } from "react-native";
+import { StyleSheet, useColorScheme } from "react-native";
 import { Colors } from "react-native/Libraries/NewAppScreen";
 
 export default function TabLayout() {
@@ -15,7 +14,7 @@ export default function TabLayout() {
 				headerShown: false,
 				animation: "fade",
 				tabBarStyle: {
-					borderTopWidth: 0,
+					borderTopWidth: colorScheme === "dark" ? 0 : StyleSheet.hairlineWidth,
 					position: "absolute",
 				},
 				tabBarBackground: () => (
@@ -48,20 +47,6 @@ export default function TabLayout() {
 							tintColor={color}
 							weight={"medium"}
 						/>
-					),
-					headerRight: () => (
-						<Link href="/modal" asChild>
-							<Pressable>
-								{({ pressed }) => (
-									<FontAwesome
-										name="info-circle"
-										size={25}
-										color={Colors[colorScheme ?? "light"].text}
-										style={{ marginRight: 15, opacity: pressed ? 0.5 : 1 }}
-									/>
-								)}
-							</Pressable>
-						</Link>
 					),
 				}}
 			/>

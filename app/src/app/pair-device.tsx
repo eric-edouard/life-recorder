@@ -16,7 +16,7 @@ export default function PairDevice() {
 	}, []);
 
 	return (
-		<SafeAreaView className="flex-1 bg-[#f5f5f5]">
+		<SafeAreaView className="flex-1 bg-system-background">
 			<ScrollView
 				className={`p-5 ${Platform.OS === "android" ? "pt-10" : ""} pb-[200px]`}
 			>

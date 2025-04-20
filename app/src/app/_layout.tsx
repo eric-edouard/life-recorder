@@ -33,15 +33,21 @@ export default function RootLayout() {
 
 	return (
 		<ThemeProvider>
-			<Stack>
+			{/* <NavigationThemeProvider value={DefaultTheme}> */}
+			<Stack screenOptions={{ animation: "flip" }}>
 				<Stack.Screen name="(tabs)" options={{ headerShown: false }} />
 				<Stack.Screen name="modal" options={{ presentation: "modal" }} />
 				<Stack.Screen
 					name="pair-device"
-					options={{ title: "Pair Device", headerBackTitle: "Home" }}
+					options={{
+						title: "Pair Device",
+						headerBackTitle: "Home",
+						// headerTransparent: true,
+					}}
 				/>
 				<Stack.Screen name="+not-found" />
 			</Stack>
+			{/* </NavigationThemeProvider> */}
 		</ThemeProvider>
 	);
 }
