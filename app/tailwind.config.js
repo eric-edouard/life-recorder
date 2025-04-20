@@ -20,17 +20,17 @@ module.exports = withUIKit({
 			addComponents({
 				".d": {
 					borderWidth: "1px",
-					borderColor: "var(--red)",
+					borderColor: "red",
 					borderStyle: "solid",
 				},
 				".d1": {
 					borderWidth: "1px",
-					borderColor: "var(--primary)",
+					borderColor: "blue",
 					borderStyle: "solid",
 				},
 				".d2": {
 					borderWidth: "1px",
-					borderColor: "var(--yellow)",
+					borderColor: "yellow",
 					borderStyle: "solid",
 				},
 			});
