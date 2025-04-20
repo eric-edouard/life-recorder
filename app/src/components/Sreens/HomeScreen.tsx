@@ -56,7 +56,7 @@ export const HomeScreen = () => {
 	};
 
 	return (
-		<ScreenScrollView.Container title="Life Recorder">
+		<ScreenScrollView.Container title="Life Recorder" className="pt-5">
 			<View className="px-5 w-full flex items-start gap-3">
 				<DeviceStatusButton />
 				<ScreenScrollView.Title title="Life Recorder" />

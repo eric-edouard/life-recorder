@@ -7,13 +7,18 @@ import {
 } from "@/src/components/ScreenScrollView/ScreenScrollContext";
 import { Animated, ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { twMerge } from "tailwind-merge";
 
 type ScreenScrollViewProps = {
 	title: string;
 	children: React.ReactNode;
+	className?: string;
 };
 
-const Container = ({ children }: { children: React.ReactNode }) => {
+const Container = ({
+	children,
+	className,
+}: { children: React.ReactNode; className?: string }) => {
 	const { scrollAnimatedValue } = useScreenScroll();
 	const insets = useSafeAreaInsets();
 	return (
@@ -23,9 +28,9 @@ const Container = ({ children }: { children: React.ReactNode }) => {
 				{ useNativeDriver: false },
 			)}
 			style={{
-				paddingTop: insets.top + 44,
+				paddingTop: insets.top,
 			}}
-			className="flex-1 bg-system-background "
+			className={twMerge("flex-1 bg-system-background ", className)}
 		>
 			{children}
 		</ScrollView>
