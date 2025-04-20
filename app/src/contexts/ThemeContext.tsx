@@ -9,6 +9,7 @@ import {
 	ThemeProvider as NavigationThemeProvider,
 	type Theme,
 } from "@react-navigation/native";
+import * as SystemUI from "expo-system-ui";
 import type React from "react";
 import { createContext, useContext } from "react";
 import { View, useColorScheme } from "react-native";
@@ -21,6 +22,8 @@ export const ThemeContext = createContext<{
 }>({
 	theme: "light",
 });
+
+SystemUI.setBackgroundColorAsync("black");
 
 export const ThemeProvider = ({ children }: ThemeProviderProps) => {
 	const colorScheme = useColorScheme();

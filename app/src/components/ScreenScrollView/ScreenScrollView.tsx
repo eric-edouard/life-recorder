@@ -30,7 +30,7 @@ const Container = ({
 			style={{
 				paddingTop: insets.top,
 			}}
-			className={twMerge("flex-1 bg-system-background ", className)}
+			className={twMerge("flex-1  bg-system-grouped-background", className)}
 		>
 			{children}
 		</ScrollView>

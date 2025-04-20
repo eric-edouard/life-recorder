@@ -9,7 +9,7 @@ export const lightColors: Record<CustomColorName, string> = {
 };
 
 export const darkColors: Record<CustomColorName, string> = {
-	"--accent": "#B10000",
+	"--accent": "#CD0D02",
 };
 
 export const customColors = {

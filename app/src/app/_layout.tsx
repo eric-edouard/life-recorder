@@ -2,11 +2,11 @@
 import "react-native-reanimated";
 import "../../global.css";
 
-import "@/src/tasks/locationTask";
-
+import { TextButton } from "@/src/components/ui/TextButton";
 import { ThemeProvider } from "@/src/contexts/ThemeContext";
+import "@/src/tasks/locationTask";
 import { useFonts } from "expo-font";
-import { Stack } from "expo-router";
+import { Stack, router } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
 
@@ -33,21 +33,28 @@ export default function RootLayout() {
 
 	return (
 		<ThemeProvider>
-			{/* <NavigationThemeProvider value={DefaultTheme}> */}
-			<Stack screenOptions={{ animation: "flip" }}>
+			<Stack>
 				<Stack.Screen name="(tabs)" options={{ headerShown: false }} />
 				<Stack.Screen name="modal" options={{ presentation: "modal" }} />
+				<Stack.Screen
+					name="device"
+					options={{
+						presentation: "modal",
+						title: "Recording Device",
+						headerRight: () => (
+							<TextButton title="Done" onPress={router.back} />
+						),
+					}}
+				/>
 				<Stack.Screen
 					name="pair-device"
 					options={{
 						title: "Pair Device",
 						headerBackTitle: "Home",
-						// headerTransparent: true,
 					}}
 				/>
 				<Stack.Screen name="+not-found" />
 			</Stack>
-			{/* </NavigationThemeProvider> */}
 		</ThemeProvider>
 	);
 }

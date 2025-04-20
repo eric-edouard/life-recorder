@@ -1,14 +1,20 @@
 import { withUIKit } from "react-native-uikit-colors/tailwind";
+import { withAccentColor } from "./utils/withAccentColor";
+const { hairlineWidth } = require("nativewind/theme");
 
 /** @type {import('tailwindcss').Config} */
-module.exports = withUIKit({
+module.exports = withAccentColor(withUIKit({
 	content: ["./src/**/*.{js,jsx,ts,tsx}"],
 	presets: [require("nativewind/preset")],
 	theme: {
 		extend: {
-			colors: {
-				// Custom colors
-				accent: "var(--accent)",
+			height: {
+				row: 44,
+			},
+			padding: {
+				sm: 8,
+				md: 16,
+				lg: 20
 			},
 		},
 	},
@@ -36,4 +42,4 @@ module.exports = withUIKit({
 			});
 		},
 	],
-});
+}));

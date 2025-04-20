@@ -4,6 +4,7 @@ import {
 	Pressable,
 	type StyleProp,
 	type ViewStyle,
+	useColorScheme,
 } from "react-native";
 import { useColor } from "react-native-uikit-colors";
 import { twMerge } from "tailwind-merge";
@@ -21,8 +22,9 @@ export const PressableLayer = ({
 	onPress?: () => void;
 	style?: StyleProp<ViewStyle>;
 }) => {
-	const systemBackground = useColor("tertiarySystemBackground");
-	const secondarySystemBackground = useColor("secondarySystemBackground");
+	const colorScheme = useColorScheme();
+	const backgroundColor = useColor("secondarySystemGroupedBackground");
+	const pressedBackgroundColor = useColor("gray4");
 
 	const colorAnim = useRef(new Animated.Value(0)).current;
 
@@ -50,16 +52,13 @@ export const PressableLayer = ({
 			className={containerClassName}
 		>
 			<Animated.View
-				className={twMerge(
-					"bg-secondary-system-background rounded-xl",
-					className,
-				)}
+				className={twMerge("rounded-xl", className)}
 				style={[
 					{
 						borderCurve: "continuous",
 						backgroundColor: colorAnim.interpolate({
 							inputRange: [0, 1],
-							outputRange: [secondarySystemBackground, systemBackground],
+							outputRange: [backgroundColor, pressedBackgroundColor],
 						}),
 					},
 					style,
