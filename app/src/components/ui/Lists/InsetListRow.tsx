@@ -15,7 +15,7 @@ export type InsetListRowProps = {
 
 export const InsetListRow = ({
 	title,
-	detail = "Detail",
+	detail,
 	accessory,
 	onPress,
 	hideBorder = false,
