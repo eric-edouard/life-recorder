@@ -13,6 +13,7 @@ export const HomeScreen = () => {
 	const connectedDeviceId = use$(deviceService.connectedDeviceId$);
 	const bluetoothState = use$(scanDevicesService.bluetoothState$);
 	const [isListeningAudio, setIsListeningAudio] = useState<boolean>(false);
+
 	const startAudioListener = async () => {
 		try {
 			if (!connectedDeviceId || !deviceService.isConnected()) {

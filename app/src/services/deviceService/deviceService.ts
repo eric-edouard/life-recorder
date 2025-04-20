@@ -245,6 +245,7 @@ export const deviceService = (() => {
 		connectToDevice,
 		getConnectedDevice: () => _connectedDevice,
 		isConnected: () => _connectedDevice !== null,
+		hasPairedDevice: () => !!storage.get("pairedDeviceId"),
 		getConnectedDeviceRssi,
 		disconnectFromDevice,
 		getAudioCodec,
