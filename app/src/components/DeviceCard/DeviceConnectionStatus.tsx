@@ -1,15 +1,16 @@
-import { useThemeColor } from "@/src/contexts/ThemeContext";
 import { deviceService } from "@/src/services/deviceService/deviceService";
 import { scanDevicesService } from "@/src/services/deviceService/scanDevicesService";
 import { use$ } from "@legendapp/state/react";
 import React, { useEffect, useRef } from "react";
 import { Animated, View } from "react-native";
 import { State } from "react-native-ble-plx";
+import { useColor } from "react-native-uikit-colors";
 import { Text } from "../Text";
+
 export const DeviceConnectionStatus = () => {
-	const green = useThemeColor("--green");
-	const yellow = useThemeColor("--yellow");
-	const red = useThemeColor("--red");
+	const green = useColor("green");
+	const yellow = useColor("yellow");
+	const red = useColor("red");
 	const blinkAnim = useRef(new Animated.Value(1)).current;
 
 	// Get state directly from deviceService
@@ -118,7 +119,7 @@ export const DeviceConnectionStatus = () => {
 					]}
 				/>
 			</View>
-			<Text className="font-normal text-foreground-level-1 ">{text}</Text>
+			<Text className="font-normal text-secondary-label">{text}</Text>
 		</View>
 	);
 };

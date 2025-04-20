@@ -1,14 +1,14 @@
-import { useThemeColors } from "@/src/contexts/ThemeContext";
 import { useDeviceBatteryLevel } from "@/src/hooks/useDeviceBatteryLevel";
 import { SymbolView } from "expo-symbols";
 import React from "react";
 import { View } from "react-native";
+import { useColor } from "react-native-uikit-colors";
 import { Text } from "../Text";
 
 export const DeviceBatteryLevel = () => {
+	const tintColor = useColor("green");
 	const batteryLevel = useDeviceBatteryLevel();
 
-	const colors = useThemeColors();
 	if (!batteryLevel) {
 		return null;
 	}
@@ -18,11 +18,11 @@ export const DeviceBatteryLevel = () => {
 				<SymbolView
 					name="battery.100"
 					size={18}
-					tintColor={colors["--green"]}
+					tintColor={tintColor}
 					style={{ opacity: 0.8 }}
 				/>
 			</View>
-			<Text className="font-normal text-foreground-level-1 ">
+			<Text className="font-normal text-secondary-label">
 				Battery: {batteryLevel}%
 			</Text>
 		</View>

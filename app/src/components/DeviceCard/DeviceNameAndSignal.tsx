@@ -16,7 +16,7 @@ export const DeviceNameAndSignal = () => {
 			<View className="flex-row justify-center items-center w-6 ">
 				<DeviceSignalStrength size={15} />
 			</View>
-			<Text className="font-normal text-foreground-level-1 ">
+			<Text className="font-normal text-secondary-label">
 				{connectedDevice?.name ?? "No device connected"}
 			</Text>
 		</View>

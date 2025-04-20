@@ -1,4 +1,3 @@
-import { useThemeColor } from "@/src/contexts/ThemeContext";
 import { useRef } from "react";
 import {
 	Animated,
@@ -6,6 +5,7 @@ import {
 	type StyleProp,
 	type ViewStyle,
 } from "react-native";
+import { useColor } from "react-native-uikit-colors";
 import { twMerge } from "tailwind-merge";
 
 export const Card = ({
@@ -21,8 +21,9 @@ export const Card = ({
 	onPress?: () => void;
 	style?: StyleProp<ViewStyle>;
 }) => {
-	const backgroundLevel1 = useThemeColor("--background-level-1");
-	const backgroundLevel2 = useThemeColor("--background-level-2");
+	const systemBackground = useColor("systemBackground");
+	const secondarySystemBackground = useColor("secondarySystemBackground");
+
 	const colorAnim = useRef(new Animated.Value(0)).current;
 
 	const handlePressIn = () => {
@@ -50,7 +51,7 @@ export const Card = ({
 		>
 			<Animated.View
 				className={twMerge(
-					"bg-background-level-1 p-3 rounded-2xl flex-1",
+					"bg-secondary-system-background p-3 rounded-2xl flex-1",
 					className,
 				)}
 				style={[
@@ -58,7 +59,7 @@ export const Card = ({
 						borderCurve: "continuous",
 						backgroundColor: colorAnim.interpolate({
 							inputRange: [0, 1],
-							outputRange: [backgroundLevel1, backgroundLevel2],
+							outputRange: [secondarySystemBackground, systemBackground],
 						}),
 					},
 					style,

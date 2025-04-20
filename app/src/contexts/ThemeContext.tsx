@@ -1,13 +1,12 @@
 import {
-	type ColorName,
-	colorThemes,
-	darkColors,
-	lightColors,
-} from "@/src/constants/colorThemes";
+	type CustomColorName,
+	customColors,
+	customColorsVars,
+} from "@/src/constants/customColors";
 import type React from "react";
 import { createContext, useContext } from "react";
 import { View, useColorScheme } from "react-native";
-
+import { useCurrentColorsVariants } from "react-native-uikit-colors";
 interface ThemeProviderProps {
 	children: React.ReactNode;
 }
@@ -19,22 +18,26 @@ export const ThemeContext = createContext<{
 
 export const ThemeProvider = ({ children }: ThemeProviderProps) => {
 	const colorScheme = useColorScheme();
+	const currentThemeColors = useCurrentColorsVariants();
 
 	return (
 		<ThemeContext.Provider value={{ theme: colorScheme ?? "dark" }}>
-			<View style={colorThemes[colorScheme ?? "dark"]} className="flex-1">
+			<View
+				style={[customColorsVars[colorScheme ?? "dark"], currentThemeColors]}
+				className="flex-1"
+			>
 				{children}
 			</View>
 		</ThemeContext.Provider>
 	);
 };
 
-export const useThemeColors = () => {
+export const useCustomColors = () => {
 	const { theme } = useContext(ThemeContext);
-	return theme === "light" ? lightColors : darkColors;
+	return customColors[theme];
 };
 
-export const useThemeColor = (color: ColorName) => {
+export const useCustomColor = (color: CustomColorName) => {
 	const { theme } = useContext(ThemeContext);
-	return theme === "light" ? lightColors[color] : darkColors[color];
+	return customColors[theme][color];
 };

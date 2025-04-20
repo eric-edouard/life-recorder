@@ -109,7 +109,7 @@ const HeaderContent = () => {
 export default function Home() {
 	return (
 		<ListScrollProvider>
-			<View className={`flex-1 bg-background`}>
+			<View className={`flex-1 bg-system-background`}>
 				<LiveTranscripts headerComponent={<HeaderContent />} />
 				<AnimatedScreenHeader />
 			</View>
