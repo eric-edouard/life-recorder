@@ -14,7 +14,7 @@ export const DeviceCard = ({
 	signalStrength: string;
 }) => {
 	return (
-		<View className="px-md pb-1 pt-8 rounded-xl bg-secondary-system-background w-full">
+		<View className="pb-1 pt-8 rounded-xl bg-secondary-system-background w-full">
 			<View className="items-center mb-4">
 				<View className="bg-secondary-system-fill p-4 rounded-full mb-4">
 					<Bluetooth size={24} color="white" />

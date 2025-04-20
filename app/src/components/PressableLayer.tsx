@@ -4,7 +4,6 @@ import {
 	Pressable,
 	type StyleProp,
 	type ViewStyle,
-	useColorScheme,
 } from "react-native";
 import { useColor } from "react-native-uikit-colors";
 import { twMerge } from "tailwind-merge";
@@ -22,13 +21,13 @@ export const PressableLayer = ({
 	onPress?: () => void;
 	style?: StyleProp<ViewStyle>;
 }) => {
-	const colorScheme = useColorScheme();
 	const backgroundColor = useColor("secondarySystemGroupedBackground");
 	const pressedBackgroundColor = useColor("gray4");
 
 	const colorAnim = useRef(new Animated.Value(0)).current;
 
 	const handlePressIn = () => {
+		if (!onPress) return;
 		Animated.timing(colorAnim, {
 			toValue: 1,
 			useNativeDriver: true,

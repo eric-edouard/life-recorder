@@ -35,9 +35,8 @@ export default function RootLayout() {
 		<ThemeProvider>
 			<Stack>
 				<Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-				<Stack.Screen name="modal" options={{ presentation: "modal" }} />
 				<Stack.Screen
-					name="device"
+					name="modals/device"
 					options={{
 						presentation: "modal",
 						title: "Recording Device",

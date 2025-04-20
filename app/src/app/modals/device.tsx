@@ -1,8 +1,8 @@
+import { DeviceCard } from "@/src/components/DeviceModal/DeviceCard";
 import { RowButton } from "@/src/components/ui/Buttons/RowButton";
 import { StatusBar } from "expo-status-bar";
 import { useState } from "react";
 import { Platform, View } from "react-native";
-import { DeviceCard } from "../components/DeviceModal/DeviceCard";
 
 export default function DeviceModal() {
 	const [isConnected, setIsConnected] = useState(true);
@@ -15,7 +15,11 @@ export default function DeviceModal() {
 				signalStrength="Strong"
 			/>
 			<View className="mt-4 w-full">
-				<RowButton title="Unpair This Device" onPress={() => {}} />
+				<RowButton
+					colorStyle="destructive"
+					title="Unpair This Device"
+					onPress={() => {}}
+				/>
 			</View>
 			<StatusBar style={Platform.OS === "ios" ? "light" : "auto"} />
 		</View>
