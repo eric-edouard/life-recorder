@@ -21,7 +21,7 @@ import { BleAudioCodec, type BluetoothDevice } from "./types";
 
 // const MY_DEVICE = "D65CD59F-3E9A-4BF0-016E-141BB478E1B8";
 
-export const omiDeviceManager = (() => {
+export const deviceService = (() => {
 	const _bleManager = new BleManager();
 	let _bleSubscription: Subscription;
 	let _stopScanCallback: (() => void) | null = null;
@@ -404,7 +404,7 @@ export const omiDeviceManager = (() => {
 	 * Get the current battery level from the device
 	 * @returns Promise that resolves with the battery level percentage (0-100)
 	 */
-	const getBatteryLevel = async (): Promise<number> => {
+	const getBatteryLevel = async (): Promise<number | null> => {
 		if (!_connectedDevice) {
 			throw new Error("Device not connected");
 		}
@@ -443,14 +443,14 @@ export const omiDeviceManager = (() => {
 				// Decode base64 to get the first byte
 				const bytes = base64ToBytes(base64Value);
 				if (bytes.length > 0) {
-					return bytes[0] || -1; // Battery level is a percentage (0-100), use -1 if undefined
+					return bytes[0] || null; // Battery level is a percentage (0-100), use -1 if undefined
 				}
 			}
 
-			return -1;
+			return null;
 		} catch (error) {
 			console.error("Error getting battery level:", error);
-			return -1;
+			return null;
 		}
 	};
 

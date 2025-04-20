@@ -1,14 +1,14 @@
 import { DeviceSignalStrength } from "@/src/components/DeviceCard/DeviceSignalStrength";
 import { Text } from "@/src/components/Text";
-import { omiDeviceManager } from "@/src/services/deviceService/deviceService";
+import { deviceService } from "@/src/services/deviceService/deviceService";
 import { use$ } from "@legendapp/state/react";
 import { View } from "react-native";
 
 export const DeviceNameAndSignal = () => {
 	const connectedDevice = use$(
-		omiDeviceManager.devices$
+		deviceService.devices$
 			.get()
-			.find((d) => d.id === omiDeviceManager.connectedDeviceId$.get()),
+			.find((d) => d.id === deviceService.connectedDeviceId$.get()),
 	);
 
 	return (

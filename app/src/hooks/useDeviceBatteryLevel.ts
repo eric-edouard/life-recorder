@@ -1,5 +1,5 @@
 import { useAppState } from "@/src/hooks/useAppState";
-import { omiDeviceManager } from "@/src/services/deviceService/deviceService";
+import { deviceService } from "@/src/services/deviceService/deviceService";
 import { use$ } from "@legendapp/state/react";
 import { useEffect, useState } from "react";
 
@@ -7,13 +7,13 @@ export const useDeviceBatteryLevel = () => {
 	const appState = useAppState();
 
 	const [batteryLevel, setBatteryLevel] = useState<number | null>(null);
-	const connectedDeviceId = use$(omiDeviceManager.connectedDeviceId$);
+	const connectedDeviceId = use$(deviceService.connectedDeviceId$);
 
 	// Fetch battery level
 	const fetchBatteryLevel = async () => {
 		if (connectedDeviceId) {
 			try {
-				const level = await omiDeviceManager.getBatteryLevel();
+				const level = await deviceService.getBatteryLevel();
 				if (level >= 0) {
 					setBatteryLevel(level);
 				}

@@ -1,5 +1,5 @@
 import { useThemeColor } from "@/src/contexts/ThemeContext";
-import { omiDeviceManager } from "@/src/services/deviceService/deviceService";
+import { deviceService } from "@/src/services/deviceService/deviceService";
 import { use$ } from "@legendapp/state/react";
 import React, { useEffect, useRef } from "react";
 import { Animated, View } from "react-native";
@@ -12,11 +12,11 @@ export const DeviceConnectionStatus = () => {
 	const red = useThemeColor("--red");
 	const blinkAnim = useRef(new Animated.Value(1)).current;
 
-	// Get state directly from omiDeviceManager
-	const bluetoothState = use$(omiDeviceManager.bluetoothState$);
-	const connectedDeviceId = use$(omiDeviceManager.connectedDeviceId$);
-	const scanning = use$(omiDeviceManager.scanning$);
-	const isConnecting = use$(omiDeviceManager.isConnecting$);
+	// Get state directly from deviceService
+	const bluetoothState = use$(deviceService.bluetoothState$);
+	const connectedDeviceId = use$(deviceService.connectedDeviceId$);
+	const scanning = use$(deviceService.scanning$);
+	const isConnecting = use$(deviceService.isConnecting$);
 
 	// Start blinking animation when scanning or connecting
 	useEffect(() => {

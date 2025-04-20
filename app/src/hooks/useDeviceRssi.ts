@@ -1,5 +1,5 @@
 import { useAppState } from "@/src/hooks/useAppState";
-import { omiDeviceManager } from "@/src/services/deviceService/deviceService";
+import { deviceService } from "@/src/services/deviceService/deviceService";
 import type { SignalStrength } from "@/src/utils/rssiToSignalStrength";
 import { rssiToSignalStrength } from "@/src/utils/rssiToSignalStrength";
 
@@ -8,7 +8,7 @@ import { useEffect, useState } from "react";
 
 export const useDeviceSignalStrength = () => {
 	const appState = useAppState();
-	const connectedDeviceId = use$(omiDeviceManager.connectedDeviceId$);
+	const connectedDeviceId = use$(deviceService.connectedDeviceId$);
 	const [signalStrength, setSignalStrength] = useState<SignalStrength | null>(
 		null,
 	);
@@ -17,7 +17,7 @@ export const useDeviceSignalStrength = () => {
 	const fetchRssi = async () => {
 		if (connectedDeviceId) {
 			try {
-				const rssi = await omiDeviceManager.getConnectedDeviceRssi();
+				const rssi = await deviceService.getConnectedDeviceRssi();
 				if (rssi) {
 					setSignalStrength(rssiToSignalStrength(rssi));
 				}

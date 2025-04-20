@@ -1,4 +1,4 @@
-import { omiDeviceManager } from "@/src/services/deviceService/deviceService";
+import { deviceService } from "@/src/services/deviceService/deviceService";
 import { use$ } from "@legendapp/state/react";
 import type React from "react";
 import { useEffect, useRef, useState } from "react";
@@ -14,17 +14,17 @@ export const ConnectionPill: React.FC<ConnectionPillProps> = ({ onPress }) => {
 	const blinkAnim = useRef(new Animated.Value(1)).current;
 	const [batteryLevel, setBatteryLevel] = useState<number | null>(null);
 
-	// Get state directly from omiDeviceManager
-	const bluetoothState = use$(omiDeviceManager.bluetoothState$);
-	const connectedDeviceId = use$(omiDeviceManager.connectedDeviceId$);
-	const scanning = use$(omiDeviceManager.scanning$);
-	const isConnecting = use$(omiDeviceManager.isConnecting$);
+	// Get state directly from deviceService
+	const bluetoothState = use$(deviceService.bluetoothState$);
+	const connectedDeviceId = use$(deviceService.connectedDeviceId$);
+	const scanning = use$(deviceService.scanning$);
+	const isConnecting = use$(deviceService.isConnecting$);
 
 	// Fetch battery level
 	const fetchBatteryLevel = async () => {
 		if (connectedDeviceId) {
 			try {
-				const level = await omiDeviceManager.getBatteryLevel();
+				const level = await deviceService.getBatteryLevel();
 				if (level >= 0) {
 					setBatteryLevel(level);
 				}

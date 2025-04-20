@@ -12,18 +12,18 @@ import { LocationPermissionsBanner } from "@/src/components/LocationPermissionsB
 import { ServerConnectionPill } from "@/src/components/ServerConnectionPill";
 import { ListScrollProvider } from "@/src/contexts/ListScrollContext";
 import { audioDataService } from "@/src/services/audioDataService";
-import { omiDeviceManager } from "@/src/services/deviceService/deviceService";
+import { deviceService } from "@/src/services/deviceService/deviceService";
 import { socketService } from "@/src/services/socketService";
 import { use$ } from "@legendapp/state/react";
 import { router } from "expo-router";
 
 const HeaderContent = () => {
-	const connectedDeviceId = use$(omiDeviceManager.connectedDeviceId$);
-	const bluetoothState = use$(omiDeviceManager.bluetoothState$);
+	const connectedDeviceId = use$(deviceService.connectedDeviceId$);
+	const bluetoothState = use$(deviceService.bluetoothState$);
 	const [isListeningAudio, setIsListeningAudio] = useState<boolean>(false);
 	const startAudioListener = async () => {
 		try {
-			if (!connectedDeviceId || !omiDeviceManager.isConnected()) {
+			if (!connectedDeviceId || !deviceService.isConnected()) {
 				Alert.alert("Not Connected", "Please connect to a device first");
 				return;
 			}
@@ -80,7 +80,7 @@ const HeaderContent = () => {
 			{/* Bluetooth Status Banner */}
 			<StatusBanner
 				bluetoothState={bluetoothState}
-				onRequestPermission={omiDeviceManager.requestBluetoothPermission}
+				onRequestPermission={deviceService.requestBluetoothPermission}
 				onOpenSettings={() => Linking.openSettings()}
 			/>
 			{connectedDeviceId && (

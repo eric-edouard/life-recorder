@@ -4,16 +4,16 @@ import { Linking, Platform, SafeAreaView, ScrollView } from "react-native";
 // Import components
 import StatusBanner from "@/src/components/BlutoothPermissionsbanner";
 import DeviceList from "@/src/components/DeviceList";
-import { omiDeviceManager } from "@/src/services/deviceService/deviceService";
+import { deviceService } from "@/src/services/deviceService/deviceService";
 import { use$ } from "@legendapp/state/react";
 
 export default function PairDevice() {
-	const connectedDeviceId = use$(omiDeviceManager.connectedDeviceId$);
-	const devices = use$(omiDeviceManager.devices$);
-	const bluetoothState = use$(omiDeviceManager.bluetoothState$);
+	const connectedDeviceId = use$(deviceService.connectedDeviceId$);
+	const devices = use$(deviceService.devices$);
+	const bluetoothState = use$(deviceService.bluetoothState$);
 
 	useEffect(() => {
-		omiDeviceManager.startScan();
+		deviceService.startScan();
 	}, []);
 
 	return (
@@ -24,7 +24,7 @@ export default function PairDevice() {
 				{/* Bluetooth Status Banner */}
 				<StatusBanner
 					bluetoothState={bluetoothState}
-					onRequestPermission={omiDeviceManager.requestBluetoothPermission}
+					onRequestPermission={deviceService.requestBluetoothPermission}
 					onOpenSettings={() => Linking.openSettings()}
 				/>
 
@@ -34,8 +34,8 @@ export default function PairDevice() {
 						devices={devices}
 						connected={!!connectedDeviceId}
 						connectedDeviceId={connectedDeviceId}
-						onConnect={omiDeviceManager.connectToDevice}
-						onDisconnect={omiDeviceManager.disconnectFromDevice}
+						onConnect={deviceService.connectToDevice}
+						onDisconnect={deviceService.disconnectFromDevice}
 					/>
 				)}
 			</ScrollView>

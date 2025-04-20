@@ -1,5 +1,5 @@
 import type { Subscription } from "react-native-ble-plx";
-import { omiDeviceManager } from "./deviceService/deviceService";
+import { deviceService } from "./deviceService/deviceService";
 import { socketService } from "./socketService";
 
 export const audioDataService = (() => {
@@ -75,7 +75,7 @@ export const audioDataService = (() => {
 	const startAudioCollection = async (
 		statsUpdateCallback?: (packetsReceived: number, savedCount: number) => void,
 	): Promise<boolean> => {
-		if (!omiDeviceManager.connectedDeviceId$.peek()) {
+		if (!deviceService.connectedDeviceId$.peek()) {
 			console.error("Cannot start audio collection: Device not connected");
 			return false;
 		}
@@ -93,7 +93,7 @@ export const audioDataService = (() => {
 
 		try {
 			// Start listening for audio packets - we now receive processed bytes directly
-			const subscription = await omiDeviceManager.startAudioBytesListener(
+			const subscription = await deviceService.startAudioBytesListener(
 				(processedBytes: number[]) => {
 					// Store the processed bytes directly
 					if (processedBytes.length > 0) {
@@ -148,7 +148,7 @@ export const audioDataService = (() => {
 
 		// Stop the audio listener
 		if (audioSubscription) {
-			await omiDeviceManager.stopAudioBytesListener(audioSubscription);
+			await deviceService.stopAudioBytesListener(audioSubscription);
 			audioSubscription = null;
 		}
 	};
