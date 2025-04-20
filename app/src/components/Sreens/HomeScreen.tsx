@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import { Alert } from "react-native";
+import { Alert, View } from "react-native";
 
-import { ScreenPadding } from "@/src/components/ScreenPadding";
+import { DeviceStatusButton } from "@/src/components/DeviceStatusButton";
 import { ScreenScrollView } from "@/src/components/ScreenScrollView/ScreenScrollView";
 import { audioDataService } from "@/src/services/audioDataService";
 import { deviceService } from "@/src/services/deviceService/deviceService";
@@ -57,9 +57,10 @@ export const HomeScreen = () => {
 
 	return (
 		<ScreenScrollView.Container title="Life Recorder">
-			<ScreenPadding>
+			<View className="px-5 w-full flex items-start gap-3">
+				<DeviceStatusButton />
 				<ScreenScrollView.Title title="Life Recorder" />
-			</ScreenPadding>
+			</View>
 		</ScreenScrollView.Container>
 	);
 };
