@@ -10,7 +10,7 @@ export const AnimatedScreenTitle = ({ title }: AnimatedScreenTitleProps) => {
 
 	return (
 		<Animated.Text
-			className="text-3xl font-extrabold mt-10 mb-4 text-label"
+			className="text-3xl font-extrabold mb-4 text-label"
 			style={{
 				opacity: scrollAnimatedValue.interpolate({
 					inputRange: [-100, 15, 25],
@@ -20,7 +20,7 @@ export const AnimatedScreenTitle = ({ title }: AnimatedScreenTitleProps) => {
 					{
 						scale: scrollAnimatedValue.interpolate({
 							inputRange: [-100, 0, 100],
-							outputRange: [1.2, 1, 1],
+							outputRange: [1.1, 1, 1],
 						}),
 					},
 				],

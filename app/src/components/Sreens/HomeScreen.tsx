@@ -1,19 +1,13 @@
-import { Text } from "@/src/components/Text";
 import React, { useState } from "react";
-import { Alert, Linking, TouchableOpacity, View } from "react-native";
+import { Alert } from "react-native";
 
-import { BackendStatusCard } from "@/src/components/BackendStatusCard";
-import StatusBanner from "@/src/components/BlutoothPermissionsbanner";
-import { DeviceCard } from "@/src/components/DeviceCard/DeviceCard";
-import { LocationPermissionsBanner } from "@/src/components/LocationPermissionsBanner";
+import { ScreenPadding } from "@/src/components/ScreenPadding";
 import { ScreenScrollView } from "@/src/components/ScreenScrollView/ScreenScrollView";
-import { ServerConnectionPill } from "@/src/components/ServerConnectionPill";
 import { audioDataService } from "@/src/services/audioDataService";
 import { deviceService } from "@/src/services/deviceService/deviceService";
 import { scanDevicesService } from "@/src/services/deviceService/scanDevicesService";
 import { socketService } from "@/src/services/socketService";
 import { use$ } from "@legendapp/state/react";
-import { router } from "expo-router";
 
 export const HomeScreen = () => {
 	const connectedDeviceId = use$(deviceService.connectedDeviceId$);
@@ -63,48 +57,9 @@ export const HomeScreen = () => {
 
 	return (
 		<ScreenScrollView.Container title="Life Recorder">
-			<View className={`flex-1 bg-system-background`}>
-				<View className={" flex-1 p-5 pt-safe-offset-3"}>
-					<ScreenScrollView.Title title="Life Recorder" />
-					<LocationPermissionsBanner />
-					<View className="flex-row gap-3">
-						<DeviceCard onPress={() => router.push("/pair-device")} />
-						<BackendStatusCard onPress={() => router.push("/pair-device")} />
-					</View>
-					{/* Connection Pills */}
-					<View className="flex-row items-center mb-2.5 gap-2">
-						{/* <ConnectionPill onPress={() => router.push("/pair-device")} /> */}
-						<ServerConnectionPill onPress={handleServerReconnect} />
-					</View>
-
-					{/* Bluetooth Status Banner */}
-					<StatusBanner
-						bluetoothState={bluetoothState}
-						onRequestPermission={scanDevicesService.requestBluetoothPermission}
-						onOpenSettings={() => Linking.openSettings()}
-					/>
-					{connectedDeviceId && (
-						<View className="mt-2.5">
-							<TouchableOpacity
-								className={
-									isListeningAudio
-										? "bg-[#FF9500] py-3 px-5 rounded-lg items-center shadow-sm"
-										: "bg-[#007AFF] py-3 px-5 rounded-lg items-center shadow-sm"
-								}
-								onPress={
-									isListeningAudio ? stopAudioListener : startAudioListener
-								}
-							>
-								<Text className="text-white text-base font-semibold">
-									{isListeningAudio
-										? "Stop Audio Listener"
-										: "Start Audio Listener"}
-								</Text>
-							</TouchableOpacity>
-						</View>
-					)}
-				</View>
-			</View>
+			<ScreenPadding>
+				<ScreenScrollView.Title title="Life Recorder" />
+			</ScreenPadding>
 		</ScreenScrollView.Container>
 	);
 };

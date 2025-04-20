@@ -5,7 +5,8 @@ import {
 	ScreenScrollViewProvider,
 	useScreenScroll,
 } from "@/src/components/ScreenScrollView/ScreenScrollContext";
-import { Animated, ScrollView, View } from "react-native";
+import { Animated, ScrollView } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 type ScreenScrollViewProps = {
 	title: string;
@@ -14,15 +15,19 @@ type ScreenScrollViewProps = {
 
 const Container = ({ children }: { children: React.ReactNode }) => {
 	const { scrollAnimatedValue } = useScreenScroll();
-
+	const insets = useSafeAreaInsets();
 	return (
 		<ScrollView
 			onScroll={Animated.event(
 				[{ nativeEvent: { contentOffset: { y: scrollAnimatedValue } } }],
 				{ useNativeDriver: false },
 			)}
+			style={{
+				paddingTop: insets.top + 44,
+			}}
+			className="flex-1 bg-system-background "
 		>
-			<View className="flex-1 bg-system-background">{children}</View>
+			{children}
 		</ScrollView>
 	);
 };
