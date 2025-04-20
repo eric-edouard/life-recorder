@@ -3,17 +3,35 @@ import { RowButton } from "@/src/components/ui/Buttons/RowButton";
 import { InsetList } from "@/src/components/ui/Lists/InsetList";
 import { InsetListRow } from "@/src/components/ui/Lists/InsetListRow";
 import { Text } from "@/src/components/ui/Text";
+import { useConnectedDevice } from "@/src/hooks/useConnectedDevice";
+import { useDeviceBatteryLevel } from "@/src/hooks/useDeviceBatteryLevel";
+import { deviceService } from "@/src/services/deviceService/deviceService";
+import { scanDevicesService } from "@/src/services/deviceService/scanDevicesService";
+import { use$ } from "@legendapp/state/react";
 import { StatusBar } from "expo-status-bar";
 import { Bluetooth } from "lucide-react-native";
-import React, { useState } from "react";
+import React from "react";
 import { Platform, View } from "react-native";
+import { State } from "react-native-ble-plx";
 
 export default function DeviceModal() {
-	const [isConnected, setIsConnected] = useState(true);
+	const bluetoothState = use$(scanDevicesService.bluetoothState$);
+	const connectedDevice = useConnectedDevice();
+	const batteryLevel = useDeviceBatteryLevel();
+	const isConnecting = use$(deviceService.isConnecting$);
+	const hasPairedDevice = deviceService.hasPairedDevice();
+
+	if (bluetoothState !== State.PoweredOn) {
+		return (
+			<View className="flex-1 items-center p-6 bg-system-grouped-background">
+				<Text>Bluetooth is off</Text>
+			</View>
+		);
+	}
 
 	return (
 		<View className="flex-1 items-center p-6 bg-system-grouped-background">
-			{isConnected && (
+			{connectedDevice && (
 				<>
 					<InsetList
 						headerText="My device"
@@ -31,9 +49,9 @@ export default function DeviceModal() {
 							accessory={
 								<View className="flex-row items-center">
 									<Text className="mr-2 text-secondary-label text-lg">
-										{isConnected ? "Connected" : "Disconnected"}
+										{connectedDevice ? "Connected" : "Disconnected"}
 									</Text>
-									<Dot color={isConnected ? "green" : "red"} />
+									<Dot color={connectedDevice ? "green" : "red"} />
 								</View>
 							}
 						/>
@@ -46,13 +64,13 @@ export default function DeviceModal() {
 							colorStyle="destructive"
 							title="Unpair This Device"
 							onPress={() => {
-								setIsConnected(!isConnected);
+								deviceService.disconnectFromDevice();
 							}}
 						/>
 					</View>
 				</>
 			)}
-			{!isConnected && (
+			{!connectedDevice && (
 				<>
 					<InsetList
 						headerText="compatible devices"
