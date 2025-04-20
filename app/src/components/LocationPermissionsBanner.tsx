@@ -1,5 +1,5 @@
 import { Card } from "@/src/components/Card";
-import { Text } from "@/src/components/Text";
+import { Text } from "@/src/components/ui/Text";
 import {
 	PermissionStatus,
 	useBackgroundPermissions,

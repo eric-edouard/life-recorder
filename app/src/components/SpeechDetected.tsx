@@ -2,7 +2,7 @@ import { liveTranscriptionService } from "@/src/services/liveTranscriptionServic
 import { use$ } from "@legendapp/state/react";
 import { useEffect, useRef } from "react";
 import { Animated, View } from "react-native";
-import { Text } from "./Text";
+import { Text } from "./ui/Text";
 
 export const SpeechDetected = () => {
 	const isSpeechDetected = use$(liveTranscriptionService.isSpeechDetected$);

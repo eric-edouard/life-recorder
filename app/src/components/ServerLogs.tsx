@@ -3,7 +3,7 @@ import type { ServerLog } from "@/src/shared/socketEvents";
 import { use$ } from "@legendapp/state/react";
 import React, { useEffect } from "react";
 import { FlatList, Platform, View } from "react-native";
-import { Text } from "./Text";
+import { Text } from "./ui/Text";
 
 export const ServerLogs = () => {
 	const logs = use$(serverLogsService.logs$);

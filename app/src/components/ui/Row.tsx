@@ -1,7 +1,7 @@
 import type React from "react";
 import { View } from "react-native";
 import { twMerge } from "tailwind-merge";
-import { Text } from "../Text";
+import { Text } from "./Text";
 
 export const Row = ({
 	title,

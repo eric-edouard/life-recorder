@@ -2,7 +2,7 @@
 import "react-native-reanimated";
 import "../../global.css";
 
-import { TextButton } from "@/src/components/ui/TextButton";
+import { TextButton } from "@/src/components/ui/Buttons/TextButton";
 import { ThemeProvider } from "@/src/contexts/ThemeContext";
 import "@/src/tasks/locationTask";
 import { useFonts } from "expo-font";

@@ -5,7 +5,7 @@ import React, { useEffect, useRef } from "react";
 import { Animated, View } from "react-native";
 import { State } from "react-native-ble-plx";
 import { useColor } from "react-native-uikit-colors";
-import { Text } from "../Text";
+import { Text } from "../ui/Text";
 
 export const DeviceConnectionStatus = () => {
 	const green = useColor("green");

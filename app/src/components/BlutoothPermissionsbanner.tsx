@@ -1,7 +1,7 @@
 import React from "react";
 import { TouchableOpacity, View } from "react-native";
 import { State } from "react-native-ble-plx";
-import { Text } from "./Text";
+import { Text } from "./ui/Text";
 
 interface StatusBannerProps {
 	bluetoothState: State;

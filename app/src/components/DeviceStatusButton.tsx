@@ -1,6 +1,6 @@
 import { Dot } from "@/src/components/Dot";
 import { PressableLayer } from "@/src/components/PressableLayer";
-import { Text } from "@/src/components/Text";
+import { Text } from "@/src/components/ui/Text";
 import { router } from "expo-router";
 import { View } from "react-native";
 

@@ -4,7 +4,7 @@ import { use$ } from "@legendapp/state/react";
 import React, { type ReactNode } from "react";
 import { ActivityIndicator, Animated, FlatList, View } from "react-native";
 import { SpeechDetected } from "./SpeechDetected";
-import { Text } from "./Text";
+import { Text } from "./ui/Text";
 type Transcript = {
 	transcript: string;
 	startTime: number;

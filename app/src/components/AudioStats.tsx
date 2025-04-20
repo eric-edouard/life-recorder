@@ -1,6 +1,6 @@
 import React from "react";
 import { View } from "react-native";
-import { Text } from "./Text";
+import { Text } from "./ui/Text";
 
 interface AudioStatsProps {
 	audioPacketsReceived: number;

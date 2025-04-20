@@ -3,7 +3,7 @@ import { SymbolView } from "expo-symbols";
 import React from "react";
 import { View } from "react-native";
 import { useColor } from "react-native-uikit-colors";
-import { Text } from "../Text";
+import { Text } from "../ui/Text";
 
 export const DeviceBatteryLevel = () => {
 	const tintColor = useColor("green");

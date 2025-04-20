@@ -1,5 +1,5 @@
 import { DeviceSignalStrength } from "@/src/components/DeviceCard/DeviceSignalStrength";
-import { Text } from "@/src/components/Text";
+import { Text } from "@/src/components/ui/Text";
 import { deviceService } from "@/src/services/deviceService/deviceService";
 import { use$ } from "@legendapp/state/react";
 import { View } from "react-native";

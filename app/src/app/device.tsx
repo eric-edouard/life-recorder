@@ -1,5 +1,4 @@
-import { PressableLayer } from "@/src/components/PressableLayer";
-import { Text } from "@/src/components/Text";
+import { RowButton } from "@/src/components/ui/Buttons/RowButton";
 import { StatusBar } from "expo-status-bar";
 import { useState } from "react";
 import { Platform, View } from "react-native";
@@ -16,12 +15,7 @@ export default function DeviceModal() {
 				signalStrength="Strong"
 			/>
 			<View className="mt-4 w-full">
-				<PressableLayer
-					onPress={() => {}}
-					className="px-4 py-3 w-full flex justify-center h-row"
-				>
-					<Text className="text-red">Unpair This Device</Text>
-				</PressableLayer>
+				<RowButton title="Unpair This Device" onPress={() => {}} />
 			</View>
 			<StatusBar style={Platform.OS === "ios" ? "light" : "auto"} />
 		</View>

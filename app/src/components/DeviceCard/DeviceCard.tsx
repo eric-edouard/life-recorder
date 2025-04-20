@@ -4,7 +4,7 @@ import { DeviceConnectionStatus } from "@/src/components/DeviceCard/DeviceConnec
 import { DeviceNameAndSignal } from "@/src/components/DeviceCard/DeviceNameAndSignal";
 import React from "react";
 import { View } from "react-native";
-import { Text } from "../Text";
+import { Text } from "../ui/Text";
 
 type DeviceCardProps = {
 	onPress: () => void;

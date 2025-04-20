@@ -2,8 +2,8 @@ import { Dot } from "@/src/components/Dot";
 import { Bluetooth } from "lucide-react-native";
 import React from "react";
 import { View } from "react-native";
-import { Text } from "../Text";
 import { Row } from "../ui/Row";
+import { Text } from "../ui/Text";
 export const DeviceCard = ({
 	deviceName,
 	connected,

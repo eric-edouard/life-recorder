@@ -6,7 +6,7 @@ import type React from "react";
 import { useEffect, useRef } from "react";
 import { Animated, TouchableOpacity } from "react-native";
 import { State } from "react-native-ble-plx";
-import { Text } from "./Text";
+import { Text } from "./ui/Text";
 
 type ConnectionPillProps = {
 	onPress: () => void;

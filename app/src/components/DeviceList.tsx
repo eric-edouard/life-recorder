@@ -1,7 +1,7 @@
 import type { BluetoothDevice } from "@/src/services/deviceService/types";
 import React from "react";
 import { TouchableOpacity, View } from "react-native";
-import { Text } from "./Text";
+import { Text } from "./ui/Text";
 
 interface DeviceListProps {
 	devices: BluetoothDevice[];

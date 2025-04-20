@@ -1,6 +1,6 @@
 import { Card } from "@/src/components/Card";
 import React from "react";
-import { Text } from "./Text";
+import { Text } from "./ui/Text";
 
 type BackendStatusCardProps = {
 	onPress: () => void;
