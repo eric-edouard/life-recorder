@@ -6,8 +6,8 @@ export const audioDataService = (() => {
 	let audioPacketsReceived = 0;
 	let savedAudioCount = 0;
 	let audioSubscription: Subscription | null = null;
-	let audioSendInterval: NodeJS.Timeout | null = null;
-	let updateStatsInterval: NodeJS.Timeout | null = null;
+	let audioSendInterval: number | null = null;
+	let updateStatsInterval: number | null = null;
 	let audioPacketsBuffer: number[][] = []; // Store processed bytes directly
 	let onStatsUpdate:
 		| ((packetsReceived: number, savedCount: number) => void)

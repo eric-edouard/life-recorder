@@ -46,12 +46,14 @@ export default function RootLayout() {
 					}}
 				/>
 				<Stack.Screen
-					name="pair-device"
+					name="modals/device"
 					options={{
-						title: "Pair Device",
-						headerBackTitle: "Home",
+						presentation: "containedTransparentModal",
+						headerShown: false,
+						animation: "none",
 					}}
 				/>
+
 				<Stack.Screen name="+not-found" />
 			</Stack>
 		</ThemeProvider>

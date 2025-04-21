@@ -4,7 +4,6 @@ import { extractFirstByteValue } from "@/src/services/deviceService/utils/extrac
 import { getDeviceCharacteristic } from "@/src/services/deviceService/utils/getDeviceCharacteric";
 import { storage } from "@/src/services/storage";
 import { defer } from "@/src/utils/defer";
-import { matchId } from "@/src/utils/matchId";
 import { observable, when } from "@legendapp/state";
 import { Alert, Platform } from "react-native";
 import { type Device, State, type Subscription } from "react-native-ble-plx";
@@ -21,31 +20,40 @@ import type { BleAudioCodec } from "./types";
 
 // const MY_DEVICE = "D65CD59F-3E9A-4BF0-016E-141BB478E1B8";
 
-const autoConnect = () => {
+export const scanAndAutoConnect = () => {
 	const pairedDeviceId = storage.get("pairedDeviceId");
 
 	// automatically scan for devices on startup if conditions are met
 	when(
 		() =>
 			scanDevicesService.bluetoothState$.get() === State.PoweredOn &&
-			scanDevicesService.permissionGranted$.get() === true,
+			scanDevicesService.permissionStatus$.get() === "granted",
 		() => {
-			defer(() => scanDevicesService.scanDevices(pairedDeviceId ?? undefined));
+			defer(() => {
+				scanDevicesService.scanDevices({
+					autoConnectDeviceId: pairedDeviceId ?? undefined,
+					onDeviceFound: async (device) => {
+						if (device.id === pairedDeviceId) {
+							scanDevicesService.stopScan();
+							defer(() => deviceService.connectToDevice(device.id));
+							return;
+						}
+
+						const foundCompatibleService =
+							!!device.serviceUUIDs?.includes(OMI_SERVICE_UUID);
+
+						if (foundCompatibleService) {
+							scanDevicesService.stopScan();
+							scanDevicesService.compatibleDeviceId$.set(device.id);
+						}
+					},
+				});
+			});
 		},
 	);
-
-	if (!pairedDeviceId) {
-		return;
-	}
-
-	// If we have a paired device and we find it, connect to it
-	when(scanDevicesService.devices$.get()?.find(matchId(pairedDeviceId)), () => {
-		scanDevicesService.stopScan();
-		defer(() => deviceService.connectToDevice(pairedDeviceId));
-	});
 };
 
-autoConnect();
+// autoConnect();
 
 export const deviceService = (() => {
 	let _connectedDevice: Device | null = null;

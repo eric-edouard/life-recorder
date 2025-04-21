@@ -3,15 +3,16 @@ import { InsetListRow } from "@/src/components/ui/Lists/InsetListRow";
 import { scanDevicesService } from "@/src/services/deviceService/scanDevicesService";
 import { use$ } from "@legendapp/state/react";
 import React from "react";
+import { View } from "react-native";
 
 export function ScanDevices() {
 	const scanning = use$(scanDevicesService.scanning$);
 	const devices = use$(scanDevicesService.devices$);
 
 	return (
-		<>
+		<View className="flex-col">
 			<InsetList
-				className="p-5"
+				className="p-5 "
 				headerText="compatible devices"
 				headerLoading={scanning}
 				emptyStateText="No compatible devices found"
@@ -25,6 +26,6 @@ export function ScanDevices() {
 					))}
 				</InsetList>
 			)}
-		</>
+		</View>
 	);
 }

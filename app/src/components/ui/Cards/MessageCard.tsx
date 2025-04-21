@@ -7,6 +7,8 @@ type MessageCardProps = {
 	icon: React.ReactNode;
 	title: string;
 	message: string;
+	transparent?: boolean;
+	content?: React.ReactNode;
 };
 
 export const MessageCard = ({
@@ -14,11 +16,14 @@ export const MessageCard = ({
 	title,
 	message,
 	className,
+	transparent = false,
+	content,
 }: MessageCardProps) => {
 	return (
 		<View
 			className={twMerge(
 				"bg-secondary-system-grouped-background rounded-xl p-8 flex items-center gap-2 ",
+				transparent && "bg-transparent",
 				className,
 			)}
 		>
@@ -31,6 +36,7 @@ export const MessageCard = ({
 					{message}
 				</Text>
 			</View>
+			{content}
 		</View>
 	);
 };

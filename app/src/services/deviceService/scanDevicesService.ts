@@ -1,7 +1,12 @@
 import { bleManager } from "@/src/services/bleManager";
 import { observable } from "@legendapp/state";
-import { Alert, Linking } from "react-native";
-import { State, type Subscription } from "react-native-ble-plx";
+import { type Device, State, type Subscription } from "react-native-ble-plx";
+import {
+	PERMISSIONS,
+	type PermissionStatus,
+	check,
+	request,
+} from "react-native-permissions";
 import type { BluetoothDevice } from "./types";
 
 // const MY_DEVICE = "D65CD59F-3E9A-4BF0-016E-141BB478E1B8";
@@ -10,9 +15,10 @@ export const scanDevicesService = (() => {
 	let _bleSubscription: Subscription;
 
 	const bluetoothState$ = observable(State.Unknown);
-	const permissionGranted$ = observable(false);
+	const permissionStatus$ = observable<PermissionStatus | "unknown">("unknown");
 	const scanning$ = observable(false);
 	const devices$ = observable<BluetoothDevice[]>([]);
+	const compatibleDeviceId$ = observable<string | null>(null);
 
 	const initialize = () => {
 		_bleSubscription = bleManager.onStateChange((state) => {
@@ -22,55 +28,33 @@ export const scanDevicesService = (() => {
 				requestBluetoothPermission();
 			}
 		}, true);
+
+		check(PERMISSIONS.IOS.BLUETOOTH).then((result) =>
+			permissionStatus$.set(result),
+		);
 	};
 
 	initialize();
 
-	const requestBluetoothPermission = () => {
-		try {
-			bleManager.startDeviceScan(null, null, (error) => {
-				if (error) {
-					console.error("Permission error:", error);
-					permissionGranted$.set(false);
-					Alert.alert(
-						"Bluetooth Permission",
-						"Please enable Bluetooth permission in your device settings to use this feature.",
-						[
-							{ text: "Cancel", style: "cancel" },
-							{
-								text: "Open Settings",
-								onPress: () => Linking.openSettings(),
-							},
-						],
-					);
-				} else {
-					permissionGranted$.set(true);
-				}
-				// Stop scanning immediately after permission check
-				bleManager.stopDeviceScan();
-			});
-		} catch (error) {
-			console.error("Error in requestBluetoothPermissions:", error);
-			permissionGranted$.set(false);
-		}
+	const requestBluetoothPermission = async () => {
+		request(PERMISSIONS.IOS.BLUETOOTH).then((result) =>
+			permissionStatus$.set(result),
+		);
 	};
 
-	const scanDevices = (autoConnectDeviceId?: string) => {
+	const scanDevices = ({
+		autoConnectDeviceId,
+		onDeviceFound,
+	}: {
+		autoConnectDeviceId?: string;
+		onDeviceFound?: (device: Device) => void;
+	}) => {
 		if (bluetoothState$.peek() !== State.PoweredOn) {
-			Alert.alert(
-				"Bluetooth is Off",
-				"Please turn on Bluetooth to scan for devices.",
-				[
-					{ text: "Cancel", style: "cancel" },
-					{ text: "Open Settings", onPress: () => Linking.openSettings() },
-				],
-			);
-			return;
+			throw new Error("Bluetooth is Off");
 		}
 
-		if (!permissionGranted$.peek()) {
-			requestBluetoothPermission();
-			return;
+		if (permissionStatus$.peek() !== "granted") {
+			throw new Error("Permissions not granted");
 		}
 
 		scanning$.set(true);
@@ -84,32 +68,35 @@ export const scanDevicesService = (() => {
 					return;
 				}
 
-				if (foundDevice?.name) {
-					const device: BluetoothDevice = {
-						id: foundDevice.id,
-						name: foundDevice.name,
-						rssi: foundDevice.rssi || 0,
-						isConnectable: foundDevice.isConnectable || false,
-						overflowServiceUUIDs: foundDevice.overflowServiceUUIDs || [],
-						rawScanRecord: foundDevice.rawScanRecord,
-						manufacturerData: foundDevice.manufacturerData,
-						serviceData: foundDevice.serviceData,
-						serviceUUIDs: foundDevice.serviceUUIDs,
-						localName: foundDevice.localName,
-						txPowerLevel: foundDevice.txPowerLevel,
-						solicitedServiceUUIDs: foundDevice.solicitedServiceUUIDs,
-					};
-
-					// Add to devices list if not already there
-					devices$.set((prevDevices) => {
-						// Check if device already exists
-						if (prevDevices.some((d) => d.id === device.id)) {
-							return prevDevices;
-						}
-
-						return [...prevDevices, device];
-					});
+				if (!foundDevice?.name) {
+					return;
 				}
+
+				const device: BluetoothDevice = {
+					id: foundDevice.id,
+					name: foundDevice.name,
+					rssi: foundDevice.rssi || 0,
+					isConnectable: foundDevice.isConnectable || false,
+					overflowServiceUUIDs: foundDevice.overflowServiceUUIDs || [],
+					rawScanRecord: foundDevice.rawScanRecord,
+					manufacturerData: foundDevice.manufacturerData,
+					serviceData: foundDevice.serviceData,
+					serviceUUIDs: foundDevice.serviceUUIDs,
+					localName: foundDevice.localName,
+					txPowerLevel: foundDevice.txPowerLevel,
+					solicitedServiceUUIDs: foundDevice.solicitedServiceUUIDs,
+				};
+				onDeviceFound?.(foundDevice);
+
+				// Add to devices list if not already there
+				devices$.set((prevDevices) => {
+					// Check if device already exists
+					if (prevDevices.some((d) => d.id === device.id)) {
+						return prevDevices;
+					}
+
+					return [...prevDevices, device];
+				});
 			},
 		);
 	};
@@ -126,9 +113,10 @@ export const scanDevicesService = (() => {
 
 	return {
 		bluetoothState$,
-		permissionGranted$,
+		permissionStatus$,
 		scanning$,
 		devices$,
+		compatibleDeviceId$,
 		requestBluetoothPermission,
 		scanDevices,
 		stopScan,

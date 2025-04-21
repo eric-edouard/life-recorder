@@ -34,6 +34,10 @@ export default ({ config }: ConfigContext) => ({
 			appleTeamId: "6A3W99PM43",
 			infoPlist: {
 				ITSAppUsesNonExemptEncryption: false,
+				NSBluetoothAlwaysUsageDescription:
+					"Life Recorder needs access to Bluetooth to connect to your device",
+				NSBluetoothPeripheralUsageDescription:
+					"Life Recorder needs access to Bluetooth to connect to your device",
 			},
 			icon: {
 				light: "./assets/images/ios-light.png",
@@ -104,6 +108,12 @@ export default ({ config }: ConfigContext) => ({
 			"expo-av",
 			"react-native-vad",
 			"expo-web-browser",
+			[
+				"react-native-permissions",
+				{
+					iosPermissions: ["Bluetooth"],
+				},
+			],
 		],
 		experiments: {
 			typedRoutes: true,
