@@ -1,7 +1,7 @@
-import { BluetoothStatusInfo } from "@/src/components/BluetoothStatusInfo";
-import { Dot } from "@/src/components/Dot";
-import { PairDevice } from "@/src/components/PairDevice";
+import { BluetoothStatusInfo } from "@/src/components/Sreens/DeviceScreen/BluetoothStatusInfo";
+import { PairDevice } from "@/src/components/Sreens/DeviceScreen/PairDevice";
 import { RowButton } from "@/src/components/ui/Buttons/RowButton";
+import { Dot } from "@/src/components/ui/Dot";
 import { InsetList } from "@/src/components/ui/Lists/InsetList";
 import { InsetListRow } from "@/src/components/ui/Lists/InsetListRow";
 import { Text } from "@/src/components/ui/Text";

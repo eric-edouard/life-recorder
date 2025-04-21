@@ -1,5 +1,5 @@
-import { Dot, type DotColor } from "@/src/components/Dot";
 import { PressableLayer } from "@/src/components/PressableLayer";
+import { Dot, type DotColor } from "@/src/components/ui/Dot";
 import { Text } from "@/src/components/ui/Text";
 import { useConnectedDevice } from "@/src/hooks/useConnectedDevice";
 import { useDeviceBatteryLevel } from "@/src/hooks/useDeviceBatteryLevel";

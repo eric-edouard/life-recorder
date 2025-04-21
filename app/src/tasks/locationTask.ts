@@ -1,7 +1,7 @@
 // import type { LocationObject } from "expo-location";
 // import * as TaskManager from "expo-task-manager";
 
-// export const LOCATION_TASK_NAME = "BACKGROUND_LOCATION_TASK";
+export const LOCATION_TASK_NAME = "BACKGROUND_LOCATION_TASK";
 
 // TaskManager.defineTask<{ locations: LocationObject[] }>(
 // 	LOCATION_TASK_NAME,

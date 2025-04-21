@@ -1,4 +1,4 @@
-import { DeviceBottomSheet } from "@/src/components/DeviceBottomSheet";
+import { DeviceBottomSheet } from "@/src/components/Sreens/DeviceScreen/DeviceBottomSheet";
 import { TrueSheet } from "@lodev09/react-native-true-sheet";
 import { router } from "expo-router";
 import React, { useRef } from "react";
