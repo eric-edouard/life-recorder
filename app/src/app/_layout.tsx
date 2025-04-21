@@ -2,11 +2,10 @@
 import "react-native-reanimated";
 import "../../global.css";
 
-import { TextButton } from "@/src/components/ui/Buttons/TextButton";
 import { ThemeProvider } from "@/src/contexts/ThemeContext";
 import "@/src/tasks/locationTask";
 import { useFonts } from "expo-font";
-import { Stack, router } from "expo-router";
+import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
 
@@ -35,16 +34,6 @@ export default function RootLayout() {
 		<ThemeProvider>
 			<Stack>
 				<Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-				<Stack.Screen
-					name="modals/device"
-					options={{
-						presentation: "modal",
-						title: "Recording Device",
-						headerRight: () => (
-							<TextButton title="Done" onPress={router.back} />
-						),
-					}}
-				/>
 				<Stack.Screen
 					name="modals/device"
 					options={{
