@@ -33,6 +33,7 @@ export const scanAndAutoConnect = () => {
 				scanDevicesService.scanDevices({
 					autoConnectDeviceId: pairedDeviceId ?? undefined,
 					onDeviceFound: async (device) => {
+						console.log("device found", device.name);
 						if (device.id === pairedDeviceId) {
 							scanDevicesService.stopScan();
 							defer(() => deviceService.connectToDevice(device.id));
@@ -53,13 +54,12 @@ export const scanAndAutoConnect = () => {
 	);
 };
 
-// autoConnect();
-
 export const deviceService = (() => {
 	let _connectedDevice: Device | null = null;
 
 	const connectedDeviceId$ = observable<string | null>(null);
 	const isConnecting$ = observable(false);
+	const isConnected$ = observable(() => !!connectedDeviceId$.get());
 
 	const setConnectedDevice = (device: Device | null) => {
 		_connectedDevice = device;
@@ -250,9 +250,9 @@ export const deviceService = (() => {
 	return {
 		connectedDeviceId$,
 		isConnecting$,
+		isConnected$,
 		connectToDevice,
 		getConnectedDevice: () => _connectedDevice,
-		isConnected: () => _connectedDevice !== null,
 		hasPairedDevice: () => !!storage.get("pairedDeviceId"),
 		getConnectedDeviceRssi,
 		disconnectFromDevice,
