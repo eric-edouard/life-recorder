@@ -1,8 +1,8 @@
-import { MessageCard } from "@/src/components/ui/Cards/MessageCard";
+import { IconAndText } from "@/src/components/ui/IconAndText";
 import { scanDevicesService } from "@/src/services/deviceService/scanDevicesService";
 import { Button } from "@expo/ui/Button";
 import { use$ } from "@legendapp/state/react";
-import { Bluetooth } from "lucide-react-native";
+import { Bluetooth, BluetoothOff } from "lucide-react-native";
 import React from "react";
 import { Linking } from "react-native";
 import { State } from "react-native-ble-plx";
@@ -17,10 +17,9 @@ export function BluetoothStatusInfo() {
 
 	if (permissionStatus !== "granted") {
 		return (
-			<MessageCard
-				transparent
+			<IconAndText
 				className="m-5 mb-safe-offset-3"
-				icon={<Bluetooth size={36} color={gray2} />}
+				icon={<Bluetooth size={56} color={gray2} />}
 				title="Missing Permissions"
 				message={
 					canAskForPermission
@@ -31,8 +30,9 @@ export function BluetoothStatusInfo() {
 					<Button
 						style={{
 							marginTop: 8,
+							padding: 32,
 						}}
-						variant="bordered"
+						variant="borderedProminent"
 						onPress={() => {
 							if (canAskForPermission) {
 								scanDevicesService.requestBluetoothPermission();
@@ -50,10 +50,9 @@ export function BluetoothStatusInfo() {
 
 	if (bluetoothState !== State.PoweredOn) {
 		return (
-			<MessageCard
-				transparent
+			<IconAndText
 				className="m-5 mb-safe-offset-5"
-				icon={<Bluetooth size={36} color={gray2} />}
+				icon={<BluetoothOff size={56} color={gray2} />}
 				title="Bluetooth is off"
 				message="Please enable Bluetooth to connect to your device"
 			/>

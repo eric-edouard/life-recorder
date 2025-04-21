@@ -1,4 +1,4 @@
-import { MessageCard } from "@/src/components/ui/Cards/MessageCard";
+import { IconAndText } from "@/src/components/ui/IconAndText";
 import { Bluetooth } from "lucide-react-native";
 import React, { useEffect, useRef } from "react";
 import { Animated } from "react-native";
@@ -26,12 +26,11 @@ export function SearchingDevices() {
 	}, []);
 
 	return (
-		<MessageCard
-			transparent
+		<IconAndText
 			className="mb-safe-offset-3 mt-3"
 			icon={
 				<Animated.View style={{ opacity: animatedValue }}>
-					<Bluetooth size={36} color={gray2} />
+					<Bluetooth size={56} color={gray2} />
 				</Animated.View>
 			}
 			title="Searching..."
