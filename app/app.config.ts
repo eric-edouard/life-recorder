@@ -103,6 +103,7 @@ export default ({ config }: ConfigContext) => ({
 			],
 			"expo-av",
 			"react-native-vad",
+			"expo-web-browser",
 		],
 		experiments: {
 			typedRoutes: true,
