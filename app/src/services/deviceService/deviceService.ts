@@ -3,6 +3,7 @@ import { scanDevicesService } from "@/src/services/deviceService/scanDevicesServ
 import { extractFirstByteValue } from "@/src/services/deviceService/utils/extractFirstByteValue";
 import { getDeviceCharacteristic } from "@/src/services/deviceService/utils/getDeviceCharacteric";
 import { storage } from "@/src/services/storage";
+import { defer } from "@/src/utils/defer";
 import { matchId } from "@/src/utils/matchId";
 import { observable, when } from "@legendapp/state";
 import { Alert, Platform } from "react-native";
@@ -20,38 +21,37 @@ import type { BleAudioCodec } from "./types";
 
 // const MY_DEVICE = "D65CD59F-3E9A-4BF0-016E-141BB478E1B8";
 
+const autoConnect = () => {
+	const pairedDeviceId = storage.get("pairedDeviceId");
+
+	// automatically scan for devices on startup if conditions are met
+	when(
+		() =>
+			scanDevicesService.bluetoothState$.get() === State.PoweredOn &&
+			scanDevicesService.permissionGranted$.get() === true,
+		() => {
+			defer(() => scanDevicesService.scanDevices(pairedDeviceId ?? undefined));
+		},
+	);
+
+	if (!pairedDeviceId) {
+		return;
+	}
+
+	// If we have a paired device and we find it, connect to it
+	when(scanDevicesService.devices$.get()?.find(matchId(pairedDeviceId)), () => {
+		scanDevicesService.stopScan();
+		defer(() => deviceService.connectToDevice(pairedDeviceId));
+	});
+};
+
+autoConnect();
+
 export const deviceService = (() => {
 	let _connectedDevice: Device | null = null;
 
 	const connectedDeviceId$ = observable<string | null>(null);
 	const isConnecting$ = observable(false);
-
-	const init = () => {
-		const pairedDeviceId = storage.get("pairedDeviceId");
-
-		// automatically scan for devices on startup if conditions are met
-		when(
-			() =>
-				scanDevicesService.bluetoothState$.get() === State.PoweredOn &&
-				scanDevicesService.permissionGranted$.get() === true,
-			() => scanDevicesService.scanDevices(pairedDeviceId ?? undefined),
-		);
-
-		if (!pairedDeviceId) {
-			return;
-		}
-
-		// If we have a paired device and we find it, connect to it
-		when(
-			scanDevicesService.devices$.get()?.find(matchId(pairedDeviceId)),
-			() => {
-				scanDevicesService.stopScan();
-				connectToDevice(pairedDeviceId);
-			},
-		);
-	};
-
-	init();
 
 	const setConnectedDevice = (device: Device | null) => {
 		_connectedDevice = device;

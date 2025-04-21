@@ -3,6 +3,7 @@ import { Alert, View } from "react-native";
 
 import { DeviceStatusButton } from "@/src/components/DeviceStatusButton";
 import { ScreenScrollView } from "@/src/components/ScreenScrollView/ScreenScrollView";
+// import { useAutoScanDevices } from "@/src/hooks/useAutoScanDevices";
 import { audioDataService } from "@/src/services/audioDataService";
 import { deviceService } from "@/src/services/deviceService/deviceService";
 import { scanDevicesService } from "@/src/services/deviceService/scanDevicesService";
@@ -10,6 +11,7 @@ import { socketService } from "@/src/services/socketService";
 import { use$ } from "@legendapp/state/react";
 
 export const HomeScreen = () => {
+	// useAutoScanDevices();
 	const connectedDeviceId = use$(deviceService.connectedDeviceId$);
 	const bluetoothState = use$(scanDevicesService.bluetoothState$);
 	const [isListeningAudio, setIsListeningAudio] = useState<boolean>(false);

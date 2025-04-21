@@ -1,5 +1,7 @@
 import { Dot } from "@/src/components/Dot";
+import { ScanDevices } from "@/src/components/Sreens/DeviceScreen/ScanDevices";
 import { RowButton } from "@/src/components/ui/Buttons/RowButton";
+import { MessageCard } from "@/src/components/ui/Cards/MessageCard";
 import { InsetList } from "@/src/components/ui/Lists/InsetList";
 import { InsetListRow } from "@/src/components/ui/Lists/InsetListRow";
 import { Text } from "@/src/components/ui/Text";
@@ -13,6 +15,7 @@ import { Bluetooth } from "lucide-react-native";
 import React from "react";
 import { Platform, View } from "react-native";
 import { State } from "react-native-ble-plx";
+import { useColor } from "react-native-uikit-colors";
 
 export default function DeviceModal() {
 	const bluetoothState = use$(scanDevicesService.bluetoothState$);
@@ -20,13 +23,36 @@ export default function DeviceModal() {
 	const batteryLevel = useDeviceBatteryLevel();
 	const isConnecting = use$(deviceService.isConnecting$);
 	const hasPairedDevice = deviceService.hasPairedDevice();
+	const permissionGranted = use$(scanDevicesService.permissionGranted$);
+	const gray2 = useColor("gray2");
+
+	// useEffect(() => {
+	// 	scanDevicesService.scanDevices();
+	// }, [permissionGranted]);
+	if (!permissionGranted) {
+		return (
+			<MessageCard
+				className="m-5"
+				icon={<Bluetooth size={36} color={gray2} />}
+				title="Bluetooth permission is off"
+				message="Please enable Bluetooth permission to connect to your device"
+			/>
+		);
+	}
 
 	if (bluetoothState !== State.PoweredOn) {
 		return (
-			<View className="flex-1 items-center p-6 bg-system-grouped-background">
-				<Text>Bluetooth is off</Text>
-			</View>
+			<MessageCard
+				className="m-5"
+				icon={<Bluetooth size={36} color={gray2} />}
+				title="Bluetooth is off"
+				message="Please enable Bluetooth to connect to your device"
+			/>
 		);
+	}
+
+	if (!hasPairedDevice) {
+		return <ScanDevices />;
 	}
 
 	return (
@@ -70,26 +96,9 @@ export default function DeviceModal() {
 					</View>
 				</>
 			)}
-			{!connectedDevice && (
-				<>
-					<InsetList
-						headerText="compatible devices"
-						headerLoading
-						emptyStateText="No compatible devices found"
-					>
-						{/* <InsetListRow title="Omi Dev Kit 2" /> */}
-					</InsetList>
-					<InsetList className="mt-6" headerText="other devices">
-						<InsetListRow title="Bose Speaker" />
-						<InsetListRow title="Bose Speaker" />
-						<InsetListRow title="Bose Speaker" />
-						<InsetListRow title="Bose Speaker" />
-						<InsetListRow title="Bose Speaker" />
-						<InsetListRow title="Bose Speaker" />
-						<InsetListRow title="Bose Speaker" />
-					</InsetList>
-				</>
-			)}
+			{/* {!connectedDevice && (
+
+			)} */}
 			<StatusBar style={Platform.OS === "ios" ? "light" : "auto"} />
 		</View>
 	);

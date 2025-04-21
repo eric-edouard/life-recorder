@@ -74,7 +74,7 @@ export const scanDevicesService = (() => {
 		}
 
 		scanning$.set(true);
-		// Start the BLE scan
+
 		bleManager.startDeviceScan(
 			autoConnectDeviceId ? [autoConnectDeviceId] : null,
 			{},
