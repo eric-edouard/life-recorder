@@ -6,6 +6,7 @@ import { Text, View, type ViewProps } from "react-native";
 import { twMerge } from "tailwind-merge";
 
 export type InsetListRowProps = {
+	backgroundColor?: "secondary" | "tertiary";
 	title: string;
 	detail?: string | ReactNode;
 	accessory?: ReactNode;
@@ -14,6 +15,7 @@ export type InsetListRowProps = {
 } & ViewProps;
 
 export const InsetListRow = ({
+	backgroundColor = "secondary",
 	title,
 	detail,
 	accessory,
@@ -23,6 +25,7 @@ export const InsetListRow = ({
 }: InsetListRowProps) => {
 	return (
 		<PressableLayer
+			backgroundColor={backgroundColor}
 			rounded={false}
 			onPress={onPress}
 			className={twMerge(

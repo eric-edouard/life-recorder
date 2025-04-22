@@ -23,13 +23,19 @@ import type { BleAudioCodec } from "./types";
 export const deviceService = (() => {
 	let _connectedDevice: Device | null = null;
 
+	let batteryLevelInterval: number | null = null;
 	const connectedDeviceId$ = observable<string | null>(null);
-	const isConnecting$ = observable(false);
 	const isConnected$ = observable(() => !!connectedDeviceId$.get());
+	const batteryLevel$ = observable<number | null>(null);
+	const isConnecting$ = observable(false);
 
 	const setConnectedDevice = (device: Device | null) => {
 		_connectedDevice = device;
 		connectedDeviceId$.set(device?.id || null);
+		if (device === null) {
+			batteryLevelInterval && clearInterval(batteryLevelInterval);
+			batteryLevel$.set(null);
+		}
 	};
 
 	const connectToDevice = async (deviceId: string) => {
@@ -72,6 +78,8 @@ export const deviceService = (() => {
 			device.onDisconnected(() => {
 				setConnectedDevice(null);
 			});
+
+			monitorBatteryLevel();
 
 			isConnecting$.set(false);
 			scanDevicesService.stopScan();
@@ -190,10 +198,6 @@ export const deviceService = (() => {
 		}
 	};
 
-	/**
-	 * Get the current battery level from the device
-	 * @returns Promise that resolves with the battery level percentage (0-100)
-	 */
 	const getBatteryLevel = async (): Promise<number | null> => {
 		if (!_connectedDevice) {
 			throw new Error("Device not connected");
@@ -211,53 +215,21 @@ export const deviceService = (() => {
 		return extractFirstByteValue(base64Value);
 	};
 
-	/**
-	 * Get the current battery level from the device
-	 * @returns Promise that resolves with the battery level percentage (0-100)
-	 */
-	const monitorBatteryLevel = async (
-		onLevel: (level: number) => void,
-	): Promise<Subscription | null> => {
-		if (!_connectedDevice) {
-			throw new Error("Device not connected");
-		}
-
-		const batteryLevelCharacteristic = await getDeviceCharacteristic(
-			_connectedDevice,
-			BATTERY_SERVICE_UUID,
-			BATTERY_LEVEL_CHARACTERISTIC_UUID,
-		);
-
-		if (!batteryLevelCharacteristic) {
-			throw new Error("Battery level characteristic not found");
-		}
-		const initialValue = await batteryLevelCharacteristic.read();
-		if (!initialValue || !initialValue.value) {
-			throw new Error("Battery level characteristic returned no value");
-		}
-		const value = extractFirstByteValue(initialValue.value);
-		if (!value) {
-			throw new Error(
-				"Could not extract first byte value from battery level characteristic",
-			);
-		}
-		onLevel(value);
-		return batteryLevelCharacteristic.monitor((err, char) => {
-			if (err || !char?.value) {
-				return;
-			}
-			const value = extractFirstByteValue(char.value);
-			if (!value) {
-				return;
-			}
-			onLevel(value);
-		});
+	const monitorBatteryLevel = async () => {
+		batteryLevelInterval = setInterval(async () => {
+			const batteryLevel = await getBatteryLevel();
+			batteryLevel$.set(batteryLevel);
+		}, 30000); // 30 seconds
+		// Initial fetch
+		const batteryLevel = await getBatteryLevel();
+		batteryLevel$.set(batteryLevel);
 	};
 
 	return {
 		connectedDeviceId$,
 		isConnecting$,
 		isConnected$,
+		batteryLevel$,
 		connectToDevice,
 		getConnectedDevice: () => _connectedDevice,
 		getConnectedDeviceRssi,
@@ -265,6 +237,5 @@ export const deviceService = (() => {
 		getAudioCodec,
 		startAudioBytesListener,
 		getBatteryLevel,
-		monitorBatteryLevel,
 	};
 })();

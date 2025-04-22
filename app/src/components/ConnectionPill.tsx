@@ -1,4 +1,3 @@
-import { useDeviceBatteryLevel } from "@/src/hooks/useDeviceBatteryLevel";
 import { deviceService } from "@/src/services/deviceService/deviceService";
 import { scanDevicesService } from "@/src/services/deviceService/scanDevicesService";
 import { use$ } from "@legendapp/state/react";
@@ -14,7 +13,7 @@ type ConnectionPillProps = {
 
 export const ConnectionPill: React.FC<ConnectionPillProps> = ({ onPress }) => {
 	const blinkAnim = useRef(new Animated.Value(1)).current;
-	const batteryLevel = useDeviceBatteryLevel();
+	const batteryLevel = use$(deviceService.batteryLevel$);
 
 	// Get state directly from deviceService
 	const bluetoothState = use$(scanDevicesService.bluetoothState$);
