@@ -106,14 +106,6 @@ export const deviceService = (() => {
 		}
 	};
 
-	const getConnectedDeviceRssi = async (): Promise<number | null> => {
-		if (_connectedDevice) {
-			const device = await bleManager.readRSSIForDevice(_connectedDevice.id);
-			return device.rssi;
-		}
-		return null;
-	};
-
 	const disconnectFromDevice = async () => {
 		if (!_connectedDevice) {
 			throw new Error("[deviceService] No device connected, cannot disconnect");
@@ -132,32 +124,25 @@ export const deviceService = (() => {
 			throw new Error("Device not connected");
 		}
 
-		try {
-			const codecCharacteristic = await getDeviceCharacteristic(
-				_connectedDevice,
-				OMI_SERVICE_UUID,
-				AUDIO_CODEC_CHARACTERISTIC_UUID,
-			);
+		const codecCharacteristic = await getDeviceCharacteristic(
+			_connectedDevice,
+			OMI_SERVICE_UUID,
+			AUDIO_CODEC_CHARACTERISTIC_UUID,
+		);
 
-			if (!codecCharacteristic) {
-				console.error("Audio codec characteristic not found");
-				return null;
-			}
-
-			const codecId = extractFirstByteValue(
-				(await codecCharacteristic.read()).value,
-			);
-
-			if (!codecId) {
-				console.error("No codec ID found");
-				return null;
-			}
-
-			return CODEC_MAP[codecId];
-		} catch (error) {
-			console.error("Error getting audio codec:", error);
-			return null;
+		if (!codecCharacteristic) {
+			throw new Error("Audio codec characteristic not found");
 		}
+
+		const codecId = extractFirstByteValue(
+			(await codecCharacteristic.read()).value,
+		);
+
+		if (!codecId) {
+			throw new Error("No codec ID found");
+		}
+
+		return CODEC_MAP[codecId];
 	};
 
 	/**
@@ -232,6 +217,14 @@ export const deviceService = (() => {
 		// Initial fetch
 		const batteryLevel = await getBatteryLevel();
 		batteryLevel$.set(batteryLevel);
+	};
+
+	const getConnectedDeviceRssi = async (): Promise<number | null> => {
+		if (_connectedDevice) {
+			const device = await bleManager.readRSSIForDevice(_connectedDevice.id);
+			return device.rssi;
+		}
+		return null;
 	};
 
 	const monitorRssi = async () => {
