@@ -12,7 +12,7 @@ export default function DeviceModal() {
 		<TrueSheet
 			backgroundColor={backgroundColor}
 			ref={sheet}
-			sizes={["auto"]}
+			sizes={["auto", "70%"]}
 			cornerRadius={24}
 			initialIndex={0}
 			initialIndexAnimated={true}

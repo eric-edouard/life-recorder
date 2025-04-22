@@ -1,14 +1,15 @@
 import { PressableLayer } from "@/src/components/PressableLayer";
 import { Text } from "@/src/components/ui/Text";
+import type { SystemColor } from "@/src/types/colors";
 import { twMerge } from "tailwind-merge";
 
 export const RowButton = ({
-	backgroundColor = "secondary",
+	backgroundColor = "secondarySystemGroupedBackground",
 	title,
 	onPress,
 	colorStyle = "default",
 }: {
-	backgroundColor?: "secondary" | "tertiary";
+	backgroundColor?: SystemColor;
 	title: string;
 	onPress: () => void;
 	colorStyle?: "default" | "destructive";

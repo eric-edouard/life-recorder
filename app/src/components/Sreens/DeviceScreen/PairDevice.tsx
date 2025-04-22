@@ -2,7 +2,7 @@ import { SearchingDevices } from "@/src/components/Sreens/DeviceScreen/Searching
 import { Text } from "@/src/components/ui/Text";
 import { deviceService } from "@/src/services/deviceService/deviceService";
 import { rssiToSignalStrength } from "@/src/utils/rssiToSignalStrength";
-import { Button } from "@expo/ui/Button";
+import { Button } from "@expo/ui/swift-ui";
 import { use$ } from "@legendapp/state/react";
 import { router } from "expo-router";
 import { SymbolView } from "expo-symbols";

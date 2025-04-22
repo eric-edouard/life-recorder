@@ -1,12 +1,13 @@
 // InsetListRow.tsx
 import { PressableLayer } from "@/src/components/PressableLayer";
+import type { SystemColor } from "@/src/types/colors";
 import type { ReactNode } from "react";
 import React from "react";
 import { Text, View, type ViewProps } from "react-native";
 import { twMerge } from "tailwind-merge";
 
 export type InsetListRowProps = {
-	backgroundColor?: "secondary" | "tertiary";
+	backgroundColor?: SystemColor;
 	title: string;
 	detail?: string | ReactNode;
 	accessory?: ReactNode;
@@ -15,7 +16,7 @@ export type InsetListRowProps = {
 } & ViewProps;
 
 export const InsetListRow = ({
-	backgroundColor = "secondary",
+	backgroundColor = "secondarySystemGroupedBackground",
 	title,
 	detail,
 	accessory,
