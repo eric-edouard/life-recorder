@@ -1,8 +1,7 @@
 import { SearchingDevices } from "@/src/components/Sreens/DeviceScreen/SearchingDevices";
 import { Text } from "@/src/components/ui/Text";
+import { useGetCompatibleDevice } from "@/src/hooks/useGetCompatibleDevice";
 import { deviceService } from "@/src/services/deviceService/deviceService";
-import { scanDevicesService } from "@/src/services/deviceService/scanDevicesService";
-import { matchId } from "@/src/utils/matchId";
 import { rssiToSignalStrength } from "@/src/utils/rssiToSignalStrength";
 import { Button } from "@expo/ui/Button";
 import { use$ } from "@legendapp/state/react";
@@ -14,12 +13,7 @@ import { View } from "react-native";
 export function PairDevice() {
 	const isConnecting = use$(deviceService.isConnecting$);
 	const isConnected = use$(deviceService.isConnected$);
-	const compatibleDeviceId = use$(scanDevicesService.compatibleDeviceId$);
-	const compatibleDevice = use$(() =>
-		compatibleDeviceId
-			? scanDevicesService.devices$.get().find(matchId(compatibleDeviceId))
-			: undefined,
-	);
+	const compatibleDevice = useGetCompatibleDevice();
 
 	useEffect(() => {
 		if (isConnected) {
@@ -29,7 +23,13 @@ export function PairDevice() {
 		}
 	}, [isConnected]);
 
-	if (!compatibleDevice) return <SearchingDevices />;
+	if (!compatibleDevice)
+		return (
+			<SearchingDevices
+				title="Searching..."
+				message="Looking for compatible devices"
+			/>
+		);
 
 	return (
 		<View className={"flex items-center gap-2 pt-20 pb-safe-offset-12 "}>
@@ -66,7 +66,9 @@ export function PairDevice() {
 				) : (
 					<Button
 						disabled={isConnecting}
-						onPress={() => deviceService.connectToDevice(compatibleDevice.id)}
+						onPress={async () => {
+							await deviceService.connectToDevice(compatibleDevice.id);
+						}}
 						variant="borderedProminent"
 					>
 						{isConnecting ? "Connecting..." : "Pair Device"}

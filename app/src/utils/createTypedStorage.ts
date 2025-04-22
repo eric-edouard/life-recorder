@@ -26,11 +26,16 @@ type StoredValue<T> = {
 	value: T;
 };
 
-export const createTypedStorage = <T extends Record<string, unknown>>(
-	options?: ConstructorParameters<typeof MMKV>[0],
-): TypedStorage<T> => {
-	const mmkv = new MMKV(options);
+export const createTypedStorage = <T extends Record<string, unknown>>({
+	onValueChanged,
+	mmkvOptions,
+}: {
+	onValueChanged?: (changedKey: keyof T) => void;
+	mmkvOptions?: ConstructorParameters<typeof MMKV>[0];
+} = {}): TypedStorage<T> => {
+	const mmkv = new MMKV(mmkvOptions);
 	const listener = mmkv.addOnValueChangedListener((changedKey) => {
+		onValueChanged?.(changedKey as keyof T);
 		for (const callback of valueChangeCallbacks) {
 			callback(changedKey as keyof T);
 		}

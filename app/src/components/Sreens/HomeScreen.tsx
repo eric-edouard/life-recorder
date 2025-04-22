@@ -11,14 +11,13 @@ import { socketService } from "@/src/services/socketService";
 import { use$ } from "@legendapp/state/react";
 
 export const HomeScreen = () => {
-	// useAutoScanDevices();
 	const connectedDeviceId = use$(deviceService.connectedDeviceId$);
 	const bluetoothState = use$(scanDevicesService.bluetoothState$);
 	const [isListeningAudio, setIsListeningAudio] = useState<boolean>(false);
 
 	const startAudioListener = async () => {
 		try {
-			if (!connectedDeviceId || !deviceService.isConnected()) {
+			if (!connectedDeviceId || !deviceService.isConnected$.peek()) {
 				Alert.alert("Not Connected", "Please connect to a device first");
 				return;
 			}

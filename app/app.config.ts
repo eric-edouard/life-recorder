@@ -108,12 +108,6 @@ export default ({ config }: ConfigContext) => ({
 			"expo-av",
 			"react-native-vad",
 			"expo-web-browser",
-			[
-				"react-native-permissions",
-				{
-					iosPermissions: ["Bluetooth"],
-				},
-			],
 		],
 		experiments: {
 			typedRoutes: true,

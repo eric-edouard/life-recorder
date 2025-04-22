@@ -1,12 +1,12 @@
 import { bleManager } from "@/src/services/bleManager";
 import { scanDevicesService } from "@/src/services/deviceService/scanDevicesService";
+import { alert } from "@/src/services/deviceService/utils/alert";
 import { extractFirstByteValue } from "@/src/services/deviceService/utils/extractFirstByteValue";
 import { getDeviceCharacteristic } from "@/src/services/deviceService/utils/getDeviceCharacteric";
-import { storage } from "@/src/services/storage";
-import { defer } from "@/src/utils/defer";
-import { observable, when } from "@legendapp/state";
-import { Alert, Platform } from "react-native";
-import { type Device, State, type Subscription } from "react-native-ble-plx";
+import { storage$ } from "@/src/services/storage";
+import { observable } from "@legendapp/state";
+import { Platform } from "react-native";
+import type { Device, Subscription } from "react-native-ble-plx";
 import { base64ToBytes } from "../../utils/base64ToBytes";
 import {
 	AUDIO_CODEC_CHARACTERISTIC_UUID,
@@ -19,40 +19,6 @@ import {
 import type { BleAudioCodec } from "./types";
 
 // const MY_DEVICE = "D65CD59F-3E9A-4BF0-016E-141BB478E1B8";
-
-export const scanAndAutoConnect = () => {
-	const pairedDeviceId = storage.get("pairedDeviceId");
-
-	// automatically scan for devices on startup if conditions are met
-	when(
-		() =>
-			scanDevicesService.bluetoothState$.get() === State.PoweredOn &&
-			scanDevicesService.permissionStatus$.get() === "granted",
-		() => {
-			defer(() => {
-				scanDevicesService.scanDevices({
-					autoConnectDeviceId: pairedDeviceId ?? undefined,
-					onDeviceFound: async (device) => {
-						console.log("device found", device.name);
-						if (device.id === pairedDeviceId) {
-							scanDevicesService.stopScan();
-							defer(() => deviceService.connectToDevice(device.id));
-							return;
-						}
-
-						const foundCompatibleService =
-							!!device.serviceUUIDs?.includes(OMI_SERVICE_UUID);
-
-						if (foundCompatibleService) {
-							scanDevicesService.stopScan();
-							scanDevicesService.compatibleDeviceId$.set(device.id);
-						}
-					},
-				});
-			});
-		},
-	);
-};
 
 export const deviceService = (() => {
 	let _connectedDevice: Device | null = null;
@@ -79,25 +45,48 @@ export const deviceService = (() => {
 
 		isConnecting$.set(true);
 
+		// Set a 10-second timeout for connection
+		const connectionTimeout = setTimeout(() => {
+			if (isConnecting$.peek()) {
+				isConnecting$.set(false);
+				alert({
+					title: "Connection failed",
+					message: "Could not connect to device after 10 seconds",
+				});
+				console.log("Connection timed out after 10 seconds");
+				return;
+			}
+		}, 10000);
+
 		try {
-			const device = await bleManager.connectToDevice(
+			const _device = await bleManager.connectToDevice(
 				deviceId,
 				Platform.OS === "android" ? { requestMTU: 512 } : undefined,
 			);
+			const device = await _device.discoverAllServicesAndCharacteristics();
 
+			clearTimeout(connectionTimeout);
 			setConnectedDevice(device);
-			storage.set("pairedDeviceId", deviceId);
+			storage$.pairedDeviceId.set(deviceId);
 
 			device.onDisconnected(() => {
 				setConnectedDevice(null);
 			});
 
 			isConnecting$.set(false);
+			scanDevicesService.resetCompatibleDevice();
+			scanDevicesService.stopScan();
+			return;
 		} catch (error) {
+			clearTimeout(connectionTimeout);
 			console.error("Connection error:", error);
 			isConnecting$.set(false);
 			setConnectedDevice(null);
-			Alert.alert("Connection Error", String(error));
+
+			alert({
+				title: "Connection Error",
+				message: String(error),
+			});
 		}
 	};
 
@@ -110,10 +99,15 @@ export const deviceService = (() => {
 	};
 
 	const disconnectFromDevice = async () => {
-		storage.set("pairedDeviceId", null);
-		if (_connectedDevice) {
+		if (!_connectedDevice) {
+			throw new Error("[deviceService] No device connected, cannot disconnect");
+		}
+		try {
 			await _connectedDevice.cancelConnection();
+			storage$.pairedDeviceId.delete();
 			setConnectedDevice(null);
+		} catch (error) {
+			console.error("[deviceService] Error disconnecting from device:", error);
 		}
 	};
 
@@ -228,6 +222,7 @@ export const deviceService = (() => {
 		if (!_connectedDevice) {
 			throw new Error("Device not connected");
 		}
+
 		const batteryLevelCharacteristic = await getDeviceCharacteristic(
 			_connectedDevice,
 			BATTERY_SERVICE_UUID,
@@ -237,13 +232,26 @@ export const deviceService = (() => {
 		if (!batteryLevelCharacteristic) {
 			throw new Error("Battery level characteristic not found");
 		}
-
+		const initialValue = await batteryLevelCharacteristic.read();
+		if (!initialValue || !initialValue.value) {
+			throw new Error("Battery level characteristic returned no value");
+		}
+		const value = extractFirstByteValue(initialValue.value);
+		if (!value) {
+			throw new Error(
+				"Could not extract first byte value from battery level characteristic",
+			);
+		}
+		onLevel(value);
 		return batteryLevelCharacteristic.monitor((err, char) => {
-			if (err || !char?.value) return;
-			const value = extractFirstByteValue(char.value);
-			if (value) {
-				onLevel(value);
+			if (err || !char?.value) {
+				return;
 			}
+			const value = extractFirstByteValue(char.value);
+			if (!value) {
+				return;
+			}
+			onLevel(value);
 		});
 	};
 
@@ -253,7 +261,6 @@ export const deviceService = (() => {
 		isConnected$,
 		connectToDevice,
 		getConnectedDevice: () => _connectedDevice,
-		hasPairedDevice: () => !!storage.get("pairedDeviceId"),
 		getConnectedDeviceRssi,
 		disconnectFromDevice,
 		getAudioCodec,

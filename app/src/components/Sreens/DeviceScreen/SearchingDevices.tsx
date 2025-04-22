@@ -1,15 +1,40 @@
 import { IconAndText } from "@/src/components/ui/IconAndText";
+import { scanDevicesService } from "@/src/services/deviceService/scanDevicesService";
+import { use$ } from "@legendapp/state/react";
 import { Bluetooth } from "lucide-react-native";
 import React, { useEffect, useRef } from "react";
 import { Animated } from "react-native";
 import { useColor } from "react-native-uikit-colors";
 
-export function SearchingDevices() {
+type Props = {
+	title: string;
+	message: string;
+};
+
+export function SearchingDevices({ title, message }: Props) {
 	const gray2 = useColor("gray2");
+	const isScanning = use$(scanDevicesService.scanning$);
 	const animatedValue = useRef(new Animated.Value(1)).current;
+	const animationRef = useRef<Animated.CompositeAnimation | null>(null);
 
 	useEffect(() => {
-		Animated.loop(
+		scanDevicesService.scanDevices({});
+	}, []);
+
+	useEffect(() => {
+		if (!isScanning) {
+			if (animationRef.current) {
+				animationRef.current.stop();
+			}
+			Animated.timing(animatedValue, {
+				toValue: 1,
+				duration: 300,
+				useNativeDriver: true,
+			}).start();
+			return;
+		}
+
+		animationRef.current = Animated.loop(
 			Animated.sequence([
 				Animated.timing(animatedValue, {
 					toValue: 0.2,
@@ -22,8 +47,16 @@ export function SearchingDevices() {
 					useNativeDriver: true,
 				}),
 			]),
-		).start();
-	}, []);
+		);
+
+		animationRef.current.start();
+
+		return () => {
+			if (animationRef.current) {
+				animationRef.current.stop();
+			}
+		};
+	}, [isScanning]);
 
 	return (
 		<IconAndText
@@ -33,8 +66,8 @@ export function SearchingDevices() {
 					<Bluetooth size={56} color={gray2} />
 				</Animated.View>
 			}
-			title="Searching..."
-			message="Looking for compatible devices"
+			title={title}
+			message={message}
 		/>
 	);
 }

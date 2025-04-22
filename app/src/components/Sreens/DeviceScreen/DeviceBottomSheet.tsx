@@ -1,5 +1,6 @@
 import { BluetoothStatusInfo } from "@/src/components/Sreens/DeviceScreen/BluetoothStatusInfo";
 import { PairDevice } from "@/src/components/Sreens/DeviceScreen/PairDevice";
+import { SearchingDevices } from "@/src/components/Sreens/DeviceScreen/SearchingDevices";
 import { RowButton } from "@/src/components/ui/Buttons/RowButton";
 import { Dot } from "@/src/components/ui/Dot";
 import { InsetList } from "@/src/components/ui/Lists/InsetList";
@@ -8,14 +9,16 @@ import { Text } from "@/src/components/ui/Text";
 import { useConnectedDevice } from "@/src/hooks/useConnectedDevice";
 import { useIsBluetoothCorrectlySetup } from "@/src/hooks/useIsBluetoothCorrectlySetup";
 import { deviceService } from "@/src/services/deviceService/deviceService";
-import { StatusBar } from "expo-status-bar";
+import { alert } from "@/src/services/deviceService/utils/alert";
+import { storage$ } from "@/src/services/storage";
+import { use$ } from "@legendapp/state/react";
 import { Bluetooth } from "lucide-react-native";
 import React from "react";
-import { Platform, View } from "react-native";
+import { View } from "react-native";
 
 export function DeviceBottomSheet() {
 	const connectedDevice = useConnectedDevice();
-	const hasPairedDevice = deviceService.hasPairedDevice();
+	const hasPairedDevice = use$(storage$.pairedDeviceId);
 	const isBluetoothCorrectlySetup = useIsBluetoothCorrectlySetup();
 
 	if (!isBluetoothCorrectlySetup) {
@@ -24,6 +27,15 @@ export function DeviceBottomSheet() {
 
 	if (!hasPairedDevice) {
 		return <PairDevice />;
+	}
+
+	if (!connectedDevice) {
+		return (
+			<SearchingDevices
+				title="Searching..."
+				message="Looking for your device"
+			/>
+		);
 	}
 
 	return (
@@ -61,16 +73,28 @@ export function DeviceBottomSheet() {
 							colorStyle="destructive"
 							title="Unpair This Device"
 							onPress={() => {
-								deviceService.disconnectFromDevice();
+								alert({
+									title: `Unpair`,
+									message: `Disconnect from ${connectedDevice.name}?`,
+									buttons: [
+										{
+											text: "Cancel",
+											style: "cancel",
+										},
+										{
+											text: "Unpair",
+											style: "destructive",
+											onPress: () => {
+												deviceService.disconnectFromDevice();
+											},
+										},
+									],
+								});
 							}}
 						/>
 					</View>
 				</>
 			)}
-			{/* {!connectedDevice && (
-
-			)} */}
-			<StatusBar style={Platform.OS === "ios" ? "light" : "auto"} />
 		</View>
 	);
 }

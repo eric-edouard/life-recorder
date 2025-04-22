@@ -5,6 +5,7 @@ import { useConnectedDevice } from "@/src/hooks/useConnectedDevice";
 import { useDeviceBatteryLevel } from "@/src/hooks/useDeviceBatteryLevel";
 import { deviceService } from "@/src/services/deviceService/deviceService";
 import { scanDevicesService } from "@/src/services/deviceService/scanDevicesService";
+import { storage$ } from "@/src/services/storage";
 import { use$ } from "@legendapp/state/react";
 import { router } from "expo-router";
 import { View } from "react-native";
@@ -15,7 +16,7 @@ export const DeviceStatusButton = () => {
 	const connectedDevice = useConnectedDevice();
 	const batteryLevel = useDeviceBatteryLevel();
 	const isConnecting = use$(deviceService.isConnecting$);
-	const hasPairedDevice = deviceService.hasPairedDevice();
+	const hasPairedDevice = use$(storage$.pairedDeviceId);
 
 	const getDotColor = (): DotColor => {
 		if (connectedDevice) {
@@ -32,7 +33,7 @@ export const DeviceStatusButton = () => {
 
 	const getText = () => {
 		if (connectedDevice) {
-			return `${batteryLevel}%`;
+			return batteryLevel ? `${batteryLevel}%` : "Loading...";
 		}
 		if (isConnecting) {
 			return "Connecting...";
