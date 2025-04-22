@@ -79,11 +79,12 @@ export function DeviceBottomSheet() {
 				<Memo>
 					{() => {
 						const drag = dragValue$.get();
-						console.log(drag);
 						let opacity = 1;
-						if (drag <= 400 + insets.bottom) opacity = 1;
-						else if (drag >= 400 + insets.bottom + 30) opacity = 0;
-						else opacity = 1 - (drag - (400 + insets.bottom)) / 30;
+						if (drag <= DEVICE_SHEET_HEIGHT + insets.bottom) opacity = 1;
+						else if (drag >= DEVICE_SHEET_HEIGHT + insets.bottom + 30)
+							opacity = 0;
+						else
+							opacity = 1 - (drag - (DEVICE_SHEET_HEIGHT + insets.bottom)) / 30;
 						return (
 							<ChevronDown
 								style={{ opacity }}
@@ -98,7 +99,7 @@ export function DeviceBottomSheet() {
 
 			<View className="w-full">
 				<RowButton
-					backgroundColor="secondarySystemGroupedBackground"
+					backgroundColor="tertiarySystemBackground"
 					colorStyle="destructive"
 					title="Unpair This Device"
 					onPress={() => {
