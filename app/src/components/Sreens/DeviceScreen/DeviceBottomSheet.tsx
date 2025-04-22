@@ -3,22 +3,31 @@ import { BluetoothStatusInfo } from "@/src/components/Sreens/DeviceScreen/Blueto
 import { DeviceBatteryIcon } from "@/src/components/Sreens/DeviceScreen/DeviceBatteryIcon";
 import { PairDevice } from "@/src/components/Sreens/DeviceScreen/PairDevice";
 import { SearchingDevices } from "@/src/components/Sreens/DeviceScreen/SearchingDevices";
+import { RowButton } from "@/src/components/ui/Buttons/RowButton";
 import { Text } from "@/src/components/ui/Text";
 import { useConnectedDevice } from "@/src/hooks/useConnectedDevice";
 import { useIsBluetoothCorrectlySetup } from "@/src/hooks/useIsBluetoothCorrectlySetup";
 import { deviceService } from "@/src/services/deviceService/deviceService";
+import { alert } from "@/src/services/deviceService/utils/alert";
 import { storage$ } from "@/src/services/storage";
+import { observable } from "@legendapp/state";
 import { Memo, use$ } from "@legendapp/state/react";
-import { CircleEllipsis } from "lucide-react-native";
+import { ChevronDown } from "lucide-react-native";
 import React from "react";
 import { View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useColor } from "react-native-uikit-colors";
+
+export const DEVICE_SHEET_HEIGHT = 400;
+
+export const dragValue$ = observable(0);
 
 export function DeviceBottomSheet() {
 	const connectedDevice = useConnectedDevice();
 	const hasPairedDevice = use$(storage$.pairedDeviceId);
 	const isBluetoothCorrectlySetup = useIsBluetoothCorrectlySetup();
 	const color = useColor("quaternaryLabel");
+	const insets = useSafeAreaInsets();
 
 	if (!isBluetoothCorrectlySetup) {
 		return <BluetoothStatusInfo />;
@@ -41,15 +50,14 @@ export function DeviceBottomSheet() {
 	}
 
 	return (
-		<View className="flex-1 items-center p-5 bg-secondary-system-background pt-8 pb-safe-offset-10">
-			<View className="absolute top-6 right-6">
-				<CircleEllipsis size={24} color={color} strokeWidth={3} />
-			</View>
+		<View
+			// style={{ height: 400 + insets.bottom }}
+			className="flex-1 items-center p-5 bg-secondary-system-background pt-8 pb-safe-offset-2 "
+		>
 			<View className="flex-row justify-center items-center w-full  mt-6 mb-8 ">
 				<Text className="text-4xl text-center font-bold">
 					{connectedDevice?.name}
 				</Text>
-				{/* <ChevronRight size={24} color="black" strokeWidth={3} /> */}
 			</View>
 			<View className="w-full h-56 ">
 				<DeviceAnimation />
@@ -66,52 +74,31 @@ export function DeviceBottomSheet() {
 					</View>
 				)}
 			</Memo>
-			{/* <InsetList
-				backgroundColor="tertiary"
-				listHeader={
-					<View className="items-center mb-4 pt-8">
-						<View className="bg-secondary-system-fill p-4 rounded-full mb-4 ">
-							<Bluetooth size={24} color="white" />
-						</View>
-						<Text className="text-2xl font-bold mb-6">Omi Dev Kit 2</Text>
-					</View>
-				}
-			>
-				<InsetListRow
-					backgroundColor="tertiary"
-					title="Status"
-					accessory={
-						<View className="flex-row items-center">
-							<Text className="mr-2 text-secondary-label text-lg">
-								{connectedDevice ? "Connected" : "Disconnected"}
-							</Text>
-							<Dot color={connectedDevice ? "green" : "red"} />
-						</View>
-					}
-				/>
-				<Memo>
-					{() => (
-						<InsetListRow
-							backgroundColor="tertiary"
-							title="Battery Level"
-							detail={`${deviceService.batteryLevel$.get() ?? "N/A"}%`}
-						/>
-					)}
-				</Memo>
-				<Memo>
-					{() => (
-						<InsetListRow
-							backgroundColor="tertiary"
-							title="Signal Strength"
-							detail={`${capitalize(deviceService.rssi$.get() ?? "N/A")}`}
-						/>
-					)}
-				</Memo>
-			</InsetList>
 
-			<View className="mt-4 w-full">
+			<View className="mt-5 mb-safe-offset-1">
+				<Memo>
+					{() => {
+						const drag = dragValue$.get();
+						console.log(drag);
+						let opacity = 1;
+						if (drag <= 400 + insets.bottom) opacity = 1;
+						else if (drag >= 400 + insets.bottom + 30) opacity = 0;
+						else opacity = 1 - (drag - (400 + insets.bottom)) / 30;
+						return (
+							<ChevronDown
+								style={{ opacity }}
+								size={24}
+								color={color}
+								strokeWidth={3}
+							/>
+						);
+					}}
+				</Memo>
+			</View>
+
+			<View className="w-full">
 				<RowButton
-					backgroundColor="tertiary"
+					backgroundColor="secondarySystemGroupedBackground"
 					colorStyle="destructive"
 					title="Unpair This Device"
 					onPress={() => {
@@ -134,7 +121,7 @@ export function DeviceBottomSheet() {
 						});
 					}}
 				/>
-			</View> */}
+			</View>
 		</View>
 	);
 }

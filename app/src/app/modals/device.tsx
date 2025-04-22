@@ -1,22 +1,48 @@
-import { DeviceBottomSheet } from "@/src/components/Sreens/DeviceScreen/DeviceBottomSheet";
-import { TrueSheet } from "@lodev09/react-native-true-sheet";
+import {
+	DEVICE_SHEET_HEIGHT,
+	DeviceBottomSheet,
+	dragValue$,
+} from "@/src/components/Sreens/DeviceScreen/DeviceBottomSheet";
+import { useConnectedDevice } from "@/src/hooks/useConnectedDevice";
+import { defer } from "@/src/utils/defer";
+import {
+	type DragChangeEvent,
+	type SizeChangeEvent,
+	TrueSheet,
+} from "@lodev09/react-native-true-sheet";
 import { router } from "expo-router";
-import React, { useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import { useColor } from "react-native-uikit-colors";
 
 export default function DeviceModal() {
+	const connectedDevice = useConnectedDevice();
+	const isInitialRender = useRef(true);
+
 	const sheet = useRef<TrueSheet>(null);
 	const backgroundColor = useColor("secondarySystemBackground");
+
+	useEffect(() => {
+		if (connectedDevice && !isInitialRender.current) {
+			defer(() => sheet.current?.present(0));
+		}
+		isInitialRender.current = false;
+	}, [connectedDevice]);
 
 	return (
 		<TrueSheet
 			backgroundColor={backgroundColor}
 			ref={sheet}
-			sizes={["auto", "70%"]}
+			sizes={connectedDevice ? [DEVICE_SHEET_HEIGHT, "auto"] : ["auto"]}
 			cornerRadius={24}
 			initialIndex={0}
 			initialIndexAnimated={true}
 			onDismiss={router.back}
+			onDragChange={(sizeInfo: DragChangeEvent) => {
+				dragValue$.set(sizeInfo.nativeEvent.value);
+			}}
+			onSizeChange={(event: SizeChangeEvent) => {
+				dragValue$.set(event.nativeEvent.value);
+			}}
 		>
 			<DeviceBottomSheet />
 		</TrueSheet>
