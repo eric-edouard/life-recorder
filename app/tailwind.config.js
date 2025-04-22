@@ -1,5 +1,5 @@
 import { withUIKit } from "react-native-uikit-colors/tailwind";
-import { withAccentColor } from "./utils/withAccentColor";
+import { withAccentColor } from "./src/utils/withAccentColor";
 const { hairlineWidth } = require("nativewind/theme");
 
 /** @type {import('tailwindcss').Config} */

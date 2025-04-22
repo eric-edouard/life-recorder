@@ -4,6 +4,10 @@ import { alert } from "@/src/services/deviceService/utils/alert";
 import { extractFirstByteValue } from "@/src/services/deviceService/utils/extractFirstByteValue";
 import { getDeviceCharacteristic } from "@/src/services/deviceService/utils/getDeviceCharacteric";
 import { storage$ } from "@/src/services/storage";
+import {
+	type SignalStrength,
+	rssiToSignalStrength,
+} from "@/src/utils/rssiToSignalStrength";
 import { observable } from "@legendapp/state";
 import { Platform } from "react-native";
 import type { Device, Subscription } from "react-native-ble-plx";
@@ -24,9 +28,11 @@ export const deviceService = (() => {
 	let _connectedDevice: Device | null = null;
 
 	let batteryLevelInterval: number | null = null;
+	let rssiInterval: number | null = null;
 	const connectedDeviceId$ = observable<string | null>(null);
 	const isConnected$ = observable(() => !!connectedDeviceId$.get());
 	const batteryLevel$ = observable<number | null>(null);
+	const rssi$ = observable<SignalStrength | null>(null);
 	const isConnecting$ = observable(false);
 
 	const setConnectedDevice = (device: Device | null) => {
@@ -35,6 +41,8 @@ export const deviceService = (() => {
 		if (device === null) {
 			batteryLevelInterval && clearInterval(batteryLevelInterval);
 			batteryLevel$.set(null);
+			rssiInterval && clearInterval(rssiInterval);
+			rssi$.set(null);
 		}
 	};
 
@@ -80,6 +88,7 @@ export const deviceService = (() => {
 			});
 
 			monitorBatteryLevel();
+			monitorRssi();
 
 			isConnecting$.set(false);
 			scanDevicesService.stopScan();
@@ -225,11 +234,22 @@ export const deviceService = (() => {
 		batteryLevel$.set(batteryLevel);
 	};
 
+	const monitorRssi = async () => {
+		rssiInterval = setInterval(async () => {
+			const rssi = await getConnectedDeviceRssi();
+			rssi$.set(rssi !== null ? rssiToSignalStrength(rssi) : null);
+		}, 10000); // 10 seconds
+		// Initial fetch
+		const rssi = await getConnectedDeviceRssi();
+		rssi$.set(rssi !== null ? rssiToSignalStrength(rssi) : null);
+	};
+
 	return {
 		connectedDeviceId$,
 		isConnecting$,
 		isConnected$,
 		batteryLevel$,
+		rssi$,
 		connectToDevice,
 		getConnectedDevice: () => _connectedDevice,
 		getConnectedDeviceRssi,

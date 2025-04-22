@@ -11,6 +11,7 @@ import { useIsBluetoothCorrectlySetup } from "@/src/hooks/useIsBluetoothCorrectl
 import { deviceService } from "@/src/services/deviceService/deviceService";
 import { alert } from "@/src/services/deviceService/utils/alert";
 import { storage$ } from "@/src/services/storage";
+import { capitalize } from "@/src/utils/capitalize";
 import { Memo, use$ } from "@legendapp/state/react";
 import { Bluetooth } from "lucide-react-native";
 import React from "react";
@@ -75,11 +76,15 @@ export function DeviceBottomSheet() {
 						/>
 					)}
 				</Memo>
-				<InsetListRow
-					backgroundColor="tertiary"
-					title="Signal Strength"
-					detail={`${deviceService.getConnectedDeviceRssi() ?? "N/A"}`}
-				/>
+				<Memo>
+					{() => (
+						<InsetListRow
+							backgroundColor="tertiary"
+							title="Signal Strength"
+							detail={`${capitalize(deviceService.rssi$.get() ?? "N/A")}`}
+						/>
+					)}
+				</Memo>
 			</InsetList>
 
 			<View className="mt-4 w-full">
