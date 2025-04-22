@@ -4,21 +4,29 @@ import { use$ } from "@legendapp/state/react";
 import { Bluetooth } from "lucide-react-native";
 import React, { useEffect, useRef } from "react";
 import { Animated } from "react-native";
+import type { Device } from "react-native-ble-plx";
 import { useColor } from "react-native-uikit-colors";
 
 type Props = {
 	title: string;
 	message: string;
+	onCompatibleDeviceFound: (device: Device) => void;
 };
 
-export function SearchingDevices({ title, message }: Props) {
+export function SearchingDevices({
+	title,
+	message,
+	onCompatibleDeviceFound,
+}: Props) {
 	const gray2 = useColor("gray2");
 	const isScanning = use$(scanDevicesService.scanning$);
 	const animatedValue = useRef(new Animated.Value(1)).current;
 	const animationRef = useRef<Animated.CompositeAnimation | null>(null);
 
 	useEffect(() => {
-		scanDevicesService.scanDevices({});
+		scanDevicesService.scanDevices({
+			onCompatibleDeviceFound,
+		});
 	}, []);
 
 	useEffect(() => {

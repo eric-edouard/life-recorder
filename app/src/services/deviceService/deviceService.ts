@@ -74,7 +74,6 @@ export const deviceService = (() => {
 			});
 
 			isConnecting$.set(false);
-			scanDevicesService.resetCompatibleDevice();
 			scanDevicesService.stopScan();
 			return;
 		} catch (error) {

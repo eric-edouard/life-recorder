@@ -15,7 +15,6 @@ export const autoScanAndConnect = () => {
 			defer(async () => {
 				const pairedDeviceId = storage$.pairedDeviceId.peek();
 				if (!pairedDeviceId) {
-					scanDevicesService.scanDevices({});
 					return;
 				}
 				const kindOfConnectedDevice =

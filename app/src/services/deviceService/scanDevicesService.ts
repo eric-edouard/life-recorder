@@ -17,8 +17,6 @@ export const scanDevicesService = (() => {
 		"unknown",
 	);
 	const scanning$ = observable(false);
-	const compatibleDeviceId$ = observable<string | null>(null);
-	let _compatibleDevice: Device | null = null;
 
 	const initialize = () => {
 		_bleSubscription = bleManager.onStateChange(async (state) => {
@@ -72,8 +70,8 @@ export const scanDevicesService = (() => {
 	const scanDevices = ({
 		onCompatibleDeviceFound,
 	}: {
-		onCompatibleDeviceFound?: (device: Device) => void;
-	} = {}) => {
+		onCompatibleDeviceFound: (device: Device) => void;
+	}) => {
 		if (bluetoothState$.peek() !== State.PoweredOn) {
 			throw new Error("Bluetooth is Off");
 		}
@@ -81,9 +79,6 @@ export const scanDevicesService = (() => {
 		if (permissionStatus$.peek() !== "granted") {
 			throw new Error("Permissions not granted");
 		}
-		// Reset the compatible device
-		compatibleDeviceId$.set(null);
-		_compatibleDevice = null;
 
 		scanning$.set(true);
 
@@ -100,8 +95,6 @@ export const scanDevicesService = (() => {
 				}
 
 				if (foundDevice.serviceUUIDs?.includes(OMI_SERVICE_UUID)) {
-					_compatibleDevice = foundDevice;
-					compatibleDeviceId$.set(foundDevice.id);
 					onCompatibleDeviceFound?.(foundDevice);
 					stopScan();
 				}
@@ -124,12 +117,6 @@ export const scanDevicesService = (() => {
 		permissionStatus$,
 		checkKindOfConnectedDevices,
 		scanning$,
-		getCompatibleDevice: () => _compatibleDevice,
-		resetCompatibleDevice: () => {
-			_compatibleDevice = null;
-			compatibleDeviceId$.set(null);
-		},
-		compatibleDeviceId$,
 		requestBluetoothPermission,
 		scanDevices,
 		stopScan,

@@ -1,19 +1,19 @@
 import { SearchingDevices } from "@/src/components/Sreens/DeviceScreen/SearchingDevices";
 import { Text } from "@/src/components/ui/Text";
-import { useGetCompatibleDevice } from "@/src/hooks/useGetCompatibleDevice";
 import { deviceService } from "@/src/services/deviceService/deviceService";
 import { rssiToSignalStrength } from "@/src/utils/rssiToSignalStrength";
 import { Button } from "@expo/ui/Button";
 import { use$ } from "@legendapp/state/react";
 import { router } from "expo-router";
 import { SymbolView } from "expo-symbols";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { View } from "react-native";
+import type { Device } from "react-native-ble-plx";
 
 export function PairDevice() {
 	const isConnecting = use$(deviceService.isConnecting$);
 	const isConnected = use$(deviceService.isConnected$);
-	const compatibleDevice = useGetCompatibleDevice();
+	const [compatibleDevice, setCompatibleDevice] = useState<Device | null>(null);
 
 	useEffect(() => {
 		if (isConnected) {
@@ -28,6 +28,7 @@ export function PairDevice() {
 			<SearchingDevices
 				title="Searching..."
 				message="Looking for compatible devices"
+				onCompatibleDeviceFound={setCompatibleDevice}
 			/>
 		);
 

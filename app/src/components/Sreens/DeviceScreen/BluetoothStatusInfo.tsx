@@ -13,7 +13,7 @@ export function BluetoothStatusInfo() {
 	const permissionStatus = use$(scanDevicesService.permissionStatus$);
 	const gray2 = useColor("gray2");
 
-	const canAskForPermission = permissionStatus !== "blocked";
+	const canAskForPermission = permissionStatus !== "denied";
 
 	if (permissionStatus !== "granted") {
 		return (

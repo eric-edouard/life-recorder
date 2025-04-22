@@ -34,6 +34,9 @@ export function DeviceBottomSheet() {
 			<SearchingDevices
 				title="Searching..."
 				message="Looking for your device"
+				onCompatibleDeviceFound={(compatibleDevice) => {
+					deviceService.connectToDevice(compatibleDevice.id);
+				}}
 			/>
 		);
 	}
