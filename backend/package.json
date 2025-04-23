@@ -9,7 +9,7 @@
 		"install-resemblyzer": "cd resemblyzer && python3 -m venv venv && venv/bin/pip install --upgrade pip && venv/bin/pip install -r requirements.txt && cd ..",
 		"install-resemblyzer:railway": "python3 -m venv /opt/venv && /opt/venv/bin/pip install --upgrade pip && /opt/venv/bin/pip install --no-cache-dir --extra-index-url https://download.pytorch.org/whl/cpu -r dist/resemblyzer/requirements.txt",
 		"start": "node dist/index.js",
-		"dev": "concurrently \"node scripts/tunnel.js\" \"tsx watch -r tsconfig-paths/register src/index.ts\"",
+		"dev": "npm run install-resemblyzer && concurrently \"node scripts/tunnel.js\" \"tsx watch -r tsconfig-paths/register src/index.ts\"",
 		"lint": "biome check . --formatter-enabled=true --linter-enabled=true --organize-imports-enabled=true --diagnostic-level error --write",
 		"typecheck": "tsc --noEmit",
 		"check": "npm run lint && npm run typecheck",
