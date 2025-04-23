@@ -18,7 +18,7 @@ export const AnimatedScreenHeader = ({ title }: AnimatedScreenHeaderProps) => {
 			className={"absolute top-0 left-0 right-0"}
 			style={{
 				opacity: scrollAnimatedValue.interpolate({
-					inputRange: [0, 20, 30, 10000],
+					inputRange: [0, 15, 25, 10000],
 					outputRange: [0, 0, 1, 1],
 					extrapolate: "clamp",
 				}),

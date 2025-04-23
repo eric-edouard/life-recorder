@@ -1,19 +1,16 @@
 import { useScreenScroll } from "@/src/components/ScreenScrollView/ScreenScrollContext";
 import { Animated } from "react-native";
 
-type AnimatedScreenTitleProps = {
-	title: string;
-};
-
-export const AnimatedScreenTitle = ({ title }: AnimatedScreenTitleProps) => {
+export const AnimatedScreenTitle = ({
+	children,
+}: { children: React.ReactNode }) => {
 	const { scrollAnimatedValue } = useScreenScroll();
 
 	return (
-		<Animated.Text
-			className="text-3xl font-extrabold mb-4 text-label"
+		<Animated.View
 			style={{
 				opacity: scrollAnimatedValue.interpolate({
-					inputRange: [-100, 15, 25],
+					inputRange: [-100, 10, 15],
 					outputRange: [1, 1, 0],
 				}),
 				transform: [
@@ -27,7 +24,7 @@ export const AnimatedScreenTitle = ({ title }: AnimatedScreenTitleProps) => {
 				transformOrigin: "left center",
 			}}
 		>
-			{title}
-		</Animated.Text>
+			{children}
+		</Animated.View>
 	);
 };

@@ -3,6 +3,7 @@ import { Alert, View } from "react-native";
 
 import { DeviceStatusButton } from "@/src/components/DeviceStatusButton";
 import { ScreenScrollView } from "@/src/components/ScreenScrollView/ScreenScrollView";
+import { Text } from "@/src/components/ui/Text";
 // import { useAutoScanDevices } from "@/src/hooks/useAutoScanDevices";
 import { audioDataService } from "@/src/services/audioDataService";
 import { deviceService } from "@/src/services/deviceService/deviceService";
@@ -60,8 +61,14 @@ export const HomeScreen = () => {
 	return (
 		<ScreenScrollView.Container title="Life Recorder" className="pt-5">
 			<View className="px-lg w-full flex items-start gap-3">
-				<DeviceStatusButton />
-				<ScreenScrollView.Title title="Life Recorder" />
+				<ScreenScrollView.Title>
+					<View className="flex items-start gap-3">
+						<DeviceStatusButton />
+						<Text className="text-3xl font-extrabold mb-4 text-label">
+							Life Recorder
+						</Text>
+					</View>
+				</ScreenScrollView.Title>
 			</View>
 		</ScreenScrollView.Container>
 	);
