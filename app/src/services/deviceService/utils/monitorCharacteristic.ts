@@ -15,6 +15,14 @@ export const monitorCharacteristic = async (
 		characteristicUuid,
 		(error, characteristic) => {
 			if (error) {
+				if (error.message === "Operation was cancelled") {
+					console.log("[monitorCharacteristic] Operation was cancelled");
+					return;
+				}
+				if (error.message.includes(" was disconnected")) {
+					console.log("[monitorCharacteristic] Device was disconnected");
+					return;
+				}
 				console.error("[monitorCharacteristic] Characteristic error:", {
 					error,
 					characteristicUuid,

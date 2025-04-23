@@ -1,10 +1,10 @@
 import { bleManager } from "@app/services/bleManager";
 import { scanDevicesService } from "@app/services/deviceService/scanDevicesService";
-import { alert } from "@app/services/deviceService/utils/alert";
 import { getCharacteristicValue } from "@app/services/deviceService/utils/getCharacteristicValue";
 import { getDeviceCharacteristic } from "@app/services/deviceService/utils/getDeviceCharacteric";
 import { monitorCharacteristic } from "@app/services/deviceService/utils/monitorCharacteristic";
 import { storage$ } from "@app/services/storage";
+import { alert } from "@app/utils/alert";
 import { defer } from "@app/utils/defer";
 import {
 	type SignalStrength,

@@ -1,8 +1,8 @@
 import { AnimatedBluetoothScanning } from "@app/components/Sreens/DeviceBottomSheet/AnimatedBluetoothScanning";
 import { IconAndText } from "@app/components/ui/IconAndText";
 import { deviceService } from "@app/services/deviceService/deviceService";
-import { alert } from "@app/services/deviceService/utils/alert";
 import { storage$ } from "@app/services/storage";
+import { alert } from "@app/utils/alert";
 import { Button } from "@expo/ui/swift-ui";
 import { use$ } from "@legendapp/state/react";
 import React from "react";

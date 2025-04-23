@@ -3,6 +3,7 @@ import { DeviceLargeDetails } from "@app/components/Sreens/DeviceBottomSheet/Dev
 import { RowButton } from "@app/components/ui/Buttons/RowButton";
 import { Text } from "@app/components/ui/Text";
 import { deviceService } from "@app/services/deviceService/deviceService";
+import { alert } from "@app/utils/alert";
 import { observable } from "@legendapp/state";
 import { Memo } from "@legendapp/state/react";
 import { ChevronDown } from "lucide-react-native";
