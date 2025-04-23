@@ -18,7 +18,7 @@ export function BluetoothStatusInfo() {
 	if (permissionStatus !== "granted") {
 		return (
 			<IconAndText
-				className="m-5 mb-safe-offset-3"
+				className="m-5 mb-safe-offset-2"
 				icon={<Bluetooth size={56} color={gray2} />}
 				title="Missing Permissions"
 				message={
