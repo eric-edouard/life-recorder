@@ -13,6 +13,7 @@ import {
 	DEVICE_SHEET_HEIGHT,
 	dragValue$,
 } from "@/src/components/Sreens/DeviceBottomSheet/ConnectedDeviceDetails";
+import { DeviceBottomSheetStateRouter } from "@/src/components/Sreens/DeviceBottomSheet/DeviceBottomSheetStateRouter";
 
 export function DeviceBottomSheet() {
 	const connectedDevice = useConnectedDevice();
@@ -44,7 +45,7 @@ export function DeviceBottomSheet() {
 				dragValue$.set(event.nativeEvent.value);
 			}}
 		>
-			<DeviceBottomSheet />
+			<DeviceBottomSheetStateRouter />
 		</TrueSheet>
 	);
 }
