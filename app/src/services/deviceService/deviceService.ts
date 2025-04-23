@@ -32,7 +32,7 @@ import type { BleAudioCodec } from "./types";
 export const deviceService = (() => {
 	let _connectedDevice: Device | null = null;
 
-	let batteryLevelInterval: number | null = null;
+	let batteryLevelSubscription: Subscription | null = null;
 	let rssiInterval: number | null = null;
 	let buttonStateSubscription: Subscription | null = null;
 	const connectedDeviceId$ = observable<string | null>(null);
@@ -46,7 +46,8 @@ export const deviceService = (() => {
 		_connectedDevice = device;
 		connectedDeviceId$.set(device?.id || null);
 		if (device === null) {
-			batteryLevelInterval && clearInterval(batteryLevelInterval);
+			batteryLevelSubscription?.remove();
+			buttonStateSubscription?.remove();
 			rssiInterval && clearInterval(rssiInterval);
 			batteryLevel$.set(null);
 			rssi$.set(null);
@@ -126,7 +127,7 @@ export const deviceService = (() => {
 
 		try {
 			buttonStateSubscription?.remove();
-			batteryLevelInterval && clearInterval(batteryLevelInterval);
+			batteryLevelSubscription?.remove();
 			rssiInterval && clearInterval(rssiInterval);
 			await _connectedDevice.cancelConnection();
 			defer(() => setConnectedDevice(null));
@@ -231,21 +232,35 @@ export const deviceService = (() => {
 	};
 
 	const monitorBatteryLevel = async () => {
-		batteryLevelInterval = setInterval(async () => {
-			const batteryLevel = await getBatteryLevel();
-			batteryLevel$.set(batteryLevel);
-		}, 30000); // 30 seconds
-		// Initial fetch
+		if (!_connectedDevice) {
+			throw new Error("Device not connected");
+		}
+		batteryLevelSubscription = _connectedDevice.monitorCharacteristicForService(
+			BATTERY_SERVICE_UUID,
+			BATTERY_LEVEL_CHARACTERISTIC_UUID,
+			(error, characteristic) => {
+				if (error) {
+					console.error("Battery level characteristic error:", error);
+					return;
+				}
+				if (!characteristic?.value) {
+					console.log("Received notification but no characteristic value");
+					return;
+				}
+				const batteryLevel = extractFirstByteValue(characteristic.value);
+				batteryLevel$.set(batteryLevel);
+			},
+		);
 		const batteryLevel = await getBatteryLevel();
 		batteryLevel$.set(batteryLevel);
 	};
 
 	const getConnectedDeviceRssi = async (): Promise<number | null> => {
-		if (_connectedDevice) {
-			const device = await bleManager.readRSSIForDevice(_connectedDevice.id);
-			return device.rssi;
+		if (!_connectedDevice) {
+			throw new Error("Device not connected");
 		}
-		return null;
+		const device = await bleManager.readRSSIForDevice(_connectedDevice.id);
+		return device.rssi;
 	};
 
 	const monitorRssi = async () => {
