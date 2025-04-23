@@ -6,6 +6,11 @@ import { BleAudioCodec } from "@/src/services/deviceService/types";
 
 // Service and characteristic UUIDs
 export const OMI_SERVICE_UUID = "19b10000-e8f2-537e-4f6c-d104768a1214";
+
+export const BUTTON_SERVICE_UUID = "23ba7924-0000-1000-7450-346eac492e92";
+export const BUTTON_TRIGGER_CHARACTERISTIC_UUID =
+	"23ba7925-0000-1000-7450-346eac492e92";
+
 export const AUDIO_CODEC_CHARACTERISTIC_UUID =
 	"19b10002-e8f2-537e-4f6c-d104768a1214";
 export const AUDIO_DATA_STREAM_CHARACTERISTIC_UUID =
