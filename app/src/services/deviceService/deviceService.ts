@@ -9,7 +9,7 @@ import {
 	type SignalStrength,
 	rssiToSignalStrength,
 } from "@/src/utils/rssiToSignalStrength";
-import { observable } from "@legendapp/state";
+import { observable, observe } from "@legendapp/state";
 import { Platform } from "react-native";
 import type { Device, Subscription } from "react-native-ble-plx";
 import { base64ToBytes } from "../../utils/base64ToBytes";
@@ -18,6 +18,10 @@ import {
 	AUDIO_DATA_STREAM_CHARACTERISTIC_UUID,
 	BATTERY_LEVEL_CHARACTERISTIC_UUID,
 	BATTERY_SERVICE_UUID,
+	BUTTON_CHARACTERISTIC_UUID,
+	BUTTON_SERVICE_UUID,
+	BUTTON_STATE,
+	type ButtonState,
 	CODEC_MAP,
 	OMI_SERVICE_UUID,
 } from "./constants";
@@ -30,10 +34,12 @@ export const deviceService = (() => {
 
 	let batteryLevelInterval: number | null = null;
 	let rssiInterval: number | null = null;
+	let buttonStateSubscription: Subscription | null = null;
 	const connectedDeviceId$ = observable<string | null>(null);
 	const isConnected$ = observable(() => !!connectedDeviceId$.get());
 	const batteryLevel$ = observable<number | null>(null);
 	const rssi$ = observable<SignalStrength | null>(null);
+	const buttonState$ = observable<ButtonState | null>(null);
 	const isConnecting$ = observable(false);
 
 	const setConnectedDevice = (device: Device | null) => {
@@ -96,7 +102,7 @@ export const deviceService = (() => {
 
 			monitorBatteryLevel();
 			monitorRssi();
-
+			monitorButtonState();
 			isConnecting$.set(false);
 			scanDevicesService.stopScan();
 			return;
@@ -119,6 +125,7 @@ export const deviceService = (() => {
 		}
 
 		try {
+			buttonStateSubscription?.remove();
 			batteryLevelInterval && clearInterval(batteryLevelInterval);
 			rssiInterval && clearInterval(rssiInterval);
 			await _connectedDevice.cancelConnection();
@@ -251,12 +258,63 @@ export const deviceService = (() => {
 		rssi$.set(rssi !== null ? rssiToSignalStrength(rssi) : null);
 	};
 
+	const getButtonState = async (): Promise<ButtonState> => {
+		if (!_connectedDevice) {
+			throw new Error("Device not connected");
+		}
+
+		const buttonStateCharacteristic = await getDeviceCharacteristic(
+			_connectedDevice,
+			BUTTON_SERVICE_UUID,
+			BUTTON_CHARACTERISTIC_UUID,
+		);
+
+		if (!buttonStateCharacteristic) {
+			throw new Error("Button state characteristic not found");
+		}
+
+		const base64Value = (await buttonStateCharacteristic.read()).value;
+		const buttonState = extractFirstByteValue(base64Value);
+		if (!buttonState) {
+			throw new Error("No button state found");
+		}
+		return BUTTON_STATE[buttonState as keyof typeof BUTTON_STATE];
+	};
+
+	const monitorButtonState = async () => {
+		if (!_connectedDevice) {
+			throw new Error("Device not connected");
+		}
+		buttonStateSubscription = _connectedDevice.monitorCharacteristicForService(
+			BUTTON_SERVICE_UUID,
+			BUTTON_CHARACTERISTIC_UUID,
+			(error, characteristic) => {
+				if (error) {
+					console.error("Button state characteristic error:", error);
+					return;
+				}
+				if (!characteristic?.value) {
+					console.log("Received notification but no characteristic value");
+					return;
+				}
+				const buttonState = extractFirstByteValue(characteristic.value);
+				if (!buttonState) {
+					throw new Error("No button state found");
+				}
+				buttonState$.set(
+					BUTTON_STATE[buttonState as keyof typeof BUTTON_STATE],
+				);
+			},
+		);
+	};
+
 	return {
 		connectedDeviceId$,
 		isConnecting$,
 		isConnected$,
 		batteryLevel$,
 		rssi$,
+		buttonState$,
 		connectToDevice,
 		getConnectedDevice: () => _connectedDevice,
 		getConnectedDeviceRssi,
@@ -265,5 +323,10 @@ export const deviceService = (() => {
 		getAudioCodec,
 		startAudioBytesListener,
 		getBatteryLevel,
+		getButtonState,
 	};
 })();
+
+observe(deviceService.buttonState$, (buttonState) => {
+	console.log("buttonState", buttonState.value);
+});
