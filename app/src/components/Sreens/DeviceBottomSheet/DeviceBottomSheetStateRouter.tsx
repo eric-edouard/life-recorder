@@ -6,19 +6,10 @@ import { useConnectedDevice } from "@/src/hooks/useConnectedDevice";
 import { useIsBluetoothCorrectlySetup } from "@/src/hooks/useIsBluetoothCorrectlySetup";
 import { deviceService } from "@/src/services/deviceService/deviceService";
 import { storage$ } from "@/src/services/storage";
-import { observable } from "@legendapp/state";
 import { use$ } from "@legendapp/state/react";
 import { router } from "expo-router";
 import React, { useState } from "react";
 import type { Device } from "react-native-ble-plx";
-import Reanimated from "react-native-reanimated";
-
-export const DEVICE_SHEET_HEIGHT = 400;
-
-export const dragValue$ = observable(0);
-
-const AnimatedSearchingDevices =
-	Reanimated.createAnimatedComponent(SearchingDevices);
 
 // type BottomSheetState =
 // 	| "bluetooth-not-set-up"
