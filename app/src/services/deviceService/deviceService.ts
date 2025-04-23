@@ -169,39 +169,33 @@ export const deviceService = (() => {
 			throw new Error("Device not connected");
 		}
 
-		try {
-			const audioDataStreamCharacteristic = await getDeviceCharacteristic(
-				_connectedDevice,
-				OMI_SERVICE_UUID,
-				AUDIO_DATA_STREAM_CHARACTERISTIC_UUID,
-			);
+		const audioDataStreamCharacteristic = await getDeviceCharacteristic(
+			_connectedDevice,
+			OMI_SERVICE_UUID,
+			AUDIO_DATA_STREAM_CHARACTERISTIC_UUID,
+		);
 
-			if (!audioDataStreamCharacteristic) {
-				console.error("Audio data stream characteristic not found");
-				return;
-			}
-
-			return audioDataStreamCharacteristic.monitor((error, characteristic) => {
-				if (error) {
-					if (error.message === "Operation was cancelled") {
-						console.log("Audio data stream notification cancelled");
-						return;
-					}
-					console.error("Audio data stream notification error:", error);
-					return;
-				}
-				if (!characteristic?.value) {
-					console.log("Received notification but no characteristic value");
-					return;
-				}
-				const bytes = base64ToBytes(characteristic.value);
-				// Remove the first 3 bytes (header) added by the Omi device
-				onAudioBytesReceived(bytes.length > 3 ? bytes.slice(3) : bytes);
-			});
-		} catch (error) {
-			console.error("Error starting audio bytes listener:", error);
-			return;
+		if (!audioDataStreamCharacteristic) {
+			throw new Error("[deviceService] No audioDataStreamCharacteristic");
 		}
+
+		return audioDataStreamCharacteristic.monitor((error, characteristic) => {
+			if (error) {
+				if (error.message === "Operation was cancelled") {
+					console.log("Audio data stream notification cancelled");
+					return;
+				}
+				throw new Error("[deviceService] Audio data stream notification error");
+			}
+			if (!characteristic?.value) {
+				throw new Error(
+					"[deviceService] Received notification but no characteristic value",
+				);
+			}
+			const bytes = base64ToBytes(characteristic.value);
+			// Remove the first 3 bytes (header) added by the Omi device
+			onAudioBytesReceived(bytes.length > 3 ? bytes.slice(3) : bytes);
+		});
 	};
 
 	const getBatteryLevel = async (): Promise<number> => {
