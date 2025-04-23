@@ -3,7 +3,8 @@
 	"compilerOptions": {
 		"module": "CommonJS",
 		"outDir": "dist",
-		"rootDir": "../"
+		"rootDir": "../",
+		"noEmit": false
 	},
 	"include": ["src/**/*", "../shared/**/*"],
 	"exclude": ["../app", "node_modules", "dist", "drizzle.config.ts"]
