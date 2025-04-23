@@ -1,8 +1,9 @@
 import { bleManager } from "@/src/services/bleManager";
 import { scanDevicesService } from "@/src/services/deviceService/scanDevicesService";
 import { alert } from "@/src/services/deviceService/utils/alert";
-import { extractFirstByteValue } from "@/src/services/deviceService/utils/extractFirstByteValue";
+import { getCharacteristicValue } from "@/src/services/deviceService/utils/getCharacteristicValue";
 import { getDeviceCharacteristic } from "@/src/services/deviceService/utils/getDeviceCharacteric";
+import { monitorCharacteristic } from "@/src/services/deviceService/utils/monitorCharacteristic";
 import { storage$ } from "@/src/services/storage";
 import { defer } from "@/src/utils/defer";
 import {
@@ -145,26 +146,15 @@ export const deviceService = (() => {
 		if (!_connectedDevice) {
 			throw new Error("Device not connected");
 		}
-
-		const codecCharacteristic = await getDeviceCharacteristic(
+		const value = await getCharacteristicValue(
 			_connectedDevice,
 			OMI_SERVICE_UUID,
 			AUDIO_CODEC_CHARACTERISTIC_UUID,
 		);
-
-		if (!codecCharacteristic) {
-			throw new Error("Audio codec characteristic not found");
+		if (!value) {
+			throw new Error("No audio codec value found");
 		}
-
-		const codecId = extractFirstByteValue(
-			(await codecCharacteristic.read()).value,
-		);
-
-		if (!codecId) {
-			throw new Error("No codec ID found");
-		}
-
-		return CODEC_MAP[codecId];
+		return CODEC_MAP[value];
 	};
 
 	/**
@@ -214,45 +204,27 @@ export const deviceService = (() => {
 		}
 	};
 
-	const getBatteryLevel = async (): Promise<number | null> => {
+	const getBatteryLevel = async (): Promise<number> => {
 		if (!_connectedDevice) {
 			throw new Error("Device not connected");
 		}
-		const batteryLevelCharacteristic = await getDeviceCharacteristic(
+		return getCharacteristicValue(
 			_connectedDevice,
 			BATTERY_SERVICE_UUID,
 			BATTERY_LEVEL_CHARACTERISTIC_UUID,
 		);
-
-		if (!batteryLevelCharacteristic) return null;
-
-		const base64Value = (await batteryLevelCharacteristic.read()).value;
-
-		return extractFirstByteValue(base64Value);
 	};
 
 	const monitorBatteryLevel = async () => {
 		if (!_connectedDevice) {
 			throw new Error("Device not connected");
 		}
-		batteryLevelSubscription = _connectedDevice.monitorCharacteristicForService(
+		batteryLevelSubscription = await monitorCharacteristic(
+			_connectedDevice,
 			BATTERY_SERVICE_UUID,
 			BATTERY_LEVEL_CHARACTERISTIC_UUID,
-			(error, characteristic) => {
-				if (error) {
-					console.error("Battery level characteristic error:", error);
-					return;
-				}
-				if (!characteristic?.value) {
-					console.log("Received notification but no characteristic value");
-					return;
-				}
-				const batteryLevel = extractFirstByteValue(characteristic.value);
-				batteryLevel$.set(batteryLevel);
-			},
+			(value) => batteryLevel$.set(value),
 		);
-		const batteryLevel = await getBatteryLevel();
-		batteryLevel$.set(batteryLevel);
 	};
 
 	const getConnectedDeviceRssi = async (): Promise<number | null> => {
@@ -264,6 +236,9 @@ export const deviceService = (() => {
 	};
 
 	const monitorRssi = async () => {
+		if (!_connectedDevice) {
+			throw new Error("Device not connected");
+		}
 		rssiInterval = setInterval(async () => {
 			const rssi = await getConnectedDeviceRssi();
 			rssi$.set(rssi !== null ? rssiToSignalStrength(rssi) : null);
@@ -277,49 +252,25 @@ export const deviceService = (() => {
 		if (!_connectedDevice) {
 			throw new Error("Device not connected");
 		}
-
-		const buttonStateCharacteristic = await getDeviceCharacteristic(
-			_connectedDevice,
-			BUTTON_SERVICE_UUID,
-			BUTTON_CHARACTERISTIC_UUID,
-		);
-
-		if (!buttonStateCharacteristic) {
-			throw new Error("Button state characteristic not found");
-		}
-
-		const base64Value = (await buttonStateCharacteristic.read()).value;
-		const buttonState = extractFirstByteValue(base64Value);
-		if (!buttonState) {
-			throw new Error("No button state found");
-		}
-		return BUTTON_STATE[buttonState as keyof typeof BUTTON_STATE];
+		return BUTTON_STATE[
+			(await getCharacteristicValue(
+				_connectedDevice,
+				BUTTON_SERVICE_UUID,
+				BUTTON_CHARACTERISTIC_UUID,
+			)) as keyof typeof BUTTON_STATE
+		];
 	};
 
 	const monitorButtonState = async () => {
 		if (!_connectedDevice) {
 			throw new Error("Device not connected");
 		}
-		buttonStateSubscription = _connectedDevice.monitorCharacteristicForService(
+		buttonStateSubscription = await monitorCharacteristic(
+			_connectedDevice,
 			BUTTON_SERVICE_UUID,
 			BUTTON_CHARACTERISTIC_UUID,
-			(error, characteristic) => {
-				if (error) {
-					console.error("Button state characteristic error:", error);
-					return;
-				}
-				if (!characteristic?.value) {
-					console.log("Received notification but no characteristic value");
-					return;
-				}
-				const buttonState = extractFirstByteValue(characteristic.value);
-				if (!buttonState) {
-					throw new Error("No button state found");
-				}
-				buttonState$.set(
-					BUTTON_STATE[buttonState as keyof typeof BUTTON_STATE],
-				);
-			},
+			(value) =>
+				buttonState$.set(BUTTON_STATE[value as keyof typeof BUTTON_STATE]),
 		);
 	};
 
@@ -343,5 +294,5 @@ export const deviceService = (() => {
 })();
 
 observe(deviceService.buttonState$, (buttonState) => {
-	console.log("buttonState", buttonState.value);
+	console.log(">>> buttonState", buttonState.value);
 });
