@@ -23,9 +23,9 @@ export const DEVICE_SHEET_HEIGHT = 400;
 export const dragValue$ = observable(0);
 
 export function DeviceBottomSheet() {
-	const connectedDevice = useConnectedDevice();
-	const hasPairedDevice = use$(storage$.pairedDeviceId);
 	const isBluetoothCorrectlySetup = useIsBluetoothCorrectlySetup();
+	const hasPairedDevice = !!use$(storage$.pairedDeviceId);
+	const connectedDevice = useConnectedDevice();
 	const color = useColor("quaternaryLabel");
 	const insets = useSafeAreaInsets();
 

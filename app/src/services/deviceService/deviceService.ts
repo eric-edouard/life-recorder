@@ -4,6 +4,7 @@ import { alert } from "@/src/services/deviceService/utils/alert";
 import { extractFirstByteValue } from "@/src/services/deviceService/utils/extractFirstByteValue";
 import { getDeviceCharacteristic } from "@/src/services/deviceService/utils/getDeviceCharacteric";
 import { storage$ } from "@/src/services/storage";
+import { defer } from "@/src/utils/defer";
 import {
 	type SignalStrength,
 	rssiToSignalStrength,
@@ -40,8 +41,8 @@ export const deviceService = (() => {
 		connectedDeviceId$.set(device?.id || null);
 		if (device === null) {
 			batteryLevelInterval && clearInterval(batteryLevelInterval);
-			batteryLevel$.set(null);
 			rssiInterval && clearInterval(rssiInterval);
+			batteryLevel$.set(null);
 			rssi$.set(null);
 		}
 	};
@@ -110,10 +111,13 @@ export const deviceService = (() => {
 		if (!_connectedDevice) {
 			throw new Error("[deviceService] No device connected, cannot disconnect");
 		}
+
 		try {
+			batteryLevelInterval && clearInterval(batteryLevelInterval);
+			rssiInterval && clearInterval(rssiInterval);
 			await _connectedDevice.cancelConnection();
 			storage$.pairedDeviceId.delete();
-			setConnectedDevice(null);
+			defer(() => setConnectedDevice(null));
 		} catch (error) {
 			console.error("[deviceService] Error disconnecting from device:", error);
 		}
