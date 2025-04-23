@@ -1,128 +1,50 @@
-import { DeviceAnimation } from "@/src/components/DeviceAnimation";
-import { BluetoothStatusInfo } from "@/src/components/Sreens/DeviceBottomSheet/BluetoothStatusInfo";
-import { DeviceBatteryIcon } from "@/src/components/Sreens/DeviceBottomSheet/DeviceBatteryIcon";
-import { PairDevice } from "@/src/components/Sreens/DeviceBottomSheet/PairDevice";
-import { SearchingDevices } from "@/src/components/Sreens/DeviceBottomSheet/SearchingDevices";
-import { RowButton } from "@/src/components/ui/Buttons/RowButton";
-import { Text } from "@/src/components/ui/Text";
 import { useConnectedDevice } from "@/src/hooks/useConnectedDevice";
-import { useIsBluetoothCorrectlySetup } from "@/src/hooks/useIsBluetoothCorrectlySetup";
-import { deviceService } from "@/src/services/deviceService/deviceService";
-import { alert } from "@/src/services/deviceService/utils/alert";
-import { storage$ } from "@/src/services/storage";
-import { observable } from "@legendapp/state";
-import { Memo, use$ } from "@legendapp/state/react";
-import { ChevronDown } from "lucide-react-native";
-import React from "react";
-import { View } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { defer } from "@/src/utils/defer";
+import {
+	type DragChangeEvent,
+	type SizeChangeEvent,
+	TrueSheet,
+} from "@lodev09/react-native-true-sheet";
+import { router } from "expo-router";
+import React, { useEffect, useRef } from "react";
 import { useColor } from "react-native-uikit-colors";
 
-export const DEVICE_SHEET_HEIGHT = 400;
-
-export const dragValue$ = observable(0);
+import {
+	DEVICE_SHEET_HEIGHT,
+	dragValue$,
+} from "@/src/components/Sreens/DeviceBottomSheet/ConnectedDeviceDetails";
 
 export function DeviceBottomSheet() {
-	const isBluetoothCorrectlySetup = useIsBluetoothCorrectlySetup();
-	const hasPairedDevice = !!use$(storage$.pairedDeviceId);
 	const connectedDevice = useConnectedDevice();
-	const color = useColor("quaternaryLabel");
-	const insets = useSafeAreaInsets();
+	const isInitialRender = useRef(true);
 
-	if (!isBluetoothCorrectlySetup) {
-		return <BluetoothStatusInfo />;
-	}
+	const sheet = useRef<TrueSheet>(null);
+	const backgroundColor = useColor("secondarySystemBackground");
 
-	if (!hasPairedDevice) {
-		return <PairDevice />;
-	}
-
-	if (!connectedDevice) {
-		return (
-			<SearchingDevices
-				title="Searching..."
-				message="Looking for your device"
-				onCompatibleDeviceFound={(compatibleDevice) => {
-					deviceService.connectToDevice(compatibleDevice.id);
-				}}
-			/>
-		);
-	}
+	useEffect(() => {
+		if (connectedDevice && !isInitialRender.current) {
+			defer(() => sheet.current?.present(0));
+		}
+		isInitialRender.current = false;
+	}, [connectedDevice]);
 
 	return (
-		<View
-			// style={{ height: 400 + insets.bottom }}
-			className="flex-1 items-center p-5 bg-secondary-system-background pt-8 pb-safe-offset-2 "
+		<TrueSheet
+			backgroundColor={backgroundColor}
+			ref={sheet}
+			sizes={connectedDevice ? [DEVICE_SHEET_HEIGHT, "auto"] : ["auto"]}
+			cornerRadius={24}
+			initialIndex={0}
+			initialIndexAnimated={true}
+			onDismiss={router.back}
+			onDragChange={(sizeInfo: DragChangeEvent) => {
+				dragValue$.set(sizeInfo.nativeEvent.value);
+			}}
+			onSizeChange={(event: SizeChangeEvent) => {
+				dragValue$.set(event.nativeEvent.value);
+			}}
 		>
-			<View className="flex-row justify-center items-center w-full  mt-6 mb-8 ">
-				<Text className="text-4xl text-center font-bold">
-					{connectedDevice?.name}
-				</Text>
-			</View>
-			<View className="w-full h-56 ">
-				<DeviceAnimation />
-			</View>
-			<Memo>
-				{() => (
-					<View className="">
-						<DeviceBatteryIcon
-							percentage={deviceService.batteryLevel$.get() ?? 0}
-						/>
-						<Text className="text-lg text-center text-label mt-[-6px]">
-							{deviceService.batteryLevel$.get() ?? 0}%
-						</Text>
-					</View>
-				)}
-			</Memo>
-
-			<View className="mt-5 mb-safe-offset-1">
-				<Memo>
-					{() => {
-						const drag = dragValue$.get();
-						let opacity = 1;
-						if (drag <= DEVICE_SHEET_HEIGHT + insets.bottom) opacity = 1;
-						else if (drag >= DEVICE_SHEET_HEIGHT + insets.bottom + 30)
-							opacity = 0;
-						else
-							opacity = 1 - (drag - (DEVICE_SHEET_HEIGHT + insets.bottom)) / 30;
-						return (
-							<ChevronDown
-								style={{ opacity }}
-								size={24}
-								color={color}
-								strokeWidth={3}
-							/>
-						);
-					}}
-				</Memo>
-			</View>
-
-			<View className="w-full">
-				<RowButton
-					backgroundColor="tertiarySystemBackground"
-					colorStyle="destructive"
-					title="Unpair This Device"
-					onPress={() => {
-						alert({
-							title: `Unpair`,
-							message: `Disconnect from ${connectedDevice.name}?`,
-							buttons: [
-								{
-									text: "Cancel",
-									style: "cancel",
-								},
-								{
-									text: "Unpair",
-									style: "destructive",
-									onPress: () => {
-										deviceService.disconnectFromDevice();
-									},
-								},
-							],
-						});
-					}}
-				/>
-			</View>
-		</View>
+			<DeviceBottomSheet />
+		</TrueSheet>
 	);
 }

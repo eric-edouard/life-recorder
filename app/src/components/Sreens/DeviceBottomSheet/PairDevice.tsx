@@ -1,36 +1,21 @@
-import { SearchingDevices } from "@/src/components/Sreens/DeviceBottomSheet/SearchingDevices";
 import { Text } from "@/src/components/ui/Text";
 import { deviceService } from "@/src/services/deviceService/deviceService";
 import { rssiToSignalStrength } from "@/src/utils/rssiToSignalStrength";
 import { Button } from "@expo/ui/swift-ui";
 import { use$ } from "@legendapp/state/react";
-import { router } from "expo-router";
 import { SymbolView } from "expo-symbols";
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { View } from "react-native";
 import type { Device } from "react-native-ble-plx";
 
-export function PairDevice() {
+type Props = {
+	compatibleDevice: Device;
+	onDevicePaired: () => void;
+};
+
+export function PairDevice({ compatibleDevice, onDevicePaired }: Props) {
 	const isConnecting = use$(deviceService.isConnecting$);
 	const isConnected = use$(deviceService.isConnected$);
-	const [compatibleDevice, setCompatibleDevice] = useState<Device | null>(null);
-
-	useEffect(() => {
-		if (isConnected) {
-			setTimeout(() => {
-				router.back();
-			}, 1000);
-		}
-	}, [isConnected]);
-
-	if (!compatibleDevice)
-		return (
-			<SearchingDevices
-				title="Searching..."
-				message="Looking for compatible devices"
-				onCompatibleDeviceFound={setCompatibleDevice}
-			/>
-		);
 
 	return (
 		<View className={"flex items-center gap-2 pt-20 pb-safe-offset-12 "}>
@@ -69,6 +54,7 @@ export function PairDevice() {
 						disabled={isConnecting}
 						onPress={async () => {
 							await deviceService.connectToDevice(compatibleDevice.id);
+							onDevicePaired();
 						}}
 						variant="borderedProminent"
 					>
