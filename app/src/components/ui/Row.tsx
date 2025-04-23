@@ -1,4 +1,4 @@
-import { PressableLayer } from "@/src/components/PressableLayer";
+import { PressableLayer } from "@app/components/PressableLayer";
 import type React from "react";
 import { View } from "react-native";
 import { twMerge } from "tailwind-merge";

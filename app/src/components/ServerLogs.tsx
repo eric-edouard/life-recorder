@@ -1,6 +1,6 @@
-import { serverLogsService } from "@/src/services/serverLogsService";
-import type { ServerLog } from "@/src/shared/socketEvents";
+import { serverLogsService } from "@app/services/serverLogsService";
 import { use$ } from "@legendapp/state/react";
+import type { ServerLog } from "@shared/socketEvents";
 import React, { useEffect } from "react";
 import { FlatList, Platform, View } from "react-native";
 import { Text } from "./ui/Text";

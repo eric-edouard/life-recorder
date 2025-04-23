@@ -1,15 +1,7 @@
 {
-	"extends": "expo/tsconfig.base",
-	"compilerOptions": {
-		"strict": true,
-		"moduleResolution": "bundler",
-		"paths": {
-			"@/*": ["./*"]
-		}
-	},
+	"extends": "../tsconfig.base.json",
 	"include": [
-		"**/*.ts",
-		"**/*.tsx",
+		"src/**/*",
 		".expo/types/**/*.ts",
 		"expo-env.d.ts",
 		"src/types/nativewind-env.d.ts",

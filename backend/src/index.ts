@@ -1,7 +1,7 @@
 import "dotenv/config";
 
-import { routes } from "@/routes";
-import { socketService } from "@/services/socketService";
+import { routes } from "@backend/routes";
+import { socketService } from "@backend/services/socketService";
 import cors from "cors";
 import express from "express";
 import { createServer } from "node:http";

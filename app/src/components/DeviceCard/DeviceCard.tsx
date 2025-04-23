@@ -1,7 +1,7 @@
-import { Card } from "@/src/components/Card";
-import { DeviceBatteryLevel } from "@/src/components/DeviceCard/DeviceBatteryLevel";
-import { DeviceConnectionStatus } from "@/src/components/DeviceCard/DeviceConnectionStatus";
-import { DeviceNameAndSignal } from "@/src/components/DeviceCard/DeviceNameAndSignal";
+import { Card } from "@app/components/Card";
+import { DeviceBatteryLevel } from "@app/components/DeviceCard/DeviceBatteryLevel";
+import { DeviceConnectionStatus } from "@app/components/DeviceCard/DeviceConnectionStatus";
+import { DeviceNameAndSignal } from "@app/components/DeviceCard/DeviceNameAndSignal";
 import React from "react";
 import { View } from "react-native";
 import { Text } from "../ui/Text";

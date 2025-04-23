@@ -1,5 +1,5 @@
-import { useScreenScroll } from "@/src/components/ScreenScrollView/ScreenScrollContext";
-import { Text } from "@/src/components/ui/Text";
+import { useScreenScroll } from "@app/components/ScreenScrollView/ScreenScrollContext";
+import { Text } from "@app/components/ui/Text";
 import { BlurView } from "expo-blur";
 import { Animated } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -18,7 +18,7 @@ export const AnimatedScreenHeader = ({ title }: AnimatedScreenHeaderProps) => {
 			className={"absolute top-0 left-0 right-0"}
 			style={{
 				opacity: scrollAnimatedValue.interpolate({
-					inputRange: [0, 20, 30, 10000],
+					inputRange: [0, 15, 25, 10000],
 					outputRange: [0, 0, 1, 1],
 					extrapolate: "clamp",
 				}),

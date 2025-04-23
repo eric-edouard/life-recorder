@@ -1,17 +1,19 @@
-import { createAndSaveTranscript } from "@/services/processSpeechService/createAndSaveTranscript";
-import { saveAudioToGCS } from "@/services/processSpeechService/saveAudioToGcs";
-import { findMatchingSpeaker } from "@/services/processSpeechService/utils/findMatchingSpeaker";
-import { getSpeakerEmbeddingFromBuffer } from "@/services/processSpeechService/utils/getSpeakerEmbeddingFromBuffer";
-import { insertNewSpeaker } from "@/services/processSpeechService/utils/insertNewSpeaker";
-import { mergeSpeechSegments } from "@/services/processSpeechService/utils/mergeSegments";
-import { updateSpeakerEmbedding } from "@/services/processSpeechService/utils/updateSpeakerEmbedding";
-import { updateUtterancesWithSpeaker } from "@/services/processSpeechService/utils/updateUtterancesWithSpeaker";
-import type { UtteranceWithSpeakerId } from "@/types/UtteranceWithSpeakerId";
-import { convertFloat32ArrayToWavBuffer } from "@/utils/audio/audioUtils";
-import { extractSegmentsFromWavBuffer } from "@/utils/audio/extractSegmentsFromWavBuffer";
-import { getWavBufferDuration } from "@/utils/audio/getWavBufferDuration";
-import { generateReadableUUID } from "@/utils/generateReadableUUID";
+import { createAndSaveTranscript } from "@backend/services/processSpeechService/createAndSaveTranscript";
+import { saveAudioToGCS } from "@backend/services/processSpeechService/saveAudioToGcs";
+import { findMatchingSpeaker } from "@backend/services/processSpeechService/utils/findMatchingSpeaker";
+import { getSpeakerEmbeddingFromBuffer } from "@backend/services/processSpeechService/utils/getSpeakerEmbeddingFromBuffer";
+import { insertNewSpeaker } from "@backend/services/processSpeechService/utils/insertNewSpeaker";
+import { mergeSpeechSegments } from "@backend/services/processSpeechService/utils/mergeSegments";
+import { updateSpeakerEmbedding } from "@backend/services/processSpeechService/utils/updateSpeakerEmbedding";
+import { updateUtterancesWithSpeaker } from "@backend/services/processSpeechService/utils/updateUtterancesWithSpeaker";
+import type { UtteranceWithSpeakerId } from "@backend/types/UtteranceWithSpeakerId";
+import { convertFloat32ArrayToWavBuffer } from "@backend/utils/audio/audioUtils";
+import { extractSegmentsFromWavBuffer } from "@backend/utils/audio/extractSegmentsFromWavBuffer";
+import { getWavBufferDuration } from "@backend/utils/audio/getWavBufferDuration";
+import { generateReadableUUID } from "@backend/utils/generateReadableUUID";
+import fs from "node:fs";
 
+const DEBUG = true;
 export const processFinalizedSpeechChunk = async (
 	audio: Float32Array,
 	speechStartTime: number,
@@ -19,8 +21,17 @@ export const processFinalizedSpeechChunk = async (
 	// Convert the raw audio into a WAV buffer
 	const wavBuffer = convertFloat32ArrayToWavBuffer(audio);
 
+	if (DEBUG) {
+		fs.writeFileSync(`1-BUFFER.wav`, wavBuffer);
+	}
+
 	// Get total duration and create a unique ID for the file
 	const durationMs = getWavBufferDuration(wavBuffer);
+
+	if (DEBUG) {
+		console.log("🪲 1 DURATION", durationMs);
+	}
+
 	const fileId = generateReadableUUID(speechStartTime, durationMs);
 
 	// Transcribe the WAV using Deepgram and store utterances immediately
@@ -29,6 +40,7 @@ export const processFinalizedSpeechChunk = async (
 		wavBuffer,
 		speechStartTime,
 	);
+
 	if (!utterances) return;
 
 	// Group utterance time segments by speaker index provided by Deepgram
@@ -43,22 +55,44 @@ export const processFinalizedSpeechChunk = async (
 		segmentsBySpeakerIndex.set(u.speaker, list);
 	}
 
+	if (DEBUG) {
+		console.log("🪲 2 segmentsBySpeakerIndex", segmentsBySpeakerIndex);
+	}
+
 	// Collect all utterances with resolved speaker IDs
 	const speakerResolvedUtterances: UtteranceWithSpeakerId[] = [];
 
 	let isMatch = false;
 	for (const [speakerIndex, segments] of segmentsBySpeakerIndex.entries()) {
+		if (DEBUG) {
+			console.log(">>>> 🪲 3 Processing speaker:", speakerIndex);
+		}
+
 		// Merge adjacent or close segments and extract their audio
 		const merged = mergeSpeechSegments(segments);
+
+		if (DEBUG) {
+			console.log("🪲 4 Merged segments:", merged);
+		}
+
 		const speakerBuffer = extractSegmentsFromWavBuffer(wavBuffer, merged);
+
 		if (!speakerBuffer) continue;
 
-		// Generate speaker embedding and calculate duration
-		const embedding = await getSpeakerEmbeddingFromBuffer(speakerBuffer);
+		if (DEBUG && speakerBuffer) {
+			fs.writeFileSync(`2 speaker-${speakerIndex}.wav`, speakerBuffer);
+			console.log("🪲 5 Wrote speaker buffer to file");
+		}
+
 		const duration = getWavBufferDuration(speakerBuffer) / 1000;
 
-		// Try to match this speaker to one already in the DB
+		console.log("🪲 6 Duration:", duration);
+
+		const embedding = await getSpeakerEmbeddingFromBuffer(speakerBuffer);
+
 		const matchedSpeaker = await findMatchingSpeaker(embedding);
+
+		console.log("🪲 7 Matched speaker:", matchedSpeaker);
 
 		let speakerId: string;
 

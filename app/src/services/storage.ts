@@ -1,14 +1,15 @@
+import type { PairedDevice } from "@app/services/deviceService/types";
 import { observable } from "@legendapp/state";
 import { createTypedStorage } from "../utils/createTypedStorage";
 
 export type PersistData = {
-	pairedDeviceId: string | null;
+	pairedDevice: PairedDevice | null;
 };
 
 export const storage = createTypedStorage<PersistData>();
 
 export const storage$ = observable<PersistData>({
-	pairedDeviceId: storage.get("pairedDeviceId") ?? null,
+	pairedDevice: storage.get("pairedDevice") ?? null,
 });
 
 storage$.onChange(({ value, changes }) => {

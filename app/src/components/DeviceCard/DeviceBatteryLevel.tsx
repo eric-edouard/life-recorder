@@ -1,4 +1,5 @@
-import { useDeviceBatteryLevel } from "@/src/hooks/useDeviceBatteryLevel";
+import { deviceService } from "@app/services/deviceService/deviceService";
+import { use$ } from "@legendapp/state/react";
 import { SymbolView } from "expo-symbols";
 import React from "react";
 import { View } from "react-native";
@@ -7,7 +8,7 @@ import { Text } from "../ui/Text";
 
 export const DeviceBatteryLevel = () => {
 	const tintColor = useColor("green");
-	const batteryLevel = useDeviceBatteryLevel();
+	const batteryLevel = use$(deviceService.batteryLevel$);
 
 	if (!batteryLevel) {
 		return null;

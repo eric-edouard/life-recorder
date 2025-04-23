@@ -1,4 +1,4 @@
-import { matchUuid } from "@/src/utils/matchUUID";
+import { matchUuid } from "@app/utils/matchUUID";
 import type { Characteristic, Device } from "react-native-ble-plx";
 
 export const getDeviceCharacteristic = async (

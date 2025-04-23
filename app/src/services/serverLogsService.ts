@@ -1,5 +1,5 @@
-import type { ServerLog } from "@/src/shared/socketEvents";
 import { observable } from "@legendapp/state";
+import type { ServerLog } from "@shared/socketEvents";
 import { socketService } from "./socketService";
 
 export const serverLogsService = (() => {

@@ -65,22 +65,19 @@ export default ({ config }: ConfigContext) => ({
 			bundler: "metro",
 		},
 		plugins: [
-			"expo-router",
+			// In alphabetical order
+			"expo-audio",
 			[
-				"expo-splash-screen",
+				"expo-build-properties",
 				{
-					image: "./assets/images/splash-icon-light.png",
-					imageWidth: 200,
-					resizeMode: "contain",
-					backgroundColor: "#FFFFFF",
-					dark: {
-						image: "./assets/images/splash-icon-dark.png",
-						backgroundColor: "#000000",
+					ios: {
+						deploymentTarget: "15.1",
 					},
 				},
 			],
+			"expo-dev-client",
+			"expo-file-system",
 			"expo-font",
-			"expo-audio",
 			[
 				"expo-location",
 				{
@@ -96,6 +93,25 @@ export default ({ config }: ConfigContext) => ({
 					enableBackgroundRemoteNotifications: true,
 				},
 			],
+			"expo-router",
+			[
+				"expo-splash-screen",
+				{
+					image: "./assets/images/splash-icon-light.png",
+					imageWidth: 200,
+					resizeMode: "contain",
+					backgroundColor: "#FFFFFF",
+					dark: {
+						image: "./assets/images/splash-icon-dark.png",
+						backgroundColor: "#000000",
+					},
+				},
+			],
+			"expo-system-ui",
+			"expo-task-manager",
+			"expo-updates",
+			"expo-video",
+			"expo-web-browser",
 			[
 				"react-native-ble-plx",
 				{
@@ -105,9 +121,7 @@ export default ({ config }: ConfigContext) => ({
 						"Allow $(PRODUCT_NAME) to connect to bluetooth devices",
 				},
 			],
-			"expo-av",
 			"react-native-vad",
-			"expo-web-browser",
 		],
 		experiments: {
 			typedRoutes: true,

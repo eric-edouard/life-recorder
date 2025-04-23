@@ -1,10 +1,16 @@
-import { bleManager } from "@/src/services/bleManager";
-import { scanDevicesService } from "@/src/services/deviceService/scanDevicesService";
-import { alert } from "@/src/services/deviceService/utils/alert";
-import { extractFirstByteValue } from "@/src/services/deviceService/utils/extractFirstByteValue";
-import { getDeviceCharacteristic } from "@/src/services/deviceService/utils/getDeviceCharacteric";
-import { storage$ } from "@/src/services/storage";
-import { observable } from "@legendapp/state";
+import { bleManager } from "@app/services/bleManager";
+import { scanDevicesService } from "@app/services/deviceService/scanDevicesService";
+import { getCharacteristicValue } from "@app/services/deviceService/utils/getCharacteristicValue";
+import { getDeviceCharacteristic } from "@app/services/deviceService/utils/getDeviceCharacteric";
+import { monitorCharacteristic } from "@app/services/deviceService/utils/monitorCharacteristic";
+import { storage$ } from "@app/services/storage";
+import { alert } from "@app/utils/alert";
+import { defer } from "@app/utils/defer";
+import {
+	type SignalStrength,
+	rssiToSignalStrength,
+} from "@app/utils/rssiToSignalStrength";
+import { observable, observe } from "@legendapp/state";
 import { Platform } from "react-native";
 import type { Device, Subscription } from "react-native-ble-plx";
 import { base64ToBytes } from "../../utils/base64ToBytes";
@@ -13,6 +19,10 @@ import {
 	AUDIO_DATA_STREAM_CHARACTERISTIC_UUID,
 	BATTERY_LEVEL_CHARACTERISTIC_UUID,
 	BATTERY_SERVICE_UUID,
+	BUTTON_CHARACTERISTIC_UUID,
+	BUTTON_SERVICE_UUID,
+	BUTTON_STATE,
+	type ButtonState,
 	CODEC_MAP,
 	OMI_SERVICE_UUID,
 } from "./constants";
@@ -23,13 +33,26 @@ import type { BleAudioCodec } from "./types";
 export const deviceService = (() => {
 	let _connectedDevice: Device | null = null;
 
+	let batteryLevelSubscription: Subscription | null = null;
+	let rssiInterval: NodeJS.Timeout | null = null;
+	let buttonStateSubscription: Subscription | null = null;
 	const connectedDeviceId$ = observable<string | null>(null);
-	const isConnecting$ = observable(false);
 	const isConnected$ = observable(() => !!connectedDeviceId$.get());
+	const batteryLevel$ = observable<number | null>(null);
+	const rssi$ = observable<SignalStrength | null>(null);
+	const buttonState$ = observable<ButtonState | null>(null);
+	const isConnecting$ = observable(false);
 
 	const setConnectedDevice = (device: Device | null) => {
 		_connectedDevice = device;
 		connectedDeviceId$.set(device?.id || null);
+		if (device === null) {
+			batteryLevelSubscription?.remove();
+			buttonStateSubscription?.remove();
+			rssiInterval && clearInterval(rssiInterval);
+			batteryLevel$.set(null);
+			rssi$.set(null);
+		}
 	};
 
 	const connectToDevice = async (deviceId: string) => {
@@ -67,12 +90,21 @@ export const deviceService = (() => {
 
 			clearTimeout(connectionTimeout);
 			setConnectedDevice(device);
-			storage$.pairedDeviceId.set(deviceId);
+			storage$.pairedDevice.set({
+				id: device.id,
+				name: device.name ?? "N/A",
+				manufacturerData: device.manufacturerData,
+				serviceUUIDs: device.serviceUUIDs,
+				localName: device.localName,
+			});
 
 			device.onDisconnected(() => {
 				setConnectedDevice(null);
 			});
 
+			monitorBatteryLevel();
+			monitorRssi();
+			monitorButtonState();
 			isConnecting$.set(false);
 			scanDevicesService.stopScan();
 			return;
@@ -89,58 +121,40 @@ export const deviceService = (() => {
 		}
 	};
 
-	const getConnectedDeviceRssi = async (): Promise<number | null> => {
-		if (_connectedDevice) {
-			const device = await bleManager.readRSSIForDevice(_connectedDevice.id);
-			return device.rssi;
-		}
-		return null;
-	};
-
 	const disconnectFromDevice = async () => {
 		if (!_connectedDevice) {
 			throw new Error("[deviceService] No device connected, cannot disconnect");
 		}
+
 		try {
+			buttonStateSubscription?.remove();
+			batteryLevelSubscription?.remove();
+			rssiInterval && clearInterval(rssiInterval);
 			await _connectedDevice.cancelConnection();
-			storage$.pairedDeviceId.delete();
-			setConnectedDevice(null);
+			defer(() => setConnectedDevice(null));
 		} catch (error) {
 			console.error("[deviceService] Error disconnecting from device:", error);
 		}
+	};
+
+	const unpairDevice = () => {
+		storage$.pairedDevice.delete();
+		return disconnectFromDevice();
 	};
 
 	const getAudioCodec = async (): Promise<BleAudioCodec | null> => {
 		if (!_connectedDevice) {
 			throw new Error("Device not connected");
 		}
-
-		try {
-			const codecCharacteristic = await getDeviceCharacteristic(
-				_connectedDevice,
-				OMI_SERVICE_UUID,
-				AUDIO_CODEC_CHARACTERISTIC_UUID,
-			);
-
-			if (!codecCharacteristic) {
-				console.error("Audio codec characteristic not found");
-				return null;
-			}
-
-			const codecId = extractFirstByteValue(
-				(await codecCharacteristic.read()).value,
-			);
-
-			if (!codecId) {
-				console.error("No codec ID found");
-				return null;
-			}
-
-			return CODEC_MAP[codecId];
-		} catch (error) {
-			console.error("Error getting audio codec:", error);
-			return null;
+		const value = await getCharacteristicValue(
+			_connectedDevice,
+			OMI_SERVICE_UUID,
+			AUDIO_CODEC_CHARACTERISTIC_UUID,
+		);
+		if (!value) {
+			throw new Error("No audio codec value found");
 		}
+		return CODEC_MAP[value];
 	};
 
 	/**
@@ -155,116 +169,124 @@ export const deviceService = (() => {
 			throw new Error("Device not connected");
 		}
 
-		try {
-			const audioDataStreamCharacteristic = await getDeviceCharacteristic(
-				_connectedDevice,
-				OMI_SERVICE_UUID,
-				AUDIO_DATA_STREAM_CHARACTERISTIC_UUID,
-			);
-
-			if (!audioDataStreamCharacteristic) {
-				console.error("Audio data stream characteristic not found");
-				return;
-			}
-
-			return audioDataStreamCharacteristic.monitor((error, characteristic) => {
-				if (error) {
-					if (error.message === "Operation was cancelled") {
-						console.log("Audio data stream notification cancelled");
-						return;
-					}
-					console.error("Audio data stream notification error:", error);
-					return;
-				}
-				if (!characteristic?.value) {
-					console.log("Received notification but no characteristic value");
-					return;
-				}
-				const bytes = base64ToBytes(characteristic.value);
-				// Remove the first 3 bytes (header) added by the Omi device
-				onAudioBytesReceived(bytes.length > 3 ? bytes.slice(3) : bytes);
-			});
-		} catch (error) {
-			console.error("Error starting audio bytes listener:", error);
-			return;
-		}
-	};
-
-	/**
-	 * Get the current battery level from the device
-	 * @returns Promise that resolves with the battery level percentage (0-100)
-	 */
-	const getBatteryLevel = async (): Promise<number | null> => {
-		if (!_connectedDevice) {
-			throw new Error("Device not connected");
-		}
-		const batteryLevelCharacteristic = await getDeviceCharacteristic(
+		const audioDataStreamCharacteristic = await getDeviceCharacteristic(
 			_connectedDevice,
-			BATTERY_SERVICE_UUID,
-			BATTERY_LEVEL_CHARACTERISTIC_UUID,
+			OMI_SERVICE_UUID,
+			AUDIO_DATA_STREAM_CHARACTERISTIC_UUID,
 		);
 
-		if (!batteryLevelCharacteristic) return null;
-
-		const base64Value = (await batteryLevelCharacteristic.read()).value;
-
-		return extractFirstByteValue(base64Value);
-	};
-
-	/**
-	 * Get the current battery level from the device
-	 * @returns Promise that resolves with the battery level percentage (0-100)
-	 */
-	const monitorBatteryLevel = async (
-		onLevel: (level: number) => void,
-	): Promise<Subscription | null> => {
-		if (!_connectedDevice) {
-			throw new Error("Device not connected");
+		if (!audioDataStreamCharacteristic) {
+			throw new Error("[deviceService] No audioDataStreamCharacteristic");
 		}
 
-		const batteryLevelCharacteristic = await getDeviceCharacteristic(
-			_connectedDevice,
-			BATTERY_SERVICE_UUID,
-			BATTERY_LEVEL_CHARACTERISTIC_UUID,
-		);
-
-		if (!batteryLevelCharacteristic) {
-			throw new Error("Battery level characteristic not found");
-		}
-		const initialValue = await batteryLevelCharacteristic.read();
-		if (!initialValue || !initialValue.value) {
-			throw new Error("Battery level characteristic returned no value");
-		}
-		const value = extractFirstByteValue(initialValue.value);
-		if (!value) {
-			throw new Error(
-				"Could not extract first byte value from battery level characteristic",
-			);
-		}
-		onLevel(value);
-		return batteryLevelCharacteristic.monitor((err, char) => {
-			if (err || !char?.value) {
-				return;
+		return audioDataStreamCharacteristic.monitor((error, characteristic) => {
+			if (error) {
+				if (error.message === "Operation was cancelled") {
+					console.log("Audio data stream notification cancelled");
+					return;
+				}
+				throw new Error("[deviceService] Audio data stream notification error");
 			}
-			const value = extractFirstByteValue(char.value);
-			if (!value) {
-				return;
+			if (!characteristic?.value) {
+				throw new Error(
+					"[deviceService] Received notification but no characteristic value",
+				);
 			}
-			onLevel(value);
+			const bytes = base64ToBytes(characteristic.value);
+			// Remove the first 3 bytes (header) added by the Omi device
+			onAudioBytesReceived(bytes.length > 3 ? bytes.slice(3) : bytes);
 		});
+	};
+
+	const getBatteryLevel = async (): Promise<number> => {
+		if (!_connectedDevice) {
+			throw new Error("Device not connected");
+		}
+		return getCharacteristicValue(
+			_connectedDevice,
+			BATTERY_SERVICE_UUID,
+			BATTERY_LEVEL_CHARACTERISTIC_UUID,
+		);
+	};
+
+	const monitorBatteryLevel = async () => {
+		if (!_connectedDevice) {
+			throw new Error("Device not connected");
+		}
+		batteryLevelSubscription = await monitorCharacteristic(
+			_connectedDevice,
+			BATTERY_SERVICE_UUID,
+			BATTERY_LEVEL_CHARACTERISTIC_UUID,
+			(value) => batteryLevel$.set(value),
+		);
+	};
+
+	const getConnectedDeviceRssi = async (): Promise<number | null> => {
+		if (!_connectedDevice) {
+			throw new Error("Device not connected");
+		}
+		const device = await bleManager.readRSSIForDevice(_connectedDevice.id);
+		return device.rssi;
+	};
+
+	const monitorRssi = async () => {
+		if (!_connectedDevice) {
+			throw new Error("Device not connected");
+		}
+		rssiInterval = setInterval(async () => {
+			const rssi = await getConnectedDeviceRssi();
+			rssi$.set(rssi !== null ? rssiToSignalStrength(rssi) : null);
+		}, 10000); // 10 seconds
+		// Initial fetch
+		const rssi = await getConnectedDeviceRssi();
+		rssi$.set(rssi !== null ? rssiToSignalStrength(rssi) : null);
+	};
+
+	const getButtonState = async (): Promise<ButtonState> => {
+		if (!_connectedDevice) {
+			throw new Error("Device not connected");
+		}
+		return BUTTON_STATE[
+			(await getCharacteristicValue(
+				_connectedDevice,
+				BUTTON_SERVICE_UUID,
+				BUTTON_CHARACTERISTIC_UUID,
+			)) as keyof typeof BUTTON_STATE
+		];
+	};
+
+	const monitorButtonState = async () => {
+		if (!_connectedDevice) {
+			throw new Error("Device not connected");
+		}
+		buttonStateSubscription = await monitorCharacteristic(
+			_connectedDevice,
+			BUTTON_SERVICE_UUID,
+			BUTTON_CHARACTERISTIC_UUID,
+			(value) =>
+				buttonState$.set(BUTTON_STATE[value as keyof typeof BUTTON_STATE]),
+		);
 	};
 
 	return {
 		connectedDeviceId$,
 		isConnecting$,
 		isConnected$,
+		batteryLevel$,
+		rssi$,
+		buttonState$,
 		connectToDevice,
 		getConnectedDevice: () => _connectedDevice,
 		getConnectedDeviceRssi,
 		disconnectFromDevice,
+		unpairDevice,
 		getAudioCodec,
 		startAudioBytesListener,
 		getBatteryLevel,
-		monitorBatteryLevel,
+		getButtonState,
 	};
 })();
+
+observe(deviceService.buttonState$, (buttonState) => {
+	console.log(">>> buttonState", buttonState.value);
+});

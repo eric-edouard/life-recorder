@@ -16,6 +16,25 @@ export interface ServerToClientEvents {
 	transcriptReceived: (transcript: string, startTime: number) => void;
 }
 
+export type GetUtterancesParams = {
+	from: number;
+	to: number;
+};
+
+export type GetUtterancesResponse = {
+	utterances: {
+		id: string;
+		transcript: string;
+		createdAt: number;
+		nonIdentifiedSpeaker: number | null;
+		speaker: string | null;
+		words: {
+			word: string;
+			start: number;
+			end: number;
+		}[];
+	}[];
+};
 export interface ClientToServerEvents {
 	audioData: (
 		data: { packets: number[][]; timestamp: number },
@@ -24,4 +43,8 @@ export interface ClientToServerEvents {
 	startLogForwarding: (callback: (success: boolean) => void) => void;
 	stopLogForwarding: (callback: (success: boolean) => void) => void;
 	ping: (nb: number) => void;
+	getUtterances: (
+		params: GetUtterancesParams,
+		callback: (response: GetUtterancesResponse, error: string | null) => void,
+	) => void;
 }

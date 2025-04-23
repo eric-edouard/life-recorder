@@ -1,0 +1,15 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Project Structure Guide
+
+- The main application code is in [app/src](mdc:app/src).
+- Components are in [app/src/components](mdc:app/src/components), with subfolders for UI, screens, and device-related components.
+- Shared code between the app and backend is in [app/src/shared](mdc:app/src/shared), and is synchronized using the `sync-shared` script in [app/package.json](mdc:app/package.json).
+- Type definitions are in [app/src/types](mdc:app/src/types).
+- Utilities, hooks, services, constants, tasks, and contexts are in their respective subdirectories under [app/src](mdc:app/src).
+- Expo/Next router files are in [app/src/app](mdc:app/src/app), with special handling for routing and layouts.
+- Scripts for project maintenance are in [app/scripts](mdc:app/scripts).
+- Documentation is in [app/docs](mdc:app/docs).

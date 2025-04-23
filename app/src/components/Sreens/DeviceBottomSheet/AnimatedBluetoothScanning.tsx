@@ -1,33 +1,15 @@
-import { IconAndText } from "@/src/components/ui/IconAndText";
-import { scanDevicesService } from "@/src/services/deviceService/scanDevicesService";
+import { scanDevicesService } from "@app/services/deviceService/scanDevicesService";
 import { use$ } from "@legendapp/state/react";
 import { Bluetooth } from "lucide-react-native";
 import React, { useEffect, useRef } from "react";
 import { Animated } from "react-native";
-import type { Device } from "react-native-ble-plx";
 import { useColor } from "react-native-uikit-colors";
 
-type Props = {
-	title: string;
-	message: string;
-	onCompatibleDeviceFound: (device: Device) => void;
-};
-
-export function SearchingDevices({
-	title,
-	message,
-	onCompatibleDeviceFound,
-}: Props) {
-	const gray2 = useColor("gray2");
+export function AnimatedBluetoothScanning() {
 	const isScanning = use$(scanDevicesService.scanning$);
+	const gray2 = useColor("gray2");
 	const animatedValue = useRef(new Animated.Value(1)).current;
 	const animationRef = useRef<Animated.CompositeAnimation | null>(null);
-
-	useEffect(() => {
-		scanDevicesService.scanDevices({
-			onCompatibleDeviceFound,
-		});
-	}, []);
 
 	useEffect(() => {
 		if (!isScanning) {
@@ -67,15 +49,8 @@ export function SearchingDevices({
 	}, [isScanning]);
 
 	return (
-		<IconAndText
-			className="mb-safe-offset-3 mt-3"
-			icon={
-				<Animated.View style={{ opacity: animatedValue }}>
-					<Bluetooth size={56} color={gray2} />
-				</Animated.View>
-			}
-			title={title}
-			message={message}
-		/>
+		<Animated.View style={{ opacity: animatedValue }}>
+			<Bluetooth size={56} color={gray2} />
+		</Animated.View>
 	);
 }

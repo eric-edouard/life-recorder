@@ -1,11 +1,11 @@
-import { CHANNELS, SAMPLE_RATE } from "@/constants/audioConstants";
-import { SAVE_RECORDINGS_TO_GCS_ENABLED } from "@/constants/features";
-import { db } from "@/db/db";
-import { utterancesTable } from "@/db/schema";
-import { deepgram } from "@/services/external/deepgram";
-import { socketService } from "@/services/socketService";
-import type { Utterance } from "@/types/deepgram";
-import { generateUtteranceId } from "@/utils/generateUtteranceId";
+import { CHANNELS, SAMPLE_RATE } from "@backend/constants/audioConstants";
+import { SAVE_RECORDINGS_TO_GCS_ENABLED } from "@backend/constants/features";
+import { db } from "@backend/db/db";
+import { utterancesTable } from "@backend/db/schema";
+import { deepgram } from "@backend/services/external/deepgram";
+import { socketService } from "@backend/services/socketService";
+import type { Utterance } from "@backend/types/deepgram";
+import { generateUtteranceId } from "@backend/utils/generateUtteranceId";
 import type { SyncPrerecordedResponse } from "@deepgram/sdk";
 
 const transcribeWithDeepgram = async (

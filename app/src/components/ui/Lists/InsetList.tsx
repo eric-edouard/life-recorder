@@ -5,6 +5,7 @@ import { twMerge } from "tailwind-merge";
 import type { InsetListRowProps } from "./InsetListRow";
 
 type InsetListProps = {
+	backgroundColor?: "secondary" | "tertiary";
 	className?: string;
 	headerLoading?: boolean;
 	headerText?: string;
@@ -20,6 +21,7 @@ type InsetListProps = {
 };
 
 export const InsetList = ({
+	backgroundColor = "secondary",
 	headerText,
 	footer,
 	children,
@@ -33,7 +35,13 @@ export const InsetList = ({
 	const isEmpty = items.length === 0;
 
 	return (
-		<View className={twMerge("w-full", className)}>
+		<View
+			className={twMerge(
+				"w-full",
+
+				className,
+			)}
+		>
 			{headerText && (
 				<View className="flex-row items-center pb-2">
 					<Text className="px-4 text-sm font-regular text-secondary-label">
@@ -43,7 +51,13 @@ export const InsetList = ({
 				</View>
 			)}
 
-			<View className="bg-secondary-system-grouped-background rounded-lg overflow-hidden ">
+			<View
+				className={twMerge(
+					"rounded-lg overflow-hidden",
+					backgroundColor === "secondary" && "bg-secondary-system-background",
+					backgroundColor === "tertiary" && "bg-tertiary-system-background",
+				)}
+			>
 				{listHeader}
 				{isEmpty ? (
 					emptyStateText ? (

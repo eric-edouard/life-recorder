@@ -1,0 +1,13 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Export and File Naming Conventions
+
+- Each file should have **one named export**, and the export name must match the file name (e.g., `export const MyComponent = ...` in `MyComponent.tsx`).
+- This applies to functions, constants, and React components.
+- **Exceptions:**
+  - Type-only files (e.g., files in [app/src/types](mdc:app/src/types)) and Next/Expo router files (e.g., files in [app/src/app](mdc:app/src/app)) must use a default export.
+- Keep files minimal and focused on a single concern.
+- Do not add extra functionality or placeholders for future use—implement only what is needed.

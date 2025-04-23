@@ -1,4 +1,4 @@
-import type { SocketMiddleware } from "@/types/socket-events";
+import type { SocketMiddleware } from "@backend/types/socket-events";
 
 /**
  * Creates and returns a socket middleware for log handling

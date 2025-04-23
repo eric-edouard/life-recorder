@@ -1,5 +1,5 @@
-import { CHANNELS, SAMPLE_RATE } from "@/constants/audioConstants";
-import type { DeepgramResult } from "@/types/deepgram";
+import { CHANNELS, SAMPLE_RATE } from "@backend/constants/audioConstants";
+import type { DeepgramResult } from "@backend/types/deepgram";
 import {
 	type DeepgramError,
 	type ListenLiveClient,
@@ -52,7 +52,12 @@ export const deepgramLiveTranscriptionService = (() => {
 			);
 			for (const packet of preConnectionBuffer) {
 				if (liveTranscription?.getReadyState() === 1) {
-					liveTranscription.send(packet);
+					liveTranscription.send(
+						packet.buffer.slice(
+							packet.byteOffset,
+							packet.byteOffset + packet.byteLength,
+						),
+					);
 				}
 			}
 			preConnectionBuffer.length = 0; // Clear buffer
@@ -89,7 +94,12 @@ export const deepgramLiveTranscriptionService = (() => {
 	const sendAudioPacket = (audioBuffer: Buffer) => {
 		if (liveTranscription && liveTranscription.getReadyState() === 1) {
 			// Connection is open, send directly
-			liveTranscription.send(audioBuffer);
+			liveTranscription.send(
+				audioBuffer.buffer.slice(
+					audioBuffer.byteOffset,
+					audioBuffer.byteOffset + audioBuffer.byteLength,
+				),
+			);
 		} else if (isConnecting) {
 			// Connection is in progress (started but not open yet), buffer the packet
 			preConnectionBuffer.push(audioBuffer);

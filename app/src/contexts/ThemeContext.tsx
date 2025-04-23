@@ -2,7 +2,7 @@ import {
 	type CustomColorName,
 	customColors,
 	customColorsVars,
-} from "@/src/constants/customColors";
+} from "@app/constants/customColors";
 import {
 	DarkTheme,
 	DefaultTheme,

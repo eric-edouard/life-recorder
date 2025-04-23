@@ -1,6 +1,6 @@
-import { CHANNELS } from "@/constants/audioConstants";
+import { CHANNELS } from "@backend/constants/audioConstants";
 
-import { SAMPLE_RATE } from "@/constants/audioConstants";
+import { SAMPLE_RATE } from "@backend/constants/audioConstants";
 
 export const getWavBufferDuration = (wavBuffer: Buffer): number => {
 	// Get audio duration from metadata (passed from parent function)

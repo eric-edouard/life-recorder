@@ -1,17 +1,18 @@
-import type { Server as HttpServer } from "node:http";
-import { forwardLogsMiddleware } from "@/services/socketMiddlewares/forwardLogsMiddleware";
-import { handleAudioMiddleware } from "@/services/socketMiddlewares/handleAudioMiddleware";
-import type {
-	ClientToServerEvents,
-	ServerToClientEvents,
-} from "@/shared/socketEvents";
+import { forwardLogsMiddleware } from "@backend/services/socketMiddlewares/forwardLogsMiddleware";
+import { handleAudioMiddleware } from "@backend/services/socketMiddlewares/handleAudioMiddleware";
+import { getUtterances } from "@backend/services/utterancesService";
 import type {
 	InterServerEvents,
 	SocketData,
 	SocketMiddleware,
 	TypedServer,
 	TypedSocket,
-} from "@/types/socket-events";
+} from "@backend/types/socket-events";
+import type {
+	ClientToServerEvents,
+	ServerToClientEvents,
+} from "@shared/socketEvents";
+import type { Server as HttpServer } from "node:http";
 import { Server as SocketIOServer } from "socket.io";
 
 // The middlewares that will be applied to all socket connections
@@ -51,9 +52,18 @@ export const socketService = (() => {
 				middleware(_socket, io!);
 			}
 
+			_socket.on("ping", (nb: number) => {
+				console.log("Ping received", nb);
+			});
+
 			// Basic disconnect logging
 			_socket.on("disconnect", () => {
 				console.log("Client disconnected");
+			});
+
+			_socket.on("getUtterances", async (params, callback) => {
+				const utterances = await getUtterances(params);
+				callback(utterances, null);
 			});
 		});
 	};

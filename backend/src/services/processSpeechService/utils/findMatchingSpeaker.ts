@@ -1,5 +1,5 @@
-import { db } from "@/db/db";
-import { speakersTable } from "@/db/schema";
+import { db } from "@backend/db/db";
+import { speakersTable } from "@backend/db/schema";
 import { cosineDistance, desc, gt, sql } from "drizzle-orm";
 
 export const findMatchingSpeaker = async (

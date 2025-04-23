@@ -1,6 +1,6 @@
-import { socketService } from "@/src/services/socketService";
-import type { ProcessingAudioPhase } from "@/src/shared/socketEvents";
+import { socketService } from "@app/services/socketService";
 import { observable } from "@legendapp/state";
+import type { ProcessingAudioPhase } from "@shared/socketEvents";
 
 export const liveTranscriptionService = (() => {
 	const isSpeechDetected$ = observable(false);

@@ -1,4 +1,4 @@
-import { fileSafeIso } from "@/utils/fileSafeIso";
+import { fileSafeIso } from "@backend/utils/fileSafeIso";
 import { randomBytes } from "node:crypto";
 
 export function generateReadableUUID(
