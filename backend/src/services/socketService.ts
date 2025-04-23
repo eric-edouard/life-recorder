@@ -1,5 +1,6 @@
 import { forwardLogsMiddleware } from "@backend/services/socketMiddlewares/forwardLogsMiddleware";
 import { handleAudioMiddleware } from "@backend/services/socketMiddlewares/handleAudioMiddleware";
+import { getUtterances } from "@backend/services/utterancesService";
 import type {
 	InterServerEvents,
 	SocketData,
@@ -58,6 +59,11 @@ export const socketService = (() => {
 			// Basic disconnect logging
 			_socket.on("disconnect", () => {
 				console.log("Client disconnected");
+			});
+
+			_socket.on("getUtterances", async (params, callback) => {
+				const utterances = await getUtterances(params);
+				callback(utterances, null);
 			});
 		});
 	};

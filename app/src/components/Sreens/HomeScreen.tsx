@@ -4,7 +4,6 @@ import { View } from "react-native";
 import { DeviceStatusButton } from "@app/components/DeviceStatusButton";
 import { ScreenScrollView } from "@app/components/ScreenScrollView/ScreenScrollView";
 import { Text } from "@app/components/ui/Text";
-import { audioDataService } from "@app/services/audioDataService";
 import { deviceService } from "@app/services/deviceService/deviceService";
 import { use$ } from "@legendapp/state/react";
 
@@ -15,7 +14,7 @@ export const HomeScreen = () => {
 		if (!connectedDeviceId) {
 			return;
 		}
-		audioDataService.startAudioCollection();
+		// audioDataService.startAudioCollection();
 	}, [connectedDeviceId]);
 
 	return (
