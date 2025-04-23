@@ -1,0 +1,9 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Minimalism and Comments
+
+- Implement only what is needed for the current problem—avoid extra, placeholder, or future-proof code.
+- Do **not** delete comments or `console.log` statements, even if they seem unnecessary, unless explicitly instructed to do so.
