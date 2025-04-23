@@ -15,7 +15,7 @@ export const DeviceStatusButton = () => {
 	const connectedDevice = useConnectedDevice();
 	const batteryLevel = use$(deviceService.batteryLevel$);
 	const isConnecting = use$(deviceService.isConnecting$);
-	const hasPairedDevice = use$(storage$.pairedDeviceId);
+	const hasPairedDevice = use$(storage$.pairedDevice);
 
 	const getDotColor = (): DotColor => {
 		if (connectedDevice) {

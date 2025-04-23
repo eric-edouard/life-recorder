@@ -13,7 +13,7 @@ export const autoScanAndConnect = () => {
 			scanDevicesService.permissionStatus$.get() === "granted",
 		() => {
 			defer(async () => {
-				const pairedDeviceId = storage$.pairedDeviceId.peek();
+				const pairedDeviceId = storage$.pairedDevice.id.peek();
 				if (!pairedDeviceId) {
 					return;
 				}

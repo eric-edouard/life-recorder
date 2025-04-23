@@ -10,7 +10,7 @@ import React from "react";
 
 export function DeviceBottomSheetStateRouter() {
 	const isBluetoothCorrectlySetup = useIsBluetoothCorrectlySetup();
-	const hasPairedDevice = !!use$(storage$.pairedDeviceId);
+	const hasPairedDevice = !!use$(storage$.pairedDevice);
 	const connectedDevice = useConnectedDevice();
 
 	if (!isBluetoothCorrectlySetup) {

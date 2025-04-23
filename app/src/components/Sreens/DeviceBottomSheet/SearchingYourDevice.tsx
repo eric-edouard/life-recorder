@@ -1,25 +1,29 @@
 import { AnimatedBluetoothScanning } from "@/src/components/Sreens/DeviceBottomSheet/AnimatedBluetoothScanning";
 import { IconAndText } from "@/src/components/ui/IconAndText";
+import { deviceService } from "@/src/services/deviceService/deviceService";
+import { alert } from "@/src/services/deviceService/utils/alert";
 import { storage$ } from "@/src/services/storage";
 import { Button } from "@expo/ui/swift-ui";
+import { use$ } from "@legendapp/state/react";
 import React from "react";
 import { View } from "react-native";
 
 export function SearchingYourDevice() {
+	const pairedDevice = use$(storage$.pairedDevice);
 	return (
 		<View className="flex-1 items-center justify-center mb-safe-offset-2 pt-14 pb-10 ">
 			<IconAndText
 				className="mt-2"
 				icon={<AnimatedBluetoothScanning />}
-				title="Searching..."
-				message="Looking for your device"
+				title={`Searching for ${pairedDevice?.name}`}
+				message="It will connect automatically once found"
 			/>
 			<Button
 				variant="bordered"
-				onPress={() => {
+				onPress={() =>
 					alert({
 						title: `Unpair`,
-						message: `Disconnect from your device?`,
+						message: `Disconnect from ${pairedDevice?.name}?`,
 						buttons: [
 							{
 								text: "Cancel",
@@ -29,15 +33,15 @@ export function SearchingYourDevice() {
 								text: "Unpair",
 								style: "destructive",
 								onPress: () => {
-									storage$.pairedDeviceId.set(null);
+									deviceService.unpairDevice();
 								},
 							},
 						],
-					});
-				}}
+					})
+				}
 				color="gray"
 			>
-				Unpair my device
+				Unpair this device
 			</Button>
 		</View>
 	);

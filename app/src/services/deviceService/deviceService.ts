@@ -82,7 +82,13 @@ export const deviceService = (() => {
 
 			clearTimeout(connectionTimeout);
 			setConnectedDevice(device);
-			storage$.pairedDeviceId.set(deviceId);
+			storage$.pairedDevice.set({
+				id: device.id,
+				name: device.name ?? "N/A",
+				manufacturerData: device.manufacturerData,
+				serviceUUIDs: device.serviceUUIDs,
+				localName: device.localName,
+			});
 
 			device.onDisconnected(() => {
 				setConnectedDevice(null);
@@ -116,11 +122,15 @@ export const deviceService = (() => {
 			batteryLevelInterval && clearInterval(batteryLevelInterval);
 			rssiInterval && clearInterval(rssiInterval);
 			await _connectedDevice.cancelConnection();
-			storage$.pairedDeviceId.delete();
 			defer(() => setConnectedDevice(null));
 		} catch (error) {
 			console.error("[deviceService] Error disconnecting from device:", error);
 		}
+	};
+
+	const unpairDevice = () => {
+		storage$.pairedDevice.delete();
+		return disconnectFromDevice();
 	};
 
 	const getAudioCodec = async (): Promise<BleAudioCodec | null> => {
@@ -251,6 +261,7 @@ export const deviceService = (() => {
 		getConnectedDevice: () => _connectedDevice,
 		getConnectedDeviceRssi,
 		disconnectFromDevice,
+		unpairDevice,
 		getAudioCodec,
 		startAudioBytesListener,
 		getBatteryLevel,

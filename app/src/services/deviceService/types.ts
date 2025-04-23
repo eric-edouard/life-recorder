@@ -13,19 +13,12 @@ export enum DeviceConnectionState {
 	CONNECTING = "connecting",
 	DISCONNECTING = "disconnecting",
 }
-export interface BluetoothDevice {
+export interface PairedDevice {
 	id: string;
 	name: string;
-	rssi: number | null;
-	rawScanRecord: Base64;
 	manufacturerData: Base64 | null;
-	serviceData: { [uuid: string]: Base64 } | null;
 	serviceUUIDs: UUID[] | null;
 	localName: string | null;
-	txPowerLevel: number | null;
-	solicitedServiceUUIDs: UUID[] | null;
-	isConnectable: boolean | null;
-	overflowServiceUUIDs: UUID[] | null;
 }
 
 /**

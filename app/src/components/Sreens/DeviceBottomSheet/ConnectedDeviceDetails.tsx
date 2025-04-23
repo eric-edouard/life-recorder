@@ -82,7 +82,7 @@ export function ConnectedDeviceDetails({ connectedDevice }: Props) {
 											text: "Unpair",
 											style: "destructive",
 											onPress: () => {
-												deviceService.disconnectFromDevice();
+												deviceService.unpairDevice();
 											},
 										},
 									],
