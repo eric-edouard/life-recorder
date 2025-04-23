@@ -1,8 +1,8 @@
 import { DeviceAnimation } from "@/src/components/DeviceAnimation";
-import { BluetoothStatusInfo } from "@/src/components/Sreens/DeviceScreen/BluetoothStatusInfo";
-import { DeviceBatteryIcon } from "@/src/components/Sreens/DeviceScreen/DeviceBatteryIcon";
-import { PairDevice } from "@/src/components/Sreens/DeviceScreen/PairDevice";
-import { SearchingDevices } from "@/src/components/Sreens/DeviceScreen/SearchingDevices";
+import { BluetoothStatusInfo } from "@/src/components/Sreens/DeviceBottomSheet/BluetoothStatusInfo";
+import { DeviceBatteryIcon } from "@/src/components/Sreens/DeviceBottomSheet/DeviceBatteryIcon";
+import { PairDevice } from "@/src/components/Sreens/DeviceBottomSheet/PairDevice";
+import { SearchingDevices } from "@/src/components/Sreens/DeviceBottomSheet/SearchingDevices";
 import { RowButton } from "@/src/components/ui/Buttons/RowButton";
 import { Text } from "@/src/components/ui/Text";
 import { useConnectedDevice } from "@/src/hooks/useConnectedDevice";

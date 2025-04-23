@@ -1,4 +1,4 @@
-import { SearchingDevices } from "@/src/components/Sreens/DeviceScreen/SearchingDevices";
+import { SearchingDevices } from "@/src/components/Sreens/DeviceBottomSheet/SearchingDevices";
 import { Text } from "@/src/components/ui/Text";
 import { deviceService } from "@/src/services/deviceService/deviceService";
 import { rssiToSignalStrength } from "@/src/utils/rssiToSignalStrength";

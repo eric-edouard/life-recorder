@@ -2,7 +2,7 @@ import {
 	DEVICE_SHEET_HEIGHT,
 	DeviceBottomSheet,
 	dragValue$,
-} from "@/src/components/Sreens/DeviceScreen/DeviceBottomSheet";
+} from "@/src/components/Sreens/DeviceBottomSheet/DeviceBottomSheet";
 import { useConnectedDevice } from "@/src/hooks/useConnectedDevice";
 import { defer } from "@/src/utils/defer";
 import {
