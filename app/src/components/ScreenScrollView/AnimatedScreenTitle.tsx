@@ -1,4 +1,4 @@
-import { useScreenScroll } from "@/src/components/ScreenScrollView/ScreenScrollContext";
+import { useScreenScroll } from "@app/components/ScreenScrollView/ScreenScrollContext";
 import { Animated } from "react-native";
 
 export const AnimatedScreenTitle = ({

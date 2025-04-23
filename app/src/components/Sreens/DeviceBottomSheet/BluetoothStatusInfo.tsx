@@ -1,5 +1,5 @@
-import { IconAndText } from "@/src/components/ui/IconAndText";
-import { scanDevicesService } from "@/src/services/deviceService/scanDevicesService";
+import { IconAndText } from "@app/components/ui/IconAndText";
+import { scanDevicesService } from "@app/services/deviceService/scanDevicesService";
 import { Button } from "@expo/ui/swift-ui";
 import { use$ } from "@legendapp/state/react";
 import { Bluetooth, BluetoothOff } from "lucide-react-native";

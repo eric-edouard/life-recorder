@@ -1,4 +1,4 @@
-import { CHANNELS, SAMPLE_RATE } from "@/constants/audioConstants";
+import { CHANNELS, SAMPLE_RATE } from "@backend/constants/audioConstants";
 import ffmpeg from "ffmpeg-static";
 import { spawn } from "node:child_process";
 

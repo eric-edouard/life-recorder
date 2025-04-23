@@ -1,6 +1,6 @@
-import { db } from "@/db/db";
-import { speakersTable } from "@/db/schema";
-import { generateReadableUUID } from "@/utils/generateReadableUUID";
+import { db } from "@backend/db/db";
+import { speakersTable } from "@backend/db/schema";
+import { generateReadableUUID } from "@backend/utils/generateReadableUUID";
 
 export const insertNewSpeaker = async (
 	embedding: number[],

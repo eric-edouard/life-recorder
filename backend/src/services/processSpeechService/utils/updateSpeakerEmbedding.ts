@@ -1,5 +1,5 @@
-import { db } from "@/db/db";
-import { speakersTable } from "@/db/schema";
+import { db } from "@backend/db/db";
+import { speakersTable } from "@backend/db/schema";
 import { eq } from "drizzle-orm";
 
 export const updateSpeakerEmbedding = async (

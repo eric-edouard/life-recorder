@@ -2,7 +2,7 @@
  * BLE UUIDs and constants for Omi device communication
  */
 
-import { BleAudioCodec } from "@/src/services/deviceService/types";
+import { BleAudioCodec } from "@app/services/deviceService/types";
 
 export const OMI_SERVICE_UUID = "19b10000-e8f2-537e-4f6c-d104768a1214";
 

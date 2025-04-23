@@ -1,10 +1,10 @@
-import { AnimatedScreenHeader } from "@/src/components/ScreenScrollView/AnimatedScreenHeader";
+import { AnimatedScreenHeader } from "@app/components/ScreenScrollView/AnimatedScreenHeader";
 
-import { AnimatedScreenTitle } from "@/src/components/ScreenScrollView/AnimatedScreenTitle";
+import { AnimatedScreenTitle } from "@app/components/ScreenScrollView/AnimatedScreenTitle";
 import {
 	ScreenScrollViewProvider,
 	useScreenScroll,
-} from "@/src/components/ScreenScrollView/ScreenScrollContext";
+} from "@app/components/ScreenScrollView/ScreenScrollContext";
 import { Animated } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { twMerge } from "tailwind-merge";

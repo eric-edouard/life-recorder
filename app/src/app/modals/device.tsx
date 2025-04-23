@@ -1,4 +1,4 @@
-import { DeviceBottomSheet } from "@/src/components/Sreens/DeviceBottomSheet/DeviceBottomSheet";
+import { DeviceBottomSheet } from "@app/components/Sreens/DeviceBottomSheet/DeviceBottomSheet";
 import React from "react";
 
 export default function DeviceModal() {

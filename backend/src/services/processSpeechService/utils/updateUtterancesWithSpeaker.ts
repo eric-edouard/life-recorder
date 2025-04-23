@@ -1,6 +1,6 @@
-import { db } from "@/db/db";
-import { utterancesTable } from "@/db/schema";
-import type { UtteranceWithSpeakerId } from "@/types/UtteranceWithSpeakerId";
+import { db } from "@backend/db/db";
+import { utterancesTable } from "@backend/db/schema";
+import type { UtteranceWithSpeakerId } from "@backend/types/UtteranceWithSpeakerId";
 import { eq } from "drizzle-orm";
 
 export const updateUtterancesWithSpeaker = async (

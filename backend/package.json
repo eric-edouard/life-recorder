@@ -4,7 +4,6 @@
 	"description": "Backend API server",
 	"main": "dist/index.js",
 	"scripts": {
-		"prebuild": "cp -r ../shared/* src/shared/",
 		"build": "tsc && tsc-alias && mkdir -p dist/resemblyzer && cp resemblyzer/*.py resemblyzer/requirements.txt dist/resemblyzer/",
 		"install-resemblyzer": "cd resemblyzer && python3 -m venv venv && venv/bin/pip install --upgrade pip && venv/bin/pip install -r requirements.txt && cd ..",
 		"install-resemblyzer:railway": "python3 -m venv /opt/venv && /opt/venv/bin/pip install --upgrade pip && /opt/venv/bin/pip install --no-cache-dir --extra-index-url https://download.pytorch.org/whl/cpu -r dist/resemblyzer/requirements.txt",

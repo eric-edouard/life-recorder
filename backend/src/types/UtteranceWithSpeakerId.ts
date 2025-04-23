@@ -1,4 +1,4 @@
-import type { Utterance } from "@/types/deepgram";
+import type { Utterance } from "@backend/types/deepgram";
 
 export type UtteranceWithSpeakerId = Utterance & {
 	speakerId?: string;

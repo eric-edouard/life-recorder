@@ -1,5 +1,5 @@
-import { useScreenScroll } from "@/src/components/ScreenScrollView/ScreenScrollContext";
-import { Text } from "@/src/components/ui/Text";
+import { useScreenScroll } from "@app/components/ScreenScrollView/ScreenScrollContext";
+import { Text } from "@app/components/ui/Text";
 import { BlurView } from "expo-blur";
 import { Animated } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";

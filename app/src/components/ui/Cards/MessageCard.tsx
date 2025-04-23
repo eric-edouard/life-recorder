@@ -1,4 +1,4 @@
-import { Text } from "@/src/components/ui/Text";
+import { Text } from "@app/components/ui/Text";
 import { View } from "react-native";
 import { twMerge } from "tailwind-merge";
 

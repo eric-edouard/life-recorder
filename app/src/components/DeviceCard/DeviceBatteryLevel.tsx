@@ -1,4 +1,4 @@
-import { deviceService } from "@/src/services/deviceService/deviceService";
+import { deviceService } from "@app/services/deviceService/deviceService";
 import { use$ } from "@legendapp/state/react";
 import { SymbolView } from "expo-symbols";
 import React from "react";

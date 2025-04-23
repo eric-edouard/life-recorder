@@ -1,6 +1,6 @@
-import { DeviceSignalStrength } from "@/src/components/DeviceCard/DeviceSignalStrength";
-import { Text } from "@/src/components/ui/Text";
-import { deviceService } from "@/src/services/deviceService/deviceService";
+import { DeviceSignalStrength } from "@app/components/DeviceCard/DeviceSignalStrength";
+import { Text } from "@app/components/ui/Text";
+import { deviceService } from "@app/services/deviceService/deviceService";
 import { use$ } from "@legendapp/state/react";
 import { View } from "react-native";
 

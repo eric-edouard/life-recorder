@@ -1,5 +1,5 @@
-import { processAudioService } from "@/services/processAudioService/processAudioService";
-import type { SocketMiddleware } from "@/types/socket-events";
+import { processAudioService } from "@backend/services/processAudioService/processAudioService";
+import type { SocketMiddleware } from "@backend/types/socket-events";
 
 /**
  * Socket middleware for handling audio-related socket events
@@ -11,9 +11,9 @@ export const handleAudioMiddleware: SocketMiddleware = (socket) => {
 		callback(true);
 
 		try {
-			console.log(
-				`Received audio data. Timestamp: ${data.timestamp}, Packets: ${data.packets.length}`,
-			);
+			// console.log(
+			// 	`Received audio data. Timestamp: ${data.timestamp}, Packets: ${data.packets.length}`,
+			// );
 
 			// Process each packet individually
 			for (const packetData of data.packets) {
@@ -27,7 +27,7 @@ export const handleAudioMiddleware: SocketMiddleware = (socket) => {
 				);
 			}
 
-			// console.log(`Processed ${data.packets.length} audio packets`);
+			console.log(`Processed ${data.packets.length} audio packets`);
 		} catch (error) {
 			console.error("Error processing audio data:", error);
 		}

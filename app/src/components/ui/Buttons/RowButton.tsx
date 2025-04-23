@@ -1,6 +1,6 @@
-import { PressableLayer } from "@/src/components/PressableLayer";
-import { Text } from "@/src/components/ui/Text";
-import type { SystemColor } from "@/src/types/colors";
+import { PressableLayer } from "@app/components/PressableLayer";
+import { Text } from "@app/components/ui/Text";
+import type { SystemColor } from "@app/types/colors";
 import { twMerge } from "tailwind-merge";
 
 export const RowButton = ({

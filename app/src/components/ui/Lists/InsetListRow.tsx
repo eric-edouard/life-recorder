@@ -1,6 +1,6 @@
 // InsetListRow.tsx
-import { PressableLayer } from "@/src/components/PressableLayer";
-import type { SystemColor } from "@/src/types/colors";
+import { PressableLayer } from "@app/components/PressableLayer";
+import type { SystemColor } from "@app/types/colors";
 import type { ReactNode } from "react";
 import React from "react";
 import { Text, View, type ViewProps } from "react-native";

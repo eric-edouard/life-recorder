@@ -1,15 +1,15 @@
-import { bleManager } from "@/src/services/bleManager";
-import { scanDevicesService } from "@/src/services/deviceService/scanDevicesService";
-import { alert } from "@/src/services/deviceService/utils/alert";
-import { getCharacteristicValue } from "@/src/services/deviceService/utils/getCharacteristicValue";
-import { getDeviceCharacteristic } from "@/src/services/deviceService/utils/getDeviceCharacteric";
-import { monitorCharacteristic } from "@/src/services/deviceService/utils/monitorCharacteristic";
-import { storage$ } from "@/src/services/storage";
-import { defer } from "@/src/utils/defer";
+import { bleManager } from "@app/services/bleManager";
+import { scanDevicesService } from "@app/services/deviceService/scanDevicesService";
+import { alert } from "@app/services/deviceService/utils/alert";
+import { getCharacteristicValue } from "@app/services/deviceService/utils/getCharacteristicValue";
+import { getDeviceCharacteristic } from "@app/services/deviceService/utils/getDeviceCharacteric";
+import { monitorCharacteristic } from "@app/services/deviceService/utils/monitorCharacteristic";
+import { storage$ } from "@app/services/storage";
+import { defer } from "@app/utils/defer";
 import {
 	type SignalStrength,
 	rssiToSignalStrength,
-} from "@/src/utils/rssiToSignalStrength";
+} from "@app/utils/rssiToSignalStrength";
 import { observable, observe } from "@legendapp/state";
 import { Platform } from "react-native";
 import type { Device, Subscription } from "react-native-ble-plx";
@@ -34,7 +34,7 @@ export const deviceService = (() => {
 	let _connectedDevice: Device | null = null;
 
 	let batteryLevelSubscription: Subscription | null = null;
-	let rssiInterval: number | null = null;
+	let rssiInterval: NodeJS.Timeout | null = null;
 	let buttonStateSubscription: Subscription | null = null;
 	const connectedDeviceId$ = observable<string | null>(null);
 	const isConnected$ = observable(() => !!connectedDeviceId$.get());

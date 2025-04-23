@@ -1,4 +1,4 @@
-import type { PairedDevice } from "@/src/services/deviceService/types";
+import type { PairedDevice } from "@app/services/deviceService/types";
 import { observable } from "@legendapp/state";
 import { createTypedStorage } from "../utils/createTypedStorage";
 

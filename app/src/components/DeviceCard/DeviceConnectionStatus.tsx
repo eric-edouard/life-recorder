@@ -1,5 +1,5 @@
-import { deviceService } from "@/src/services/deviceService/deviceService";
-import { scanDevicesService } from "@/src/services/deviceService/scanDevicesService";
+import { deviceService } from "@app/services/deviceService/deviceService";
+import { scanDevicesService } from "@app/services/deviceService/scanDevicesService";
 import { use$ } from "@legendapp/state/react";
 import React, { useEffect, useRef } from "react";
 import { Animated, View } from "react-native";

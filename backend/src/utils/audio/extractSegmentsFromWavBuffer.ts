@@ -1,4 +1,4 @@
-import { SAMPLE_RATE } from "@/constants/audioConstants";
+import { SAMPLE_RATE } from "@backend/constants/audioConstants";
 import { WaveFile } from "wavefile";
 
 /**

@@ -1,5 +1,5 @@
-import { backendUrl } from "@/src/constants/backendUrl";
-import type { TypedSocket } from "@/src/types/socket-events";
+import { backendUrl } from "@app/constants/backendUrl";
+import type { TypedSocket } from "@app/types/socket-events";
 import { observable } from "@legendapp/state";
 import { io } from "socket.io-client";
 

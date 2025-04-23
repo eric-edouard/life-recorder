@@ -6,8 +6,8 @@ export const audioDataService = (() => {
 	let audioPacketsReceived = 0;
 	let savedAudioCount = 0;
 	let audioSubscription: Subscription | null = null;
-	let audioSendInterval: number | null = null;
-	let updateStatsInterval: number | null = null;
+	let audioSendInterval: NodeJS.Timeout | null = null;
+	let updateStatsInterval: NodeJS.Timeout | null = null;
 	let audioPacketsBuffer: number[][] = []; // Store processed bytes directly
 	let onStatsUpdate:
 		| ((packetsReceived: number, savedCount: number) => void)
@@ -49,9 +49,9 @@ export const audioDataService = (() => {
 				(success: boolean) => {
 					if (success) {
 						savedAudioCount += packetsToSend.length;
-						// console.log(
-						// 	`Successfully sent ${packetsToSend.length} audio packets`,
-						// );
+						console.log(
+							`Successfully sent ${packetsToSend.length} audio packets`,
+						);
 					} else {
 						console.error("Failed to send audio data, will retry later");
 						// Re-add the packets to the buffer for retry

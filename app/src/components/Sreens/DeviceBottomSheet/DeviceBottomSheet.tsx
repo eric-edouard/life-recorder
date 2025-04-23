@@ -1,5 +1,5 @@
-import { useConnectedDevice } from "@/src/hooks/useConnectedDevice";
-import { defer } from "@/src/utils/defer";
+import { useConnectedDevice } from "@app/hooks/useConnectedDevice";
+import { defer } from "@app/utils/defer";
 import {
 	type DragChangeEvent,
 	type SizeChangeEvent,
@@ -12,8 +12,8 @@ import { useColor } from "react-native-uikit-colors";
 import {
 	DEVICE_SHEET_HEIGHT,
 	dragValue$,
-} from "@/src/components/Sreens/DeviceBottomSheet/ConnectedDeviceDetails";
-import { DeviceBottomSheetStateRouter } from "@/src/components/Sreens/DeviceBottomSheet/DeviceBottomSheetStateRouter";
+} from "@app/components/Sreens/DeviceBottomSheet/ConnectedDeviceDetails";
+import { DeviceBottomSheetStateRouter } from "@app/components/Sreens/DeviceBottomSheet/DeviceBottomSheetStateRouter";
 
 export function DeviceBottomSheet() {
 	const connectedDevice = useConnectedDevice();

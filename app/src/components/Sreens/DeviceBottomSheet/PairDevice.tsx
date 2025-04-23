@@ -1,6 +1,6 @@
-import { DeviceLargeDetails } from "@/src/components/Sreens/DeviceBottomSheet/DeviceLargeDetails";
-import { Text } from "@/src/components/ui/Text";
-import { deviceService } from "@/src/services/deviceService/deviceService";
+import { DeviceLargeDetails } from "@app/components/Sreens/DeviceBottomSheet/DeviceLargeDetails";
+import { Text } from "@app/components/ui/Text";
+import { deviceService } from "@app/services/deviceService/deviceService";
 import { Button } from "@expo/ui/swift-ui";
 import { use$ } from "@legendapp/state/react";
 import React from "react";

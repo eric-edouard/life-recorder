@@ -1,9 +1,9 @@
-import { CHANNELS, SAMPLE_RATE } from "@/constants/audioConstants";
-import { DEEPGRAM_LIVE_TRANSCRIPTION_ENABLED } from "@/constants/features";
-import { deepgramLiveTranscriptionService } from "@/services/processAudioService/utils/deepgramLiveTranscriptionService";
-import { processFinalizedSpeechChunk } from "@/services/processSpeechService/processFinalizedSpeechChunk";
-import { socketService } from "@/services/socketService";
-import { convertPcmToFloat32Array } from "@/utils/audio/audioUtils";
+import { CHANNELS, SAMPLE_RATE } from "@backend/constants/audioConstants";
+import { DEEPGRAM_LIVE_TRANSCRIPTION_ENABLED } from "@backend/constants/features";
+import { deepgramLiveTranscriptionService } from "@backend/services/processAudioService/utils/deepgramLiveTranscriptionService";
+import { processFinalizedSpeechChunk } from "@backend/services/processSpeechService/processFinalizedSpeechChunk";
+import { socketService } from "@backend/services/socketService";
+import { convertPcmToFloat32Array } from "@backend/utils/audio/audioUtils";
 import { OpusEncoder } from "@discordjs/opus";
 import { RealTimeVAD } from "@ericedouard/vad-node-realtime";
 
@@ -61,6 +61,7 @@ export const processAudioService = (() => {
 
 				processFinalizedSpeechChunk(audio, speechStartTime);
 			},
+			preSpeechPadFrames: 4,
 			minSpeechFrames: 3,
 			redemptionFrames: 8,
 		});
