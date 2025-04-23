@@ -1,7 +1,9 @@
+import { AnimatedBluetoothScanning } from "@/src/components/Sreens/DeviceBottomSheet/AnimatedBluetoothScanning";
 import { PairDevice } from "@/src/components/Sreens/DeviceBottomSheet/PairDevice";
-import { SearchingDevices } from "@/src/components/Sreens/DeviceBottomSheet/SearchingDevices";
+import { IconAndText } from "@/src/components/ui/IconAndText";
 import { scanDevicesService } from "@/src/services/deviceService/scanDevicesService";
 import React, { useEffect, useState } from "react";
+import { View } from "react-native";
 import type { Device } from "react-native-ble-plx";
 
 export function SearchAndPairDevice() {
@@ -17,10 +19,14 @@ export function SearchAndPairDevice() {
 
 	if (!compatibleDevice)
 		return (
-			<SearchingDevices
-				title="Searching..."
-				message="Looking for compatible devices"
-			/>
+			<View className="flex-1 items-center justify-center mb-safe-offset-2 pt-14 pb-4 ">
+				<IconAndText
+					className="mb-safe-offset-2 mt-2"
+					icon={<AnimatedBluetoothScanning />}
+					title="Searching..."
+					message="Looking for compatible devices"
+				/>
+			</View>
 		);
 
 	return <PairDevice compatibleDevice={compatibleDevice} />;

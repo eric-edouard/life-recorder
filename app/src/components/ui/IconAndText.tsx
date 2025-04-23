@@ -18,12 +18,7 @@ export const IconAndText = ({
 	content,
 }: MessageCardProps) => {
 	return (
-		<View
-			className={twMerge(
-				"flex items-center gap-2 pt-24 pb-safe-offset-10 ",
-				className,
-			)}
-		>
+		<View className={twMerge("flex items-center gap-2 pt-10 pb-10", className)}>
 			{icon}
 			<View>
 				<Text className="text-2xl font-bold text-center mb-2 mt-4 text-gray-2">

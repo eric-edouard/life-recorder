@@ -1,4 +1,3 @@
-import { IconAndText } from "@/src/components/ui/IconAndText";
 import { scanDevicesService } from "@/src/services/deviceService/scanDevicesService";
 import { use$ } from "@legendapp/state/react";
 import { Bluetooth } from "lucide-react-native";
@@ -6,14 +5,9 @@ import React, { useEffect, useRef } from "react";
 import { Animated } from "react-native";
 import { useColor } from "react-native-uikit-colors";
 
-type Props = {
-	title: string;
-	message: string;
-};
-
-export function SearchingDevices({ title, message }: Props) {
-	const gray2 = useColor("gray2");
+export function AnimatedBluetoothScanning() {
 	const isScanning = use$(scanDevicesService.scanning$);
+	const gray2 = useColor("gray2");
 	const animatedValue = useRef(new Animated.Value(1)).current;
 	const animationRef = useRef<Animated.CompositeAnimation | null>(null);
 
@@ -55,15 +49,8 @@ export function SearchingDevices({ title, message }: Props) {
 	}, [isScanning]);
 
 	return (
-		<IconAndText
-			className="mb-safe-offset-2 mt-2"
-			icon={
-				<Animated.View style={{ opacity: animatedValue }}>
-					<Bluetooth size={56} color={gray2} />
-				</Animated.View>
-			}
-			title={title}
-			message={message}
-		/>
+		<Animated.View style={{ opacity: animatedValue }}>
+			<Bluetooth size={56} color={gray2} />
+		</Animated.View>
 	);
 }
