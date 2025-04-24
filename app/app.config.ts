@@ -86,6 +86,13 @@ export default ({ config }: ConfigContext) => ({
 			"expo-file-system",
 			"expo-font",
 			[
+				"expo-local-authentication",
+				{
+					faceIDPermission:
+						"Allow $(PRODUCT_NAME) to use Face ID to log in and protect your sensitive data.",
+				},
+			],
+			[
 				"expo-location",
 				{
 					locationAlwaysAndWhenInUsePermission:

@@ -9,25 +9,11 @@ import { ThemeProvider } from "@app/contexts/ThemeContext";
 import "@app/tasks/locationTask";
 import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
-import * as SplashScreen from "expo-splash-screen";
-import { useEffect } from "react";
-
-// Prevent the splash screen from auto-hiding before asset loading is complete.
-SplashScreen.preventAutoHideAsync();
-SplashScreen.setOptions({
-	fade: true,
-});
 
 export default function RootLayout() {
 	const [loaded] = useFonts({
 		SpaceMono: require("../../assets/fonts/SpaceMono-Regular.ttf"),
 	});
-
-	useEffect(() => {
-		if (loaded) {
-			SplashScreen.hideAsync();
-		}
-	}, [loaded]);
 
 	if (!loaded) {
 		return null;
@@ -38,6 +24,12 @@ export default function RootLayout() {
 			<ThemeProvider>
 				<Stack>
 					<Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+					<Stack.Screen
+						name="(auth)"
+						options={{
+							headerShown: false,
+						}}
+					/>
 					<Stack.Screen
 						name="modals/device"
 						options={{
