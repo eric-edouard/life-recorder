@@ -1,5 +1,5 @@
 import { CHANNELS, SAMPLE_RATE } from "@backend/constants/audioConstants";
-import type { DeepgramResult } from "@backend/types/deepgram";
+import type { DeepgramLiveTranscriptionResult } from "@backend/types/deepgramLiveTranscriptionResult";
 import {
 	type DeepgramError,
 	type ListenLiveClient,
@@ -65,7 +65,7 @@ export const deepgramLiveTranscriptionService = (() => {
 
 		liveTranscription.addListener(
 			LiveTranscriptionEvents.Transcript,
-			(data: DeepgramResult) => {
+			(data: DeepgramLiveTranscriptionResult) => {
 				console.log(
 					"[Deepgram] Transcript received:",
 					data.channel?.alternatives[0]?.transcript || "No transcript",

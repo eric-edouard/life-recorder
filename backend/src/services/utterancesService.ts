@@ -16,8 +16,8 @@ export const getUtterances = async (
 			id: utterance.id,
 			transcript: utterance.transcript,
 			createdAt: utterance.createdAt.getTime(),
-			nonIdentifiedSpeaker: utterance.non_identified_speaker,
-			speaker: utterance.speaker,
+			nonIdentifiedSpeaker: utterance.nonIdentifiedSpeaker,
+			speaker: utterance.voiceProfileId,
 			words: utterance.words as { word: string; start: number; end: number }[],
 		})),
 	};

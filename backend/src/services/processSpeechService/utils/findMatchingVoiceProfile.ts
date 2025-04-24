@@ -1,24 +1,24 @@
 import { db } from "@backend/db/db";
-import { speakersTable } from "@backend/db/schema";
+import { voiceProfilesTable } from "@backend/db/schema";
 import { cosineDistance, desc, gt, sql } from "drizzle-orm";
 
-export const findMatchingSpeaker = async (
+export const findMatchingVoiceProfile = async (
 	newEmbedding: number[],
 	threshold = 0.75,
 ) => {
 	const similarity = sql<number>`1 - (${cosineDistance(
-		speakersTable.embedding,
+		voiceProfilesTable.embedding,
 		newEmbedding,
-	)})`;
+	)})`.as("similarity");
 
 	const matches = await db
 		.select({
-			id: speakersTable.id,
-			name: speakersTable.name,
+			id: voiceProfilesTable.id,
+			language: voiceProfilesTable.language,
+			duration: voiceProfilesTable.duration,
 			similarity,
-			duration: speakersTable.duration,
 		})
-		.from(speakersTable)
+		.from(voiceProfilesTable)
 		.where(gt(similarity, threshold))
 		.orderBy(desc(similarity))
 		.limit(1);

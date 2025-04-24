@@ -1,5 +1,4 @@
 import { CHANNELS, SAMPLE_RATE } from "@backend/constants/audioConstants";
-import { SAVE_RECORDINGS_TO_GCS_ENABLED } from "@backend/constants/features";
 import { db } from "@backend/db/db";
 import { utterancesTable } from "@backend/db/schema";
 import { deepgram } from "@backend/services/external/deepgram";
@@ -54,7 +53,7 @@ export const createAndSaveTranscript = async (
 	const transcript = result?.results.channels[0].alternatives[0].transcript;
 
 	console.log("Transcription content: ", transcript);
-	console.log("Transcription result: ", JSON.stringify(result));
+	console.log("Transcription result: ", JSON.stringify(result, null, 2));
 
 	if (!utterances || !transcript) {
 		console.error("Missing transcript or utterances", JSON.stringify(result));
@@ -67,14 +66,14 @@ export const createAndSaveTranscript = async (
 		utterances.map((u) =>
 			db.insert(utterancesTable).values({
 				id: generateUtteranceId(startTime, u.start, u.end),
-				fileId: SAVE_RECORDINGS_TO_GCS_ENABLED ? fileId : undefined,
+				fileId,
 				start: u.start,
 				end: u.end,
 				transcript: u.transcript,
 				confidence: u.confidence,
 				createdAt: new Date(startTime),
 				words: u.words,
-				non_identified_speaker: u.speaker,
+				nonIdentifiedSpeaker: u.speaker!,
 				// Deepgram does return this in  the data but it's not typed by their SDK
 				languages: (u as Utterance & { languages: string[] }).languages,
 			}),
