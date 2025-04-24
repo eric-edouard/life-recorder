@@ -11,25 +11,30 @@ import { twMerge } from "tailwind-merge";
 
 export const PressableLayer = ({
 	backgroundColor = "secondarySystemGroupedBackground",
+	pressedBackgroundColor = "gray4",
+	disabledBackgroundColor = "gray4",
 	children,
 	containerClassName,
 	className,
 	onPress,
 	style,
 	rounded = true,
+	disabled = false,
 }: {
 	backgroundColor?: SystemColor;
+	pressedBackgroundColor?: SystemColor;
+	disabledBackgroundColor?: SystemColor;
 	children: React.ReactNode;
 	containerClassName?: string;
 	className?: string;
 	onPress?: () => void;
 	style?: StyleProp<ViewStyle>;
 	rounded?: boolean;
+	disabled?: boolean;
 }) => {
 	const _backgroundColor = useColor(backgroundColor);
-
-	const pressedBackgroundColor = useColor("gray4");
-
+	const _pressedBackgroundColor = useColor(pressedBackgroundColor);
+	const _disabledBackgroundColor = useColor(disabledBackgroundColor);
 	const colorAnim = useRef(new Animated.Value(0)).current;
 
 	const handlePressIn = () => {
@@ -51,6 +56,7 @@ export const PressableLayer = ({
 
 	return (
 		<Pressable
+			disabled={disabled}
 			onPress={onPress}
 			onPressIn={handlePressIn}
 			onPressOut={handlePressOut}
@@ -61,10 +67,12 @@ export const PressableLayer = ({
 				style={[
 					{
 						borderCurve: "continuous",
-						backgroundColor: colorAnim.interpolate({
-							inputRange: [0, 1],
-							outputRange: [_backgroundColor, pressedBackgroundColor],
-						}),
+						backgroundColor: disabled
+							? _disabledBackgroundColor
+							: colorAnim.interpolate({
+									inputRange: [0, 1],
+									outputRange: [_backgroundColor, _pressedBackgroundColor],
+								}),
 					},
 					style,
 				]}

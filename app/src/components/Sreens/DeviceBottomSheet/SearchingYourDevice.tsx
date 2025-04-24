@@ -1,9 +1,9 @@
 import { AnimatedBluetoothScanning } from "@app/components/Sreens/DeviceBottomSheet/AnimatedBluetoothScanning";
+import { Button } from "@app/components/ui/Buttons/Button";
 import { IconAndText } from "@app/components/ui/IconAndText";
 import { deviceService } from "@app/services/deviceService/deviceService";
 import { storage$ } from "@app/services/storage";
 import { alert } from "@app/utils/alert";
-import { Button } from "@expo/ui/swift-ui";
 import { use$ } from "@legendapp/state/react";
 import React from "react";
 import { View } from "react-native";
@@ -19,7 +19,9 @@ export function SearchingYourDevice() {
 				message="It will connect automatically once found"
 			/>
 			<Button
-				variant="bordered"
+				title="Unpair this device"
+				color="gray4"
+				textColor="secondaryLabel"
 				onPress={() =>
 					alert({
 						title: `Unpair`,
@@ -39,10 +41,7 @@ export function SearchingYourDevice() {
 						],
 					})
 				}
-				color="gray"
-			>
-				Unpair this device
-			</Button>
+			/>
 		</View>
 	);
 }

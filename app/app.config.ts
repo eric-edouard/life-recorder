@@ -75,6 +75,13 @@ export default ({ config }: ConfigContext) => ({
 					},
 				},
 			],
+			[
+				"expo-contacts",
+				{
+					contactsPermission:
+						"Contacts permission is required to link people's voices to their contact information",
+				},
+			],
 			"expo-dev-client",
 			"expo-file-system",
 			"expo-font",
@@ -111,7 +118,7 @@ export default ({ config }: ConfigContext) => ({
 			"expo-task-manager",
 			"expo-updates",
 			"expo-video",
-			"expo-web-browser",
+			// "expo-web-browser",
 			[
 				"react-native-ble-plx",
 				{

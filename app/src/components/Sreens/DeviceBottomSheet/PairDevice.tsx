@@ -1,7 +1,7 @@
 import { DeviceLargeDetails } from "@app/components/Sreens/DeviceBottomSheet/DeviceLargeDetails";
+import { Button } from "@app/components/ui/Buttons/Button";
 import { Text } from "@app/components/ui/Text";
 import { deviceService } from "@app/services/deviceService/deviceService";
-import { Button } from "@expo/ui/swift-ui";
 import { use$ } from "@legendapp/state/react";
 import React from "react";
 import { View } from "react-native";
@@ -33,10 +33,8 @@ export function PairDevice({ compatibleDevice, onDevicePaired }: Props) {
 									await deviceService.connectToDevice(compatibleDevice.id);
 									onDevicePaired?.();
 								}}
-								variant="borderedProminent"
-							>
-								{isConnecting ? "Connecting..." : "Pair Device"}
-							</Button>
+								title={isConnecting ? "Connecting..." : "Pair Device"}
+							/>
 						)}
 					</View>
 				</View>

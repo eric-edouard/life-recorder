@@ -1,8 +1,8 @@
 // InsetList.tsx
-import React, { type ReactElement, Children, cloneElement } from "react";
+import React, { Children, cloneElement, type ReactElement } from "react";
 import { ActivityIndicator, Text, View } from "react-native";
 import { twMerge } from "tailwind-merge";
-import type { InsetListRowProps } from "./InsetListRow";
+import { InsetListRow, type InsetListRowProps } from "./InsetListRow";
 
 type InsetListProps = {
 	backgroundColor?: "secondary" | "tertiary";
@@ -20,7 +20,7 @@ type InsetListProps = {
 		| ReactElement<InsetListRowProps>[];
 };
 
-export const InsetList = ({
+const InsetList = ({
 	backgroundColor = "secondary",
 	headerText,
 	footer,
@@ -80,3 +80,7 @@ export const InsetList = ({
 		</View>
 	);
 };
+
+InsetList.Row = InsetListRow;
+
+export { InsetList };

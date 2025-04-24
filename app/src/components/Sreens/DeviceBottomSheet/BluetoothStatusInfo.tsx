@@ -1,6 +1,6 @@
+import { Button } from "@app/components/ui/Buttons/Button";
 import { IconAndText } from "@app/components/ui/IconAndText";
 import { scanDevicesService } from "@app/services/deviceService/scanDevicesService";
-import { Button } from "@expo/ui/swift-ui";
 import { use$ } from "@legendapp/state/react";
 import { Bluetooth, BluetoothOff } from "lucide-react-native";
 import React from "react";
@@ -32,7 +32,6 @@ export function BluetoothStatusInfo() {
 							marginTop: 8,
 							padding: 32,
 						}}
-						variant="borderedProminent"
 						onPress={() => {
 							if (canAskForPermission) {
 								scanDevicesService.requestBluetoothPermission();
@@ -40,9 +39,8 @@ export function BluetoothStatusInfo() {
 								Linking.openSettings();
 							}
 						}}
-					>
-						{canAskForPermission ? "Enable Bluetooth" : "Go to settings"}
-					</Button>
+						title={canAskForPermission ? "Enable Bluetooth" : "Go to settings"}
+					/>
 				}
 			/>
 		);
