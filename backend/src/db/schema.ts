@@ -9,28 +9,24 @@ import {
 	vector,
 } from "drizzle-orm/pg-core";
 
-export const utterancesTable = pgTable("utterances", {
-	id: text("id").primaryKey(), // custom readable UUID for the utterance
-	fileId: text("file_id"), // foreign key linking to the audio file record
-	start: real("start").notNull(), // start time in seconds
-	end: real("end").notNull(), // end time in seconds
-	transcript: text("transcript").notNull(),
-	confidence: real("confidence").notNull(),
-	// This field now references the speakers table. It can be null if not identified
-	speaker: text("speaker").references(() => speakersTable.id),
-	non_identified_speaker: integer("non_identified_speaker"),
-	words: jsonb("words").notNull(),
-	languages: text("languages").array(),
+export const peopleTable = pgTable("people", {
+	id: text("id").primaryKey(),
+	name: text("name").notNull(),
+	contactId: text("contact_id"),
+	notes: text("notes"),
 	createdAt: timestamp("created_at").defaultNow().notNull(),
+	updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
-export const speakersTable = pgTable(
-	"speakers",
+export const voiceProfilesTable = pgTable(
+	"voice_profiles",
 	{
 		id: text("id").primaryKey(),
-		name: text("name"),
-		embedding: vector("embedding", { dimensions: 256 }),
-		duration: real("duration").notNull().default(0),
+		personId: text("person_id").references(() => peopleTable.id),
+		embedding: vector("embedding", { dimensions: 256 }).notNull(),
+		duration: real("duration").notNull(),
+		language: text("language"),
+		fileId: text("file_id").notNull(),
 		createdAt: timestamp("created_at").defaultNow().notNull(),
 		updatedAt: timestamp("updated_at").defaultNow().notNull(),
 	},
@@ -41,3 +37,19 @@ export const speakersTable = pgTable(
 		),
 	],
 );
+
+export const utterancesTable = pgTable("utterances", {
+	id: text("id").primaryKey(),
+	fileId: text("file_id").notNull(),
+	start: real("start").notNull(),
+	end: real("end").notNull(),
+	transcript: text("transcript").notNull(),
+	confidence: real("confidence").notNull(),
+	voiceProfileId: text("voice_profile_id").references(
+		() => voiceProfilesTable.id,
+	),
+	nonIdentifiedSpeaker: integer("non_identified_speaker").notNull(),
+	words: jsonb("words").notNull(),
+	languages: text("languages").array(),
+	createdAt: timestamp("created_at").defaultNow().notNull(),
+});
