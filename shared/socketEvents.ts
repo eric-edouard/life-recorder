@@ -35,6 +35,7 @@ export type GetUtterancesResponse = {
 		}[];
 	}[];
 };
+
 export interface ClientToServerEvents {
 	audioData: (
 		data: { packets: number[][]; timestamp: number },

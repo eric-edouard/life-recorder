@@ -1,4 +1,5 @@
 import {
+	boolean,
 	index,
 	integer,
 	jsonb,
@@ -12,10 +13,11 @@ import {
 export const peopleTable = pgTable("people", {
 	id: text("id").primaryKey(),
 	name: text("name").notNull(),
-	contactId: text("contact_id"),
+	contactId: text("contact_id").unique(),
 	notes: text("notes"),
 	createdAt: timestamp("created_at").defaultNow().notNull(),
 	updatedAt: timestamp("updated_at").defaultNow().notNull(),
+	isUser: boolean("is_user").default(false),
 });
 
 export const voiceProfilesTable = pgTable(
@@ -26,7 +28,7 @@ export const voiceProfilesTable = pgTable(
 		embedding: vector("embedding", { dimensions: 256 }).notNull(),
 		duration: real("duration").notNull(),
 		language: text("language"),
-		fileId: text("file_id").notNull(),
+		fileId: text("file_id").notNull().unique(),
 		createdAt: timestamp("created_at").defaultNow().notNull(),
 		updatedAt: timestamp("updated_at").defaultNow().notNull(),
 	},
