@@ -5,10 +5,10 @@ import { saveAudioToGCS } from "@backend/services/processSpeechService/saveAudio
 import { findMatchingVoiceProfile } from "@backend/services/processSpeechService/utils/findMatchingVoiceProfile";
 import { getSpeakerEmbeddingFromBuffer } from "@backend/services/processSpeechService/utils/getSpeakerEmbeddingFromBuffer";
 import { insertNewVoiceProfile } from "@backend/services/processSpeechService/utils/insertNewVoiceProfile";
+import type { Utterance } from "@backend/types/deepgram";
 import { convertFloat32ArrayToWavBuffer } from "@backend/utils/audio/audioUtils";
 import { getWavBufferDuration } from "@backend/utils/audio/getWavBufferDuration";
 import { generateReadableUUID } from "@backend/utils/generateReadableUUID";
-import type { Utterance } from "@deepgram/sdk/src/lib/types/SyncPrerecordedResponse";
 import { inArray } from "drizzle-orm";
 import fs from "node:fs";
 
