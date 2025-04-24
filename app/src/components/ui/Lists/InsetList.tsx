@@ -53,7 +53,7 @@ const InsetList = ({
 
 			<View
 				className={twMerge(
-					"rounded-lg overflow-hidden",
+					"rounded-xl overflow-hidden",
 					backgroundColor === "secondary" && "bg-secondary-system-background",
 					backgroundColor === "tertiary" && "bg-tertiary-system-background",
 				)}

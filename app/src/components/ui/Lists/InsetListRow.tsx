@@ -1,15 +1,18 @@
 // InsetListRow.tsx
 import { PressableLayer } from "@app/components/PressableLayer";
 import type { SystemColor } from "@app/types/colors";
+import { ChevronRight } from "lucide-react-native";
 import type { ReactNode } from "react";
 import React from "react";
 import { Text, View, type ViewProps } from "react-native";
+import { useColor } from "react-native-uikit-colors";
 import { twMerge } from "tailwind-merge";
 
 export type InsetListRowProps = {
 	backgroundColor?: SystemColor;
 	title: string;
 	detail?: string | ReactNode;
+	detailChevron?: boolean;
 	accessory?: ReactNode;
 	onPress?: () => void;
 	hideBorder?: boolean;
@@ -20,10 +23,12 @@ export const InsetListRow = ({
 	title,
 	detail,
 	accessory,
+	detailChevron = true,
 	onPress,
 	hideBorder = false,
 	...rest
 }: InsetListRowProps) => {
+	const chevronColor = useColor("secondaryLabel");
 	return (
 		<PressableLayer
 			backgroundColor={backgroundColor}
@@ -41,7 +46,10 @@ export const InsetListRow = ({
 				{accessory ? (
 					accessory
 				) : (
-					<Text className="text-lg text-secondary-label">{detail}</Text>
+					<View className="flex-row items-center gap-1">
+						<Text className="text-lg text-secondary-label">{detail}</Text>
+						{detailChevron && <ChevronRight size={20} color={chevronColor} />}
+					</View>
 				)}
 			</View>
 		</PressableLayer>

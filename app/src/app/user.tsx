@@ -1,10 +1,5 @@
-import { Text } from "@app/components/ui/Text";
-import { View } from "react-native";
+import { UserScreen } from "@app/components/Sreens/UserScreen/UserScreen";
 
 export default function User() {
-	return (
-		<View>
-			<Text>User</Text>
-		</View>
-	);
+	return <UserScreen />;
 }

@@ -1,12 +1,12 @@
 import React, { useEffect } from "react";
-import { Image, View } from "react-native";
+import { Image, TouchableOpacity, View } from "react-native";
 
 import { DeviceStatusButton } from "@app/components/DeviceStatusButton";
 import { ScreenScrollView } from "@app/components/ScreenScrollView/ScreenScrollView";
-import { Button } from "@app/components/ui/Buttons/Button";
 import { Text } from "@app/components/ui/Text";
 import { deviceService } from "@app/services/deviceService/deviceService";
 import { use$ } from "@legendapp/state/react";
+import { router } from "expo-router";
 
 export const HomeScreen = () => {
 	const connectedDeviceId = use$(deviceService.connectedDeviceId$);
@@ -31,17 +31,20 @@ export const HomeScreen = () => {
 								</Text>
 							</View>
 						</View>
-						<Image
-							source={{
-								uri: "https://ng0taspu2n.ufs.sh/f/U6TZ1KbvcdmTGQifCw2ULDWxUQCZ2BsqE7bVmwygO0Y3f6vz",
+						<TouchableOpacity
+							onPress={() => {
+								router.push("/user");
 							}}
-							className="w-10 h-10 rounded-full mb-1"
-						/>
+						>
+							<Image
+								source={{
+									uri: "https://ng0taspu2n.ufs.sh/f/U6TZ1KbvcdmTGQifCw2ULDWxUQCZ2BsqE7bVmwygO0Y3f6vz",
+								}}
+								className="w-10 h-10 rounded-full mb-1"
+							/>
+						</TouchableOpacity>
 					</View>
 				</ScreenScrollView.Title>
-			</View>
-			<View className=" relative flex items-center justify-center">
-				<Button title="Test" onPress={() => {}} />
 			</View>
 		</ScreenScrollView.Container>
 	);
