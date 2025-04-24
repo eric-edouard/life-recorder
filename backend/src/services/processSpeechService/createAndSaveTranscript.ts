@@ -81,5 +81,5 @@ export const createAndSaveTranscript = async (
 	);
 
 	console.log(`Saved ${utterances.length} utterances`);
-	return utterances;
+	return utterances as Utterance[];
 };
