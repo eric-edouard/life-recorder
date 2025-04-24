@@ -1,31 +1,13 @@
-import { useAuth } from "@clerk/clerk-expo";
 import { BlurView } from "expo-blur";
 import { Redirect, Tabs } from "expo-router";
-import * as SplashScreen from "expo-splash-screen";
 import { SymbolView } from "expo-symbols";
 import type React from "react";
-import { useEffect } from "react";
 import { StyleSheet, useColorScheme } from "react-native";
 import { Colors } from "react-native/Libraries/NewAppScreen";
 
-// Prevent the splash screen from auto-hiding before asset loading is complete.
-SplashScreen.preventAutoHideAsync();
-SplashScreen.setOptions({
-	fade: true,
-});
+const isSignedIn = false;
 
 export default function TabLayout() {
-	const { isSignedIn, isLoaded } = useAuth();
-
-	useEffect(() => {
-		if (isLoaded) {
-			SplashScreen.hideAsync();
-		}
-	}, [isLoaded]);
-
-	if (!isLoaded) {
-		return null;
-	}
 	if (!isSignedIn) {
 		return <Redirect href="/(auth)/sign-in" />;
 	}

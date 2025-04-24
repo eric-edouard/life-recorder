@@ -10,6 +10,13 @@ import {
 	vector,
 } from "drizzle-orm/pg-core";
 
+export const usersTable = pgTable("users", {
+	id: text("id").primaryKey(),
+	email: text("email").notNull().unique(),
+	createdAt: timestamp("created_at").defaultNow().notNull(),
+	updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
 export const peopleTable = pgTable("people", {
 	id: text("id").primaryKey(),
 	name: text("name").notNull(),
@@ -18,6 +25,9 @@ export const peopleTable = pgTable("people", {
 	createdAt: timestamp("created_at").defaultNow().notNull(),
 	updatedAt: timestamp("updated_at").defaultNow().notNull(),
 	isUser: boolean("is_user").default(false),
+	userId: text("user_id")
+		.notNull()
+		.references(() => usersTable.id),
 });
 
 export const voiceProfilesTable = pgTable(
@@ -31,6 +41,9 @@ export const voiceProfilesTable = pgTable(
 		fileId: text("file_id").notNull().unique(),
 		createdAt: timestamp("created_at").defaultNow().notNull(),
 		updatedAt: timestamp("updated_at").defaultNow().notNull(),
+		userId: text("user_id")
+			.notNull()
+			.references(() => usersTable.id),
 	},
 	(table) => [
 		index("embeddingIndex").using(
@@ -54,4 +67,7 @@ export const utterancesTable = pgTable("utterances", {
 	words: jsonb("words").notNull(),
 	languages: text("languages").array(),
 	createdAt: timestamp("created_at").defaultNow().notNull(),
+	userId: text("user_id")
+		.notNull()
+		.references(() => usersTable.id),
 });

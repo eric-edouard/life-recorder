@@ -19,11 +19,11 @@ export const Button = ({
 	color = "blue",
 	style,
 	disabled = false,
-	textColor = "label",
+	textColor,
 }: ButtonProps) => {
 	const _backgroundColor = useColor(color);
 	const _disabledBackgroundColor = useColor("gray4");
-	const _textColor = useColor(textColor);
+	const _textColor = useColor(textColor ?? "label");
 	return (
 		<TouchableOpacity
 			onPress={onPress}
@@ -43,7 +43,7 @@ export const Button = ({
 					" text-center text-lg",
 					disabled && "text-secondary-label",
 				)}
-				style={{ color: _textColor }}
+				style={{ color: textColor ? _textColor : "white" }}
 			>
 				{title}
 			</Text>

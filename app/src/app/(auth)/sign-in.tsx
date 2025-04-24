@@ -1,66 +1,51 @@
-import { useSignIn } from "@clerk/clerk-expo";
-import { Link, useRouter } from "expo-router";
+import { Button } from "@app/components/ui/Buttons/Button";
+import { Text } from "@app/components/ui/Text";
+import { useObservable } from "@legendapp/state/react";
+import { Link } from "expo-router";
 import React from "react";
-import { Text, TextInput, TouchableOpacity, View } from "react-native";
+import { TextInput, View } from "react-native";
 
 export default function Page() {
-	const { signIn, setActive, isLoaded } = useSignIn();
-	const router = useRouter();
-
-	const [emailAddress, setEmailAddress] = React.useState("");
-	const [password, setPassword] = React.useState("");
+	const emailAddress$ = useObservable("eamilhat@gmail.com");
+	const password$ = useObservable("b7ysdbnqk.456LK");
 
 	// Handle the submission of the sign-in form
-	const onSignInPress = async () => {
-		if (!isLoaded) return;
-
-		// Start the sign-in process using the email and password provided
-		try {
-			const signInAttempt = await signIn.create({
-				identifier: emailAddress,
-				password,
-			});
-
-			// If sign-in process is complete, set the created session as active
-			// and redirect the user
-			if (signInAttempt.status === "complete") {
-				await setActive({ session: signInAttempt.createdSessionId });
-				router.replace("/");
-			} else {
-				// If the status isn't complete, check why. User might need to
-				// complete further steps.
-				console.error(JSON.stringify(signInAttempt, null, 2));
-			}
-		} catch (err) {
-			// See https://clerk.com/docs/custom-flows/error-handling
-			// for more info on error handling
-			console.error(JSON.stringify(err, null, 2));
-		}
-	};
+	const onSignInPress = async () => {};
 
 	return (
-		<View>
-			<Text>Sign in</Text>
-			<TextInput
-				autoCapitalize="none"
-				value={emailAddress}
-				placeholder="Enter email"
-				onChangeText={(emailAddress) => setEmailAddress(emailAddress)}
-			/>
-			<TextInput
-				value={password}
-				placeholder="Enter password"
-				secureTextEntry={true}
-				onChangeText={(password) => setPassword(password)}
-			/>
-			<TouchableOpacity onPress={onSignInPress}>
-				<Text>Continue</Text>
-			</TouchableOpacity>
-			<View style={{ display: "flex", flexDirection: "row", gap: 3 }}>
-				<Text>Don't have an account?</Text>
-				<Link href="/sign-up">
-					<Text>Sign up</Text>ack
-				</Link>
+		<View className="h-full p-5 pt-safe-offset-5">
+			<View className="w-full flex flex-1 pt-10 items-center h-full">
+				<Text className="text-3xl font-bold mb-2 text-center">Sign in</Text>
+				<Text className="text-secondary-label mb-8 text-center">
+					Welcome back! Please enter your credentials.
+				</Text>
+				<View className="w-full gap-4">
+					<TextInput
+						defaultValue={emailAddress$.peek()}
+						autoFocus
+						textContentType="emailAddress"
+						autoCapitalize="none"
+						placeholder="Enter email"
+						onChangeText={emailAddress$.set}
+						className=" rounded-xl px-4 py-3 mb-2 text-label h-14 bg-secondary-system-grouped-background"
+						keyboardType="email-address"
+					/>
+					<TextInput
+						defaultValue={password$.peek()}
+						placeholder="Enter password"
+						secureTextEntry={true}
+						textContentType="password"
+						onChangeText={password$.set}
+						className=" rounded-xl px-4 py-3 mb-4 text-label h-14 bg-secondary-system-grouped-background"
+					/>
+					<Button title="Continue" onPress={onSignInPress} />
+				</View>
+				<View className="flex-row justify-center items-center mt-6 gap-1">
+					<Text className="text-secondary-label">Don't have an account?</Text>
+					<Link href="/sign-up">
+						<Text className=" text-blue font-semibold">Sign up</Text>
+					</Link>
+				</View>
 			</View>
 		</View>
 	);

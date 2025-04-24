@@ -26,6 +26,9 @@ export const socketService = (() => {
 
 		socket = io(backendUrl, {
 			transports: ["websocket", "polling"],
+			// auth: {
+			// 	token: clerk.user.get,
+			// },
 		});
 
 		socket.on("connect", () => {
