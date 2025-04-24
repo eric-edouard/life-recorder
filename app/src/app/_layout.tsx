@@ -2,6 +2,9 @@
 import "react-native-reanimated";
 import "../../global.css";
 
+import { ClerkProvider } from "@clerk/clerk-expo";
+import { tokenCache } from "@clerk/clerk-expo/token-cache";
+
 import { ThemeProvider } from "@app/contexts/ThemeContext";
 import "@app/tasks/locationTask";
 import { useFonts } from "expo-font";
@@ -31,27 +34,29 @@ export default function RootLayout() {
 	}
 
 	return (
-		<ThemeProvider>
-			<Stack>
-				<Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-				<Stack.Screen
-					name="modals/device"
-					options={{
-						presentation: "containedTransparentModal",
-						headerShown: false,
-						animation: "none",
-					}}
-				/>
+		<ClerkProvider tokenCache={tokenCache}>
+			<ThemeProvider>
+				<Stack>
+					<Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+					<Stack.Screen
+						name="modals/device"
+						options={{
+							presentation: "containedTransparentModal",
+							headerShown: false,
+							animation: "none",
+						}}
+					/>
 
-				<Stack.Screen name="+not-found" />
-				<Stack.Screen
-					name="user"
-					options={{
-						headerBackTitle: "Home",
-						headerTitle: "User",
-					}}
-				/>
-			</Stack>
-		</ThemeProvider>
+					<Stack.Screen name="+not-found" />
+					<Stack.Screen
+						name="user"
+						options={{
+							headerBackTitle: "Home",
+							headerTitle: "User",
+						}}
+					/>
+				</Stack>
+			</ThemeProvider>
+		</ClerkProvider>
 	);
 }

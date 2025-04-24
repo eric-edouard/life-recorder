@@ -114,6 +114,7 @@ export default ({ config }: ConfigContext) => ({
 					},
 				},
 			],
+			"expo-secure-store",
 			"expo-system-ui",
 			"expo-task-manager",
 			"expo-updates",
