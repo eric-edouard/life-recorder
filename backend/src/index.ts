@@ -3,24 +3,33 @@ import "dotenv/config";
 import { db } from "@backend/db/db";
 import { routes } from "@backend/routes";
 import { socketService } from "@backend/services/socketService";
-import { publicProcedure, router } from "@backend/services/trpc";
+import { type Context, publicProcedure, router } from "@backend/services/trpc";
 import * as trpcExpress from "@trpc/server/adapters/express";
-import { toNodeHandler } from "better-auth/node";
+import { fromNodeHeaders, toNodeHandler } from "better-auth/node";
 import cors from "cors";
 import express from "express";
 import { createServer } from "node:http";
 import { auth } from "./auth";
 
-const createContext = ({
+/**
+ * Create context for tRPC
+ */
+export const createContext = async ({
 	req,
 	res,
-}: trpcExpress.CreateExpressContextOptions) => ({}); // no context
-type Context = Awaited<ReturnType<typeof createContext>>;
+}: trpcExpress.CreateExpressContextOptions): Promise<Context> => {
+	const session = await auth.api.getSession({
+		headers: fromNodeHeaders(req.headers),
+	});
+
+	return { session };
+};
 
 const appRouter = router({
-	userList: publicProcedure.query(async () => {
+	userList: publicProcedure.query(async ({ ctx }) => {
 		const users = await db.query.usersTable.findMany();
 		console.log(users);
+		console.log("Session:", ctx.session);
 		return users;
 	}),
 });
