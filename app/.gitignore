@@ -40,3 +40,6 @@ ios/
 android/
 
 .env
+
+# local backend url
+localBackendUrl.ts
