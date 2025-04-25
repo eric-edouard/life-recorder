@@ -10,14 +10,61 @@ import {
 	vector,
 } from "drizzle-orm/pg-core";
 
-export const usersTable = pgTable("users", {
+// ==================== Auth Tables ====================
+
+export const user = pgTable("user", {
 	id: text("id").primaryKey(),
+	name: text("name").notNull(),
 	email: text("email").notNull().unique(),
-	createdAt: timestamp("created_at").defaultNow().notNull(),
-	updatedAt: timestamp("updated_at").defaultNow().notNull(),
+	emailVerified: boolean("email_verified").notNull(),
+	image: text("image"),
+	createdAt: timestamp("created_at").notNull(),
+	updatedAt: timestamp("updated_at").notNull(),
 });
 
-export const peopleTable = pgTable("people", {
+export const session = pgTable("session", {
+	id: text("id").primaryKey(),
+	expiresAt: timestamp("expires_at").notNull(),
+	token: text("token").notNull().unique(),
+	createdAt: timestamp("created_at").notNull(),
+	updatedAt: timestamp("updated_at").notNull(),
+	ipAddress: text("ip_address"),
+	userAgent: text("user_agent"),
+	userId: text("user_id")
+		.notNull()
+		.references(() => user.id, { onDelete: "cascade" }),
+});
+
+export const account = pgTable("account", {
+	id: text("id").primaryKey(),
+	accountId: text("account_id").notNull(),
+	providerId: text("provider_id").notNull(),
+	userId: text("user_id")
+		.notNull()
+		.references(() => user.id, { onDelete: "cascade" }),
+	accessToken: text("access_token"),
+	refreshToken: text("refresh_token"),
+	idToken: text("id_token"),
+	accessTokenExpiresAt: timestamp("access_token_expires_at"),
+	refreshTokenExpiresAt: timestamp("refresh_token_expires_at"),
+	scope: text("scope"),
+	password: text("password"),
+	createdAt: timestamp("created_at").notNull(),
+	updatedAt: timestamp("updated_at").notNull(),
+});
+
+export const verification = pgTable("verification", {
+	id: text("id").primaryKey(),
+	identifier: text("identifier").notNull(),
+	value: text("value").notNull(),
+	expiresAt: timestamp("expires_at").notNull(),
+	createdAt: timestamp("created_at"),
+	updatedAt: timestamp("updated_at"),
+});
+
+// ==================== Application Tables ====================
+
+export const speaker = pgTable("speaker", {
 	id: text("id").primaryKey(),
 	name: text("name").notNull(),
 	contactId: text("contact_id").unique(),
@@ -27,14 +74,14 @@ export const peopleTable = pgTable("people", {
 	isUser: boolean("is_user").default(false),
 	userId: text("user_id")
 		.notNull()
-		.references(() => usersTable.id),
+		.references(() => user.id),
 });
 
-export const voiceProfilesTable = pgTable(
-	"voice_profiles",
+export const voiceProfile = pgTable(
+	"voice_profile",
 	{
 		id: text("id").primaryKey(),
-		personId: text("person_id").references(() => peopleTable.id),
+		speakerId: text("speaker_id").references(() => speaker.id),
 		embedding: vector("embedding", { dimensions: 256 }).notNull(),
 		duration: real("duration").notNull(),
 		language: text("language"),
@@ -43,7 +90,7 @@ export const voiceProfilesTable = pgTable(
 		updatedAt: timestamp("updated_at").defaultNow().notNull(),
 		userId: text("user_id")
 			.notNull()
-			.references(() => usersTable.id),
+			.references(() => user.id),
 	},
 	(table) => [
 		index("embeddingIndex").using(
@@ -53,21 +100,19 @@ export const voiceProfilesTable = pgTable(
 	],
 );
 
-export const utterancesTable = pgTable("utterances", {
+export const utterance = pgTable("utterance", {
 	id: text("id").primaryKey(),
 	fileId: text("file_id").notNull(),
 	start: real("start").notNull(),
 	end: real("end").notNull(),
 	transcript: text("transcript").notNull(),
 	confidence: real("confidence").notNull(),
-	voiceProfileId: text("voice_profile_id").references(
-		() => voiceProfilesTable.id,
-	),
+	voiceProfileId: text("voice_profile_id").references(() => voiceProfile.id),
 	nonIdentifiedSpeaker: integer("non_identified_speaker").notNull(),
 	words: jsonb("words").notNull(),
 	languages: text("languages").array(),
 	createdAt: timestamp("created_at").defaultNow().notNull(),
 	userId: text("user_id")
 		.notNull()
-		.references(() => usersTable.id),
+		.references(() => user.id),
 });
