@@ -26,6 +26,7 @@
 		"@discordjs/opus": "^0.10.0",
 		"@ericedouard/vad-node-realtime": "^0.2.0",
 		"@google-cloud/storage": "^7.16.0",
+		"@trpc/server": "^11.1.1",
 		"@types/cors": "^2.8.17",
 		"@types/socket.io": "^3.0.2",
 		"better-auth": "^1.2.7",
@@ -36,7 +37,8 @@
 		"ffmpeg-static": "^5.2.0",
 		"pg": "^8.14.1",
 		"socket.io": "^4.8.1",
-		"wavefile": "^11.0.0"
+		"wavefile": "^11.0.0",
+		"zod": "^3.24.3"
 	},
 	"devDependencies": {
 		"@babel/core": "^7.26.10",
