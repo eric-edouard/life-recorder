@@ -6,7 +6,7 @@ import { createTRPCClient, httpBatchLink } from "@trpc/client";
 const trpc = createTRPCClient<AppRouter>({
 	links: [
 		httpBatchLink({
-			url: backendUrl,
+			url: `${backendUrl}/trpc`,
 			headers: () => {
 				const headers = new Map<string, string>();
 				const cookies = authClient.getCookie();

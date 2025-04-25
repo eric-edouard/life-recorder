@@ -25,6 +25,15 @@ export const UserScreen = () => {
 						});
 					}}
 				/>
+
+				<RowButton
+					title="List users"
+					onPress={() => {
+						userService.listUsers().then((users) => {
+							Alert.alert("Users", JSON.stringify(users, null, 2));
+						});
+					}}
+				/>
 				<RowButton
 					title="Logout"
 					colorStyle="destructive"
