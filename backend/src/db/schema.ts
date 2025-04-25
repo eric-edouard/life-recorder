@@ -12,7 +12,7 @@ import {
 
 // ==================== Auth Tables ====================
 
-export const user = pgTable("user", {
+export const usersTable = pgTable("users", {
 	id: text("id").primaryKey(),
 	name: text("name").notNull(),
 	email: text("email").notNull().unique(),
@@ -22,7 +22,7 @@ export const user = pgTable("user", {
 	updatedAt: timestamp("updated_at").notNull(),
 });
 
-export const session = pgTable("session", {
+export const sessionsTable = pgTable("sessions", {
 	id: text("id").primaryKey(),
 	expiresAt: timestamp("expires_at").notNull(),
 	token: text("token").notNull().unique(),
@@ -32,16 +32,16 @@ export const session = pgTable("session", {
 	userAgent: text("user_agent"),
 	userId: text("user_id")
 		.notNull()
-		.references(() => user.id, { onDelete: "cascade" }),
+		.references(() => usersTable.id, { onDelete: "cascade" }),
 });
 
-export const account = pgTable("account", {
+export const accountsTable = pgTable("accounts", {
 	id: text("id").primaryKey(),
 	accountId: text("account_id").notNull(),
 	providerId: text("provider_id").notNull(),
 	userId: text("user_id")
 		.notNull()
-		.references(() => user.id, { onDelete: "cascade" }),
+		.references(() => usersTable.id, { onDelete: "cascade" }),
 	accessToken: text("access_token"),
 	refreshToken: text("refresh_token"),
 	idToken: text("id_token"),
@@ -53,7 +53,7 @@ export const account = pgTable("account", {
 	updatedAt: timestamp("updated_at").notNull(),
 });
 
-export const verification = pgTable("verification", {
+export const verificationsTable = pgTable("verification", {
 	id: text("id").primaryKey(),
 	identifier: text("identifier").notNull(),
 	value: text("value").notNull(),
@@ -64,7 +64,7 @@ export const verification = pgTable("verification", {
 
 // ==================== Application Tables ====================
 
-export const speaker = pgTable("speaker", {
+export const speakersTable = pgTable("speaker", {
 	id: text("id").primaryKey(),
 	name: text("name").notNull(),
 	contactId: text("contact_id").unique(),
@@ -74,14 +74,14 @@ export const speaker = pgTable("speaker", {
 	isUser: boolean("is_user").default(false),
 	userId: text("user_id")
 		.notNull()
-		.references(() => user.id),
+		.references(() => usersTable.id),
 });
 
-export const voiceProfile = pgTable(
+export const voiceProfileTable = pgTable(
 	"voice_profile",
 	{
 		id: text("id").primaryKey(),
-		speakerId: text("speaker_id").references(() => speaker.id),
+		speakerId: text("speaker_id").references(() => speakersTable.id),
 		embedding: vector("embedding", { dimensions: 256 }).notNull(),
 		duration: real("duration").notNull(),
 		language: text("language"),
@@ -90,7 +90,7 @@ export const voiceProfile = pgTable(
 		updatedAt: timestamp("updated_at").defaultNow().notNull(),
 		userId: text("user_id")
 			.notNull()
-			.references(() => user.id),
+			.references(() => usersTable.id),
 	},
 	(table) => [
 		index("embeddingIndex").using(
@@ -100,19 +100,21 @@ export const voiceProfile = pgTable(
 	],
 );
 
-export const utterance = pgTable("utterance", {
+export const utterancesTable = pgTable("utterance", {
 	id: text("id").primaryKey(),
 	fileId: text("file_id").notNull(),
 	start: real("start").notNull(),
 	end: real("end").notNull(),
 	transcript: text("transcript").notNull(),
 	confidence: real("confidence").notNull(),
-	voiceProfileId: text("voice_profile_id").references(() => voiceProfile.id),
+	voiceProfileId: text("voice_profile_id").references(
+		() => voiceProfileTable.id,
+	),
 	nonIdentifiedSpeaker: integer("non_identified_speaker").notNull(),
 	words: jsonb("words").notNull(),
 	languages: text("languages").array(),
 	createdAt: timestamp("created_at").defaultNow().notNull(),
 	userId: text("user_id")
 		.notNull()
-		.references(() => user.id),
+		.references(() => usersTable.id),
 });
