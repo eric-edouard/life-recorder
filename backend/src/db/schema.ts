@@ -64,7 +64,7 @@ export const verificationsTable = pgTable("verification", {
 
 // ==================== Application Tables ====================
 
-export const speakersTable = pgTable("speaker", {
+export const speakersTable = pgTable("speakers", {
 	id: text("id").primaryKey(),
 	name: text("name").notNull(),
 	contactId: text("contact_id").unique(),
@@ -78,7 +78,7 @@ export const speakersTable = pgTable("speaker", {
 });
 
 export const voiceProfileTable = pgTable(
-	"voice_profile",
+	"voice_profiles",
 	{
 		id: text("id").primaryKey(),
 		speakerId: text("speaker_id").references(() => speakersTable.id),
@@ -100,7 +100,7 @@ export const voiceProfileTable = pgTable(
 	],
 );
 
-export const utterancesTable = pgTable("utterance", {
+export const utterancesTable = pgTable("utterances", {
 	id: text("id").primaryKey(),
 	fileId: text("file_id").notNull(),
 	start: real("start").notNull(),
