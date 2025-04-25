@@ -4,8 +4,8 @@
 	"version": "1.0.0",
 	"scripts": {
 		"doctor": "rm -rf ios/ && bunx expo-doctor --verbose",
-		"prebuild:dev": "APP_VARIANT=development npx expo prebuild --platform ios --clean",
-		"prebuild": "npx expo prebuild --platform ios --clean",
+		"prebuild:dev": "APP_VARIANT=development bunx expo prebuild --platform ios --clean",
+		"prebuild": "bunx expo prebuild --platform ios --clean",
 		"start": "APP_VARIANT=development expo start",
 		"reset-project": "node ./scripts/reset-project.js",
 		"android": "expo run:android",
