@@ -1,16 +1,33 @@
 import { Button } from "@app/components/ui/Buttons/Button";
 import { Text } from "@app/components/ui/Text";
+import { authClient } from "@app/services/authClient";
 import { useObservable } from "@legendapp/state/react";
-import { Link } from "expo-router";
+import * as Burnt from "burnt";
+import { Link, useRouter } from "expo-router";
 import React from "react";
 import { TextInput, View } from "react-native";
 
 export default function Page() {
+	const router = useRouter();
 	const emailAddress$ = useObservable("eamilhat@gmail.com");
 	const password$ = useObservable("b7ysdbnqk.456LK");
 
 	// Handle the submission of the sign-in form
-	const onSignInPress = async () => {};
+	const onSignInPress = async () => {
+		const { error } = await authClient.signIn.email({
+			email: emailAddress$.peek(),
+			password: password$.peek(),
+		});
+		if (error) {
+			Burnt.toast({
+				title: "Error",
+				message: error.message,
+				preset: "error",
+			});
+		} else {
+			router.replace("/");
+		}
+	};
 
 	return (
 		<View className="h-full p-5 pt-safe-offset-5">

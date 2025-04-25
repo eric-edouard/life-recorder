@@ -1,17 +1,33 @@
+import { authClient } from "@app/services/authClient";
 import { BlurView } from "expo-blur";
 import { Redirect, Tabs } from "expo-router";
 import { SymbolView } from "expo-symbols";
 import type React from "react";
-import { StyleSheet, useColorScheme } from "react-native";
+import {
+	ActivityIndicator,
+	StyleSheet,
+	View,
+	useColorScheme,
+} from "react-native";
 import { Colors } from "react-native/Libraries/NewAppScreen";
 
-const isSignedIn = false;
-
 export default function TabLayout() {
+	const { data: session, isPending } = authClient.useSession();
+	const colorScheme = useColorScheme();
+
+	const isSignedIn = session?.user;
+
+	if (isPending) {
+		return (
+			<View className="flex-1 items-center justify-center bg-system-background">
+				<ActivityIndicator size="large" />
+			</View>
+		);
+	}
+
 	if (!isSignedIn) {
 		return <Redirect href="/(auth)/sign-in" />;
 	}
-	const colorScheme = useColorScheme();
 	return (
 		<Tabs
 			screenOptions={{

@@ -1,6 +1,8 @@
 import { Button } from "@app/components/ui/Buttons/Button";
 import { Text } from "@app/components/ui/Text";
+import { authClient } from "@app/services/authClient";
 import { use$, useObservable } from "@legendapp/state/react";
+import * as Burnt from "burnt";
 import { Link, useRouter } from "expo-router";
 import React from "react";
 import { TextInput, View } from "react-native";
@@ -9,13 +11,29 @@ export default function Page() {
 	const router = useRouter();
 
 	const emailAddress$ = useObservable("eamilhat@gmail.com");
+	const name$ = useObservable("eamilhat");
 	const password$ = useObservable("b7ysdbnqk.456LK");
 	const code$ = useObservable("");
 	const pendingVerification$ = useObservable(false);
 	const pendingVerification = use$(pendingVerification$);
 
 	// Handle submission of sign-up form
-	const onSignUpPress = async () => {};
+	const onSignUpPress = async () => {
+		const { error } = await authClient.signUp.email({
+			email: emailAddress$.peek(),
+			password: password$.peek(),
+			name: name$.peek(),
+		});
+		if (error) {
+			Burnt.toast({
+				title: "Error",
+				message: error.message,
+				preset: "error",
+			});
+		} else {
+			router.replace("/");
+		}
+	};
 
 	// Handle submission of verification form
 	const onVerifyPress = async () => {};
