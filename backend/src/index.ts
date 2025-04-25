@@ -2,12 +2,16 @@ import "dotenv/config";
 
 import { routes } from "@backend/routes";
 import { socketService } from "@backend/services/socketService";
+import { toNodeHandler } from "better-auth/node";
 import cors from "cors";
 import express from "express";
 import { createServer } from "node:http";
+import { auth } from "./auth";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+app.all("/api/auth/*", toNodeHandler(auth));
 
 // Create HTTP server
 const server = createServer(app);
