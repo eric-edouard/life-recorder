@@ -77,7 +77,7 @@ export const speakersTable = pgTable("speakers", {
 		.references(() => usersTable.id),
 });
 
-export const voiceProfileTable = pgTable(
+export const voiceProfilesTable = pgTable(
 	"voice_profiles",
 	{
 		id: text("id").primaryKey(),
@@ -88,9 +88,7 @@ export const voiceProfileTable = pgTable(
 		fileId: text("file_id").notNull().unique(),
 		createdAt: timestamp("created_at").defaultNow().notNull(),
 		updatedAt: timestamp("updated_at").defaultNow().notNull(),
-		userId: text("user_id")
-			.notNull()
-			.references(() => usersTable.id),
+		userId: text("user_id").references(() => usersTable.id),
 	},
 	(table) => [
 		index("embeddingIndex").using(
@@ -108,13 +106,11 @@ export const utterancesTable = pgTable("utterances", {
 	transcript: text("transcript").notNull(),
 	confidence: real("confidence").notNull(),
 	voiceProfileId: text("voice_profile_id").references(
-		() => voiceProfileTable.id,
+		() => voiceProfilesTable.id,
 	),
 	nonIdentifiedSpeaker: integer("non_identified_speaker").notNull(),
 	words: jsonb("words").notNull(),
 	languages: text("languages").array(),
 	createdAt: timestamp("created_at").defaultNow().notNull(),
-	userId: text("user_id")
-		.notNull()
-		.references(() => usersTable.id),
+	userId: text("user_id").references(() => usersTable.id),
 });
