@@ -1,6 +1,6 @@
 import type { auth } from "@backend/src/auth";
 import { initTRPC } from "@trpc/server";
-import SuperJSON from "superjson";
+import { default as SuperJSON } from "superjson";
 
 // Define context type
 export interface Context {
