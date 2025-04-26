@@ -12,9 +12,9 @@ import {
 import { fromNodeHeaders } from "better-auth/node";
 import FastifyBetterAuth from "fastify-better-auth";
 
+import fastifyIO from "@ericedouard/fastify-socket.io";
 import { and, eq, inArray } from "drizzle-orm";
 import Fastify from "fastify";
-import fastifyIO from "fastify-socket.io";
 
 const appRouter = router({
 	userList: publicProcedure.query(async ({ ctx }) => {
