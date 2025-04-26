@@ -1,7 +1,7 @@
 import { Text } from "@app/src/components/ui/Text";
+import { useSystemColors } from "@app/src/hooks/useSystemColors";
 import type { SystemColor } from "@app/src/types/colors";
 import { type StyleProp, TouchableOpacity, type ViewStyle } from "react-native";
-import { useColor } from "react-native-uikit-colors";
 import { twMerge } from "tailwind-merge";
 
 export type ButtonProps = {
@@ -21,9 +21,10 @@ export const Button = ({
 	disabled = false,
 	textColor,
 }: ButtonProps) => {
-	const _backgroundColor = useColor(color);
-	const _disabledBackgroundColor = useColor("gray4");
-	const _textColor = useColor(textColor ?? "label");
+	const colors = useSystemColors();
+	const _backgroundColor = colors[color];
+	const _disabledBackgroundColor = colors.gray4;
+	const _textColor = colors[textColor ?? "label"];
 	return (
 		<TouchableOpacity
 			onPress={onPress}
@@ -43,7 +44,9 @@ export const Button = ({
 					" text-center text-lg",
 					disabled && "text-secondary-label",
 				)}
-				style={{ color: textColor ? _textColor : "white" }}
+				style={
+					disabled ? undefined : { color: textColor ? _textColor : "white" }
+				}
 			>
 				{title}
 			</Text>

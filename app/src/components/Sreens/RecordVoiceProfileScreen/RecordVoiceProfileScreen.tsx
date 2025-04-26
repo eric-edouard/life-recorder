@@ -1,6 +1,6 @@
 import React from "react";
 
-import { Text } from "@app/src/components/ui/Text";
+import { Button } from "@app/src/components/ui/Buttons/Button";
 import { userService } from "@app/src/services/userService";
 import { use$ } from "@legendapp/state/react";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -14,7 +14,7 @@ export const RecordVoiceProfileScreen = () => {
 	const router = useRouter();
 	return (
 		<ScrollView className="flex-1 px-5 pt-10">
-			<Text>Record {type} voice profile</Text>
+			<Button title="Start recording" disabled onPress={() => {}} />
 		</ScrollView>
 	);
 };

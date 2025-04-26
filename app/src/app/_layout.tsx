@@ -33,7 +33,10 @@ export default function RootLayout() {
 	return (
 		<ThemeProvider>
 			<Stack>
-				<Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+				<Stack.Screen
+					name="(tabs)"
+					options={{ headerShown: false, headerTitle: "Home" }}
+				/>
 				<Stack.Screen
 					name="(auth)"
 					options={{
@@ -53,8 +56,13 @@ export default function RootLayout() {
 				<Stack.Screen
 					name="user"
 					options={{
-						headerBackTitle: "Home",
 						headerTitle: "User",
+					}}
+				/>
+				<Stack.Screen
+					name="record-voice-profile"
+					options={{
+						headerTitle: "Record voice profile",
 					}}
 				/>
 			</Stack>
