@@ -2,7 +2,7 @@ import type { Subscription } from "react-native-ble-plx";
 import { deviceService } from "./deviceService/deviceService";
 import { socketService } from "./socketService";
 
-export const audioDataService = (() => {
+export const liveAudioDataService = (() => {
 	let audioPacketsReceived = 0;
 	let savedAudioCount = 0;
 	let audioSubscription: Subscription | null = null;
