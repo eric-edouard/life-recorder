@@ -9,7 +9,6 @@
 		}
 	},
 	"deploy": {
-		"startCommand": "cd backend && npm run install-resemblyzer:railway && npm run start",
-		"healthcheckPath": "/health"
+		"startCommand": "cd backend && npm run install-resemblyzer:railway && npm run start"
 	}
 }
