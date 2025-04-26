@@ -8,17 +8,17 @@ const workspaceRoot = path.resolve(projectRoot, "..");
 const config = getDefaultConfig(projectRoot);
 config.watchFolders = [...(config.watchFolders || []), workspaceRoot];
 config.resolver.nodeModulesPaths = [
-    ...new Set([
-        ...(config.resolver.nodeModulesPaths || []),
-        path.resolve(projectRoot, "node_modules"),
-        path.resolve(workspaceRoot, "node_modules"),
-    ]),
+	...new Set([
+		...(config.resolver.nodeModulesPaths || []),
+		path.resolve(projectRoot, "node_modules"),
+		path.resolve(workspaceRoot, "node_modules"),
+	]),
 ];
 config.resolver.resolverMainFields = [
-    "react-native",
-    "browser",
-    "main",
-    ...(config.resolver.resolverMainFields || []),
+	"react-native",
+	"browser",
+	"main",
+	...(config.resolver.resolverMainFields || []),
 ];
 
 // Needed for better-auth
