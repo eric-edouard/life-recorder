@@ -1,3 +1,4 @@
+import fs from "node:fs";
 import { db } from "@backend/src/db/db";
 import { utterancesTable } from "@backend/src/db/schema";
 import { createAndSaveTranscript } from "@backend/src/services/processSpeechService/createAndSaveTranscript";
@@ -10,7 +11,6 @@ import { convertFloat32ArrayToWavBuffer } from "@backend/src/utils/audio/audioUt
 import { getWavBufferDuration } from "@backend/src/utils/audio/getWavBufferDuration";
 import { generateReadableUUID } from "@backend/src/utils/generateReadableUUID";
 import { inArray } from "drizzle-orm";
-import fs from "node:fs";
 
 const DEBUG = true;
 export const processFinalizedSpeechChunk = async (

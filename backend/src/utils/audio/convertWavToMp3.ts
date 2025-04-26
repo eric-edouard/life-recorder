@@ -1,6 +1,6 @@
+import { spawn } from "node:child_process";
 import { CHANNELS, SAMPLE_RATE } from "@backend/src/constants/audioConstants";
 import ffmpeg from "ffmpeg-static";
-import { spawn } from "node:child_process";
 
 /**
  * Convert WAV buffer to MP3 using ffmpeg

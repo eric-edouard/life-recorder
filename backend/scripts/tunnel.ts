@@ -1,6 +1,6 @@
-import * as ngrok from "ngrok";
 import * as fs from "node:fs";
 import * as path from "node:path";
+import * as ngrok from "ngrok";
 
 (async (): Promise<void> => {
 	console.log("🌍 Starting ngrok ...");
