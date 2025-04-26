@@ -1,0 +1,40 @@
+name: Check App
+
+on:
+  push:
+    paths:
+      - "app/**"
+      - "shared/**"
+      - "tsconfig.base.json"
+    branches:
+      - "**"
+  pull_request:
+    paths:
+      - "app/**"
+      - "shared/**"
+      - "tsconfig.base.json"
+    branches:
+      - "**"
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        working-directory: ./app
+        run: bun install
+
+      - name: Run linting
+        working-directory: ./app
+        run: bun run lint
+
+      - name: Run type checking
+        working-directory: ./app
+        run: bun run typecheck

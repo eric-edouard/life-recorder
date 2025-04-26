@@ -1,0 +1,40 @@
+name: Check Backend
+
+on:
+  push:
+    paths:
+      - "backend/**"
+      - "shared/**"
+      - "tsconfig.base.json"
+    branches:
+      - "**"
+  pull_request:
+    paths:
+      - "backend/**"
+      - "shared/**"
+      - "tsconfig.base.json"
+    branches:
+      - "**"
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+
+      - name: Install dependencies
+        working-directory: ./backend
+        run: npm ci
+
+      - name: Run linting
+        working-directory: ./backend
+        run: npm run lint
+
+      - name: Run type checking
+        working-directory: ./backend
+        run: npm run typecheck
