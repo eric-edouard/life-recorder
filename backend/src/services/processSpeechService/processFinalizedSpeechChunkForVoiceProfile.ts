@@ -25,7 +25,6 @@ export const processFinalizedSpeechChunkForVoiceProfile = async ({
 	language,
 }: Params) => {
 	const speechStartTime = now();
-	// 1. Convert raw audio to WAV
 	const wavBuffer = convertFloat32ArrayToWavBuffer(audio);
 	if (DEBUG) fs.writeFileSync(`1-BUFFER.wav`, wavBuffer);
 

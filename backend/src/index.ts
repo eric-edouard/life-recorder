@@ -1,20 +1,26 @@
 import "dotenv/config";
 
 import { auth } from "@backend/src/auth";
+import { CHANNELS, SAMPLE_RATE } from "@backend/src/constants/audioConstants";
 import { db } from "@backend/src/db/db";
 import { speakersTable, voiceProfilesTable } from "@backend/src/db/schema";
+import { processFinalizedSpeechChunkForVoiceProfile } from "@backend/src/services/processSpeechService/processFinalizedSpeechChunkForVoiceProfile";
 import { socketService } from "@backend/src/services/socketService";
 import {
 	type Context,
 	publicProcedure,
 	router,
 } from "@backend/src/services/trpc";
+import { OpusEncoder } from "@discordjs/opus";
+import { SupportedLanguage, VoiceProfileType } from "@shared/sharedTypes";
+import { TRPCError } from "@trpc/server";
 import * as trpcExpress from "@trpc/server/adapters/express";
 import { fromNodeHeaders, toNodeHandler } from "better-auth/node";
 import cors from "cors";
 import { and, eq } from "drizzle-orm";
 import express, { type Request, type Response } from "express";
 import { createServer } from "node:http";
+import z from "zod";
 
 const appRouter = router({
 	userList: publicProcedure.query(async ({ ctx }) => {
@@ -46,40 +52,32 @@ const appRouter = router({
 		return profiles;
 	}),
 
-	// createVoiceProfile: publicProcedure
-	// 	.input(octetInputParser)
-	// 	.mutation(async ({ ctx, input }) => {
-	// 		const chunks = [];
+	createVoiceProfile: publicProcedure
+		.input(
+			z.object({
+				opusFramesB64: z.base64(),
+				type: z.enum(VoiceProfileType),
+				language: z.enum(SupportedLanguage),
+			}),
+		)
+		.mutation(async ({ ctx, input }) => {
+			if (!ctx.session?.user?.id)
+				throw new TRPCError({
+					code: "UNAUTHORIZED",
+					message: "Not authenticated",
+				});
+			const opusEncoder = new OpusEncoder(SAMPLE_RATE, CHANNELS);
 
-	// 		const reader = input.getReader();
-	// 		while (true) {
-	// 			const { done, value } = await reader.read();
-	// 			if (done) {
-	// 				break;
-	// 			}
-	// 			chunks.push(value);
-	// 		}
-
-	// 		const content = Buffer.concat(chunks).toString("utf-8");
-
-	// 		console.log("File: ", content);
-	// 		// const speaker = await db
-	// 		// 	.select()
-	// 		// 	.from(speakersTable)
-	// 		// 	.where(eq(speakersTable.id, speakerId));
-	// 		// if (!speaker) throw new Error("Speaker not found");
-	// 		// const voiceProfile = await db.insert(voiceProfilesTable).values({
-	// 		// 	id: generateReadableUUID(),
-	// 		// 	speakerId,
-	// 		// 	duration: 0,
-	// 		// 	embedding: [],
-	// 		// 	fileId: "",
-	// 		// 	language: "",
-	// 		// 	userId: ctx.session?.user?.id,
-	// 		// 	type,
-	// 		// });
-	// 		// return voiceProfile;
-	// 	}),
+			const opusFrames = Buffer.from(input.opusFramesB64, "base64");
+			const audioData = opusEncoder.decode(opusFrames);
+			await processFinalizedSpeechChunkForVoiceProfile({
+				audio: new Float32Array(audioData),
+				type: input.type,
+				userId: ctx.session.user.id,
+				language: input.language,
+			});
+			console.log("File processed");
+		}),
 });
 
 export type AppRouter = typeof appRouter;
