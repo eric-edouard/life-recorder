@@ -1,7 +1,7 @@
-import { deviceService } from "@app/services/deviceService/deviceService";
-import { scanDevicesService } from "@app/services/deviceService/scanDevicesService";
-import { storage$ } from "@app/services/storage";
-import { defer } from "@app/utils/defer";
+import { deviceService } from "@app/src/services/deviceService/deviceService";
+import { scanDevicesService } from "@app/src/services/deviceService/scanDevicesService";
+import { storage$ } from "@app/src/services/storage";
+import { defer } from "@app/src/utils/defer";
 import { when } from "@legendapp/state";
 import { State } from "react-native-ble-plx";
 

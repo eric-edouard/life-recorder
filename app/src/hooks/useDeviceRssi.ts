@@ -1,7 +1,7 @@
-import { useAppState } from "@app/hooks/useAppState";
-import { deviceService } from "@app/services/deviceService/deviceService";
-import type { SignalStrength } from "@app/utils/rssiToSignalStrength";
-import { rssiToSignalStrength } from "@app/utils/rssiToSignalStrength";
+import { useAppState } from "@app/src/hooks/useAppState";
+import { deviceService } from "@app/src/services/deviceService/deviceService";
+import type { SignalStrength } from "@app/src/utils/rssiToSignalStrength";
+import { rssiToSignalStrength } from "@app/src/utils/rssiToSignalStrength";
 
 import { use$ } from "@legendapp/state/react";
 import { useEffect, useState } from "react";

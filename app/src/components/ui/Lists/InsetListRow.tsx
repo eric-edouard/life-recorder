@@ -1,6 +1,6 @@
 // InsetListRow.tsx
-import { PressableLayer } from "@app/components/PressableLayer";
-import type { SystemColor } from "@app/types/colors";
+import { PressableLayer } from "@app/src/components/PressableLayer";
+import type { SystemColor } from "@app/src/types/colors";
 import { ChevronRight } from "lucide-react-native";
 import type { ReactNode } from "react";
 import React from "react";

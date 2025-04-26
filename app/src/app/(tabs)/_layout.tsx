@@ -1,4 +1,4 @@
-import { authClient } from "@app/services/authClient";
+import { authClient } from "@app/src/services/authClient";
 import { BlurView } from "expo-blur";
 import { Redirect, Tabs } from "expo-router";
 import { SymbolView } from "expo-symbols";

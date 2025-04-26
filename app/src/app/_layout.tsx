@@ -2,8 +2,8 @@
 import "react-native-reanimated";
 import "../../global.css";
 
-import { ThemeProvider } from "@app/contexts/ThemeContext";
-import "@app/tasks/locationTask";
+import { ThemeProvider } from "@app/src/contexts/ThemeContext";
+import "@app/src/tasks/locationTask";
 import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";

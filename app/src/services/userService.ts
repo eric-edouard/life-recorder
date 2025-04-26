@@ -1,5 +1,5 @@
-import { backendUrl } from "@app/constants/backendUrl";
-import trpc from "@app/services/trpc";
+import { backendUrl } from "@app/src/constants/backendUrl";
+import trpc from "@app/src/services/trpc";
 import { authClient } from "./authClient";
 
 export const userService = (() => {

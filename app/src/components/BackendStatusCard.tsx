@@ -1,4 +1,4 @@
-import { Card } from "@app/components/Card";
+import { Card } from "@app/src/components/Card";
 import React from "react";
 import { Text } from "./ui/Text";
 

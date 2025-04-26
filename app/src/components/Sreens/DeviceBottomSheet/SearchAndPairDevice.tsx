@@ -1,7 +1,7 @@
-import { AnimatedBluetoothScanning } from "@app/components/Sreens/DeviceBottomSheet/AnimatedBluetoothScanning";
-import { PairDevice } from "@app/components/Sreens/DeviceBottomSheet/PairDevice";
-import { IconAndText } from "@app/components/ui/IconAndText";
-import { scanDevicesService } from "@app/services/deviceService/scanDevicesService";
+import { AnimatedBluetoothScanning } from "@app/src/components/Sreens/DeviceBottomSheet/AnimatedBluetoothScanning";
+import { PairDevice } from "@app/src/components/Sreens/DeviceBottomSheet/PairDevice";
+import { IconAndText } from "@app/src/components/ui/IconAndText";
+import { scanDevicesService } from "@app/src/services/deviceService/scanDevicesService";
 import React, { useEffect, useState } from "react";
 import { View } from "react-native";
 import type { Device } from "react-native-ble-plx";

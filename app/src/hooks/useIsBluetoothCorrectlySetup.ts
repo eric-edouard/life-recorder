@@ -1,4 +1,4 @@
-import { scanDevicesService } from "@app/services/deviceService/scanDevicesService";
+import { scanDevicesService } from "@app/src/services/deviceService/scanDevicesService";
 import { use$ } from "@legendapp/state/react";
 import { State } from "react-native-ble-plx";
 

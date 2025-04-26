@@ -1,9 +1,9 @@
-import { AnimatedBluetoothScanning } from "@app/components/Sreens/DeviceBottomSheet/AnimatedBluetoothScanning";
-import { Button } from "@app/components/ui/Buttons/Button";
-import { IconAndText } from "@app/components/ui/IconAndText";
-import { deviceService } from "@app/services/deviceService/deviceService";
-import { storage$ } from "@app/services/storage";
-import { alert } from "@app/utils/alert";
+import { AnimatedBluetoothScanning } from "@app/src/components/Sreens/DeviceBottomSheet/AnimatedBluetoothScanning";
+import { Button } from "@app/src/components/ui/Buttons/Button";
+import { IconAndText } from "@app/src/components/ui/IconAndText";
+import { deviceService } from "@app/src/services/deviceService/deviceService";
+import { storage$ } from "@app/src/services/storage";
+import { alert } from "@app/src/utils/alert";
 import { use$ } from "@legendapp/state/react";
 import React from "react";
 import { View } from "react-native";

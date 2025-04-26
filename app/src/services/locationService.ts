@@ -1,5 +1,5 @@
 // src/services/locationService.ts
-import { LOCATION_TASK_NAME } from "@app/tasks/locationTask";
+import { LOCATION_TASK_NAME } from "@app/src/tasks/locationTask";
 import * as Location from "expo-location";
 import { useBackgroundPermissions } from "expo-location";
 import { useEffect } from "react";

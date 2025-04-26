@@ -1,10 +1,10 @@
-import { PressableLayer } from "@app/components/PressableLayer";
-import { Dot, type DotColor } from "@app/components/ui/Dot";
-import { Text } from "@app/components/ui/Text";
-import { useConnectedDevice } from "@app/hooks/useConnectedDevice";
-import { deviceService } from "@app/services/deviceService/deviceService";
-import { scanDevicesService } from "@app/services/deviceService/scanDevicesService";
-import { storage$ } from "@app/services/storage";
+import { PressableLayer } from "@app/src/components/PressableLayer";
+import { Dot, type DotColor } from "@app/src/components/ui/Dot";
+import { Text } from "@app/src/components/ui/Text";
+import { useConnectedDevice } from "@app/src/hooks/useConnectedDevice";
+import { deviceService } from "@app/src/services/deviceService/deviceService";
+import { scanDevicesService } from "@app/src/services/deviceService/scanDevicesService";
+import { storage$ } from "@app/src/services/storage";
 import { use$ } from "@legendapp/state/react";
 import { router } from "expo-router";
 import { View } from "react-native";

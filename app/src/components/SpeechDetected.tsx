@@ -1,4 +1,4 @@
-import { liveTranscriptionService } from "@app/services/liveTranscriptionService";
+import { liveTranscriptionService } from "@app/src/services/liveTranscriptionService";
 import { use$ } from "@legendapp/state/react";
 import { useEffect, useRef } from "react";
 import { Animated, View } from "react-native";

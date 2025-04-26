@@ -1,9 +1,9 @@
-import { DeviceBatteryIcon } from "@app/components/Sreens/DeviceBottomSheet/DeviceBatteryIcon";
-import { DeviceLargeDetails } from "@app/components/Sreens/DeviceBottomSheet/DeviceLargeDetails";
-import { RowButton } from "@app/components/ui/Buttons/RowButton";
-import { Text } from "@app/components/ui/Text";
-import { deviceService } from "@app/services/deviceService/deviceService";
-import { alert } from "@app/utils/alert";
+import { DeviceBatteryIcon } from "@app/src/components/Sreens/DeviceBottomSheet/DeviceBatteryIcon";
+import { DeviceLargeDetails } from "@app/src/components/Sreens/DeviceBottomSheet/DeviceLargeDetails";
+import { RowButton } from "@app/src/components/ui/Buttons/RowButton";
+import { Text } from "@app/src/components/ui/Text";
+import { deviceService } from "@app/src/services/deviceService/deviceService";
+import { alert } from "@app/src/utils/alert";
 import { observable } from "@legendapp/state";
 import { Memo } from "@legendapp/state/react";
 import { ChevronDown } from "lucide-react-native";

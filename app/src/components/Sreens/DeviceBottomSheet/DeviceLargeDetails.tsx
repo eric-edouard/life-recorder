@@ -1,5 +1,5 @@
-import { DeviceAnimation } from "@app/components/DeviceAnimation";
-import { Text } from "@app/components/ui/Text";
+import { DeviceAnimation } from "@app/src/components/DeviceAnimation";
+import { Text } from "@app/src/components/ui/Text";
 import type React from "react";
 import { View } from "react-native";
 import type { Device } from "react-native-ble-plx";

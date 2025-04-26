@@ -1,7 +1,7 @@
-import { DeviceLargeDetails } from "@app/components/Sreens/DeviceBottomSheet/DeviceLargeDetails";
-import { Button } from "@app/components/ui/Buttons/Button";
-import { Text } from "@app/components/ui/Text";
-import { deviceService } from "@app/services/deviceService/deviceService";
+import { DeviceLargeDetails } from "@app/src/components/Sreens/DeviceBottomSheet/DeviceLargeDetails";
+import { Button } from "@app/src/components/ui/Buttons/Button";
+import { Text } from "@app/src/components/ui/Text";
+import { deviceService } from "@app/src/services/deviceService/deviceService";
 import { use$ } from "@legendapp/state/react";
 import React from "react";
 import { View } from "react-native";

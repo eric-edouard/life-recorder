@@ -1,4 +1,4 @@
-import { backendUrl } from "@app/constants/backendUrl";
+import { backendUrl } from "@app/src/constants/backendUrl";
 import { expoClient } from "@better-auth/expo/client";
 import { createAuthClient } from "better-auth/react";
 import * as SecureStore from "expo-secure-store";

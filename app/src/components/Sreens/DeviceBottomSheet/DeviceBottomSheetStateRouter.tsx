@@ -1,10 +1,10 @@
-import { BluetoothStatusInfo } from "@app/components/Sreens/DeviceBottomSheet/BluetoothStatusInfo";
-import { ConnectedDeviceDetails } from "@app/components/Sreens/DeviceBottomSheet/ConnectedDeviceDetails";
-import { SearchAndPairDevice } from "@app/components/Sreens/DeviceBottomSheet/SearchAndPairDevice";
-import { SearchingYourDevice } from "@app/components/Sreens/DeviceBottomSheet/SearchingYourDevice";
-import { useConnectedDevice } from "@app/hooks/useConnectedDevice";
-import { useIsBluetoothCorrectlySetup } from "@app/hooks/useIsBluetoothCorrectlySetup";
-import { storage$ } from "@app/services/storage";
+import { BluetoothStatusInfo } from "@app/src/components/Sreens/DeviceBottomSheet/BluetoothStatusInfo";
+import { ConnectedDeviceDetails } from "@app/src/components/Sreens/DeviceBottomSheet/ConnectedDeviceDetails";
+import { SearchAndPairDevice } from "@app/src/components/Sreens/DeviceBottomSheet/SearchAndPairDevice";
+import { SearchingYourDevice } from "@app/src/components/Sreens/DeviceBottomSheet/SearchingYourDevice";
+import { useConnectedDevice } from "@app/src/hooks/useConnectedDevice";
+import { useIsBluetoothCorrectlySetup } from "@app/src/hooks/useIsBluetoothCorrectlySetup";
+import { storage$ } from "@app/src/services/storage";
 import { use$ } from "@legendapp/state/react";
 import React from "react";
 

@@ -1,4 +1,4 @@
-import { rgbaToHex } from "@app/utils/rgbaToHex";
+import { rgbaToHex } from "@app/src/utils/rgbaToHex";
 import { type SFSymbol, SymbolView } from "expo-symbols";
 import { useColor } from "react-native-uikit-colors";
 

@@ -1,5 +1,5 @@
-import { ScreenScrollView } from "@app/components/ScreenScrollView/ScreenScrollView";
-import { utterancesService } from "@app/services/utterancesService";
+import { ScreenScrollView } from "@app/src/components/ScreenScrollView/ScreenScrollView";
+import { utterancesService } from "@app/src/services/utterancesService";
 import { use$ } from "@legendapp/state/react";
 import { useEffect } from "react";
 import { FlatList, StyleSheet, View } from "react-native";

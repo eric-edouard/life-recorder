@@ -1,6 +1,6 @@
-import { Button } from "@app/components/ui/Buttons/Button";
-import { Text } from "@app/components/ui/Text";
-import { authClient } from "@app/services/authClient";
+import { Button } from "@app/src/components/ui/Buttons/Button";
+import { Text } from "@app/src/components/ui/Text";
+import { authClient } from "@app/src/services/authClient";
 import { useObservable } from "@legendapp/state/react";
 import * as Burnt from "burnt";
 import { Link, useRouter } from "expo-router";

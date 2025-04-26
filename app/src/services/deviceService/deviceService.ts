@@ -1,15 +1,15 @@
-import { bleManager } from "@app/services/bleManager";
-import { scanDevicesService } from "@app/services/deviceService/scanDevicesService";
-import { getCharacteristicValue } from "@app/services/deviceService/utils/getCharacteristicValue";
-import { getDeviceCharacteristic } from "@app/services/deviceService/utils/getDeviceCharacteric";
-import { monitorCharacteristic } from "@app/services/deviceService/utils/monitorCharacteristic";
-import { storage$ } from "@app/services/storage";
-import { alert } from "@app/utils/alert";
-import { defer } from "@app/utils/defer";
+import { bleManager } from "@app/src/services/bleManager";
+import { scanDevicesService } from "@app/src/services/deviceService/scanDevicesService";
+import { getCharacteristicValue } from "@app/src/services/deviceService/utils/getCharacteristicValue";
+import { getDeviceCharacteristic } from "@app/src/services/deviceService/utils/getDeviceCharacteric";
+import { monitorCharacteristic } from "@app/src/services/deviceService/utils/monitorCharacteristic";
+import { storage$ } from "@app/src/services/storage";
+import { alert } from "@app/src/utils/alert";
+import { defer } from "@app/src/utils/defer";
 import {
 	type SignalStrength,
 	rssiToSignalStrength,
-} from "@app/utils/rssiToSignalStrength";
+} from "@app/src/utils/rssiToSignalStrength";
 import { observable, observe } from "@legendapp/state";
 import { Platform } from "react-native";
 import type { Device, Subscription } from "react-native-ble-plx";

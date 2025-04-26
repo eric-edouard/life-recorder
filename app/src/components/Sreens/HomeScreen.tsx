@@ -1,10 +1,10 @@
 import React, { useEffect } from "react";
 import { Image, TouchableOpacity, View } from "react-native";
 
-import { DeviceStatusButton } from "@app/components/DeviceStatusButton";
-import { ScreenScrollView } from "@app/components/ScreenScrollView/ScreenScrollView";
-import { Text } from "@app/components/ui/Text";
-import { deviceService } from "@app/services/deviceService/deviceService";
+import { DeviceStatusButton } from "@app/src/components/DeviceStatusButton";
+import { ScreenScrollView } from "@app/src/components/ScreenScrollView/ScreenScrollView";
+import { Text } from "@app/src/components/ui/Text";
+import { deviceService } from "@app/src/services/deviceService/deviceService";
 import { use$ } from "@legendapp/state/react";
 import { router } from "expo-router";
 

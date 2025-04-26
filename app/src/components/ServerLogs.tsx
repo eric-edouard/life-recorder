@@ -1,4 +1,4 @@
-import { serverLogsService } from "@app/services/serverLogsService";
+import { serverLogsService } from "@app/src/services/serverLogsService";
 import { use$ } from "@legendapp/state/react";
 import type { ServerLog } from "@shared/socketEvents";
 import React, { useEffect } from "react";

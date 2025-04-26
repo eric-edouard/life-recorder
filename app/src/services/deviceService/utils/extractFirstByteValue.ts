@@ -1,4 +1,4 @@
-import { base64ToBytes } from "@app/utils/base64ToBytes";
+import { base64ToBytes } from "@app/src/utils/base64ToBytes";
 
 export function extractFirstByteValue(
 	base64Value: string | undefined | null,

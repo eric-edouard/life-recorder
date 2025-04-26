@@ -1,9 +1,9 @@
 import React from "react";
 
-import { RowButton } from "@app/components/ui/Buttons/RowButton";
-import { InsetList } from "@app/components/ui/Lists/InsetList";
-import { authClient } from "@app/services/authClient";
-import { userService } from "@app/services/userService";
+import { RowButton } from "@app/src/components/ui/Buttons/RowButton";
+import { InsetList } from "@app/src/components/ui/Lists/InsetList";
+import { authClient } from "@app/src/services/authClient";
+import { userService } from "@app/src/services/userService";
 import { useRouter } from "expo-router";
 import { Alert, ScrollView, View } from "react-native";
 

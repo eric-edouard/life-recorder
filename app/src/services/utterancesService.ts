@@ -1,4 +1,4 @@
-import { socketService } from "@app/services/socketService";
+import { socketService } from "@app/src/services/socketService";
 import { observable } from "@legendapp/state";
 import type { GetUtterancesResponse } from "@shared/socketEvents";
 

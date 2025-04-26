@@ -1,5 +1,5 @@
-import { extractFirstByteValue } from "@app/services/deviceService/utils/extractFirstByteValue";
-import { getDeviceCharacteristic } from "@app/services/deviceService/utils/getDeviceCharacteric";
+import { extractFirstByteValue } from "@app/src/services/deviceService/utils/extractFirstByteValue";
+import { getDeviceCharacteristic } from "@app/src/services/deviceService/utils/getDeviceCharacteric";
 import type { Device } from "react-native-ble-plx";
 
 export const getCharacteristicValue = async (

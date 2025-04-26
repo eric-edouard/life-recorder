@@ -11,7 +11,7 @@ module.exports = (api) => {
 				{
 					root: ["./src"],
 					alias: {
-						"@app": "../app/src",
+						"@app": "../app",
 						"@backend": "../backend/src",
 						"@shared": "../shared",
 					},

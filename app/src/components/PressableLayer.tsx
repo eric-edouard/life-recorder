@@ -1,4 +1,4 @@
-import type { SystemColor } from "@app/types/colors";
+import type { SystemColor } from "@app/src/types/colors";
 import { useRef } from "react";
 import {
 	Animated,

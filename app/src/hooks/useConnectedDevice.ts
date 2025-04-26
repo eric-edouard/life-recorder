@@ -1,4 +1,4 @@
-import { deviceService } from "@app/services/deviceService/deviceService";
+import { deviceService } from "@app/src/services/deviceService/deviceService";
 import { use$ } from "@legendapp/state/react";
 
 export const useConnectedDevice = () => {

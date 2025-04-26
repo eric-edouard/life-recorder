@@ -1,6 +1,6 @@
-import { Button } from "@app/components/ui/Buttons/Button";
-import { IconAndText } from "@app/components/ui/IconAndText";
-import { scanDevicesService } from "@app/services/deviceService/scanDevicesService";
+import { Button } from "@app/src/components/ui/Buttons/Button";
+import { IconAndText } from "@app/src/components/ui/IconAndText";
+import { scanDevicesService } from "@app/src/services/deviceService/scanDevicesService";
 import { use$ } from "@legendapp/state/react";
 import { Bluetooth, BluetoothOff } from "lucide-react-native";
 import React from "react";

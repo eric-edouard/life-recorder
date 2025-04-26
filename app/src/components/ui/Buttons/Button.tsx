@@ -1,5 +1,5 @@
-import { Text } from "@app/components/ui/Text";
-import type { SystemColor } from "@app/types/colors";
+import { Text } from "@app/src/components/ui/Text";
+import type { SystemColor } from "@app/src/types/colors";
 import { type StyleProp, TouchableOpacity, type ViewStyle } from "react-native";
 import { useColor } from "react-native-uikit-colors";
 import { twMerge } from "tailwind-merge";

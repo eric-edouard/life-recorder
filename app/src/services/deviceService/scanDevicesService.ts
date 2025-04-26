@@ -1,6 +1,6 @@
-import { bleManager } from "@app/services/bleManager";
-import { OMI_SERVICE_UUID } from "@app/services/deviceService/constants";
-import { alert } from "@app/utils/alert";
+import { bleManager } from "@app/src/services/bleManager";
+import { OMI_SERVICE_UUID } from "@app/src/services/deviceService/constants";
+import { alert } from "@app/src/utils/alert";
 import { observable } from "@legendapp/state";
 import { Linking } from "react-native";
 import { type Device, State, type Subscription } from "react-native-ble-plx";

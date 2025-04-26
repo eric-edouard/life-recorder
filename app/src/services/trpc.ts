@@ -1,5 +1,5 @@
-import { backendUrl } from "@app/constants/backendUrl";
-import { authClient } from "@app/services/authClient";
+import { backendUrl } from "@app/src/constants/backendUrl";
+import { authClient } from "@app/src/services/authClient";
 import type { AppRouter } from "@backend/index";
 import { createTRPCClient, httpBatchLink } from "@trpc/client";
 

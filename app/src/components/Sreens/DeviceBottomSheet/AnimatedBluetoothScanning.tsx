@@ -1,4 +1,4 @@
-import { scanDevicesService } from "@app/services/deviceService/scanDevicesService";
+import { scanDevicesService } from "@app/src/services/deviceService/scanDevicesService";
 import { use$ } from "@legendapp/state/react";
 import { Bluetooth } from "lucide-react-native";
 import React, { useEffect, useRef } from "react";

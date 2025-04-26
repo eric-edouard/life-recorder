@@ -1,4 +1,4 @@
-import { useCustomColor } from "@app/contexts/ThemeContext";
+import { useCustomColor } from "@app/src/contexts/ThemeContext";
 import { Button } from "react-native";
 
 type TextButtonProps = {

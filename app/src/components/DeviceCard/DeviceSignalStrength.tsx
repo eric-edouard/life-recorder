@@ -1,4 +1,4 @@
-import { useDeviceSignalStrength } from "@app/hooks/useDeviceRssi";
+import { useDeviceSignalStrength } from "@app/src/hooks/useDeviceRssi";
 
 type DeviceSignalStrengthProps = {
 	size?: number;
