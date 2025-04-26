@@ -2,7 +2,7 @@ import { backendUrl } from "@app/src/constants/backendUrl";
 import { authClient } from "@app/src/services/authClient";
 import type { AppRouter } from "@backend/src/index";
 import { createTRPCClient, httpBatchLink } from "@trpc/client";
-
+import SuperJSON from "superjson";
 const trpc = createTRPCClient<AppRouter>({
 	links: [
 		httpBatchLink({
@@ -15,6 +15,7 @@ const trpc = createTRPCClient<AppRouter>({
 				}
 				return Object.fromEntries(headers);
 			},
+			transformer: SuperJSON,
 		}),
 	],
 });

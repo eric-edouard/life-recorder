@@ -1,5 +1,6 @@
 import type { auth } from "@backend/src/auth";
 import { initTRPC } from "@trpc/server";
+import SuperJSON from "superjson";
 
 // Define context type
 export interface Context {
@@ -10,7 +11,9 @@ export interface Context {
  * Initialization of tRPC backend
  * Should be done only once per backend!
  */
-const t = initTRPC.context<Context>().create();
+const t = initTRPC.context<Context>().create({
+	transformer: SuperJSON,
+});
 
 /**
  * Export reusable router and procedure helpers

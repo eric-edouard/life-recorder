@@ -19,6 +19,7 @@ export default function Page() {
 			password: password$.peek(),
 		});
 		if (error) {
+			console.log(error);
 			Burnt.toast({
 				title: "Error",
 				message: error.message,

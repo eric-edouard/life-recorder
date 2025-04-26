@@ -2,6 +2,7 @@ import "dotenv/config";
 
 import { auth } from "@backend/src/auth";
 import { db } from "@backend/src/db/db";
+import { speakersTable, voiceProfilesTable } from "@backend/src/db/schema";
 import { publicProcedure, router } from "@backend/src/services/trpc";
 import type { CreateFastifyContextOptions } from "@trpc/server/adapters/fastify";
 import {
@@ -9,6 +10,9 @@ import {
 	fastifyTRPCPlugin,
 } from "@trpc/server/adapters/fastify";
 import { fromNodeHeaders } from "better-auth/node";
+import FastifyBetterAuth from "fastify-better-auth";
+
+import { and, eq, inArray } from "drizzle-orm";
 import Fastify from "fastify";
 import fastifyIO from "fastify-socket.io";
 
@@ -18,6 +22,37 @@ const appRouter = router({
 		console.log(users);
 		console.log("Session:", ctx.session);
 		return users;
+	}),
+
+	userVoiceProfiles: publicProcedure.query(async ({ ctx }) => {
+		if (!ctx.session?.user?.id) throw new Error("Not authenticated");
+		// Find the speaker record for the current user
+		const speaker = await db
+			.select()
+			.from(speakersTable)
+			.where(
+				and(
+					eq(speakersTable.userId, ctx.session.user.id),
+					eq(speakersTable.isUser, true),
+				),
+			)
+			.then((rows) => rows[0]);
+		if (!speaker) throw new Error("User speaker not found");
+		// Fetch the 3 special voice profiles for this speaker
+		const profiles = await db
+			.select()
+			.from(voiceProfilesTable)
+			.where(
+				and(
+					eq(voiceProfilesTable.speakerId, speaker.id),
+					inArray(voiceProfilesTable.type, [
+						"normal",
+						"slow_deep",
+						"fast_high",
+					]),
+				),
+			);
+		return profiles;
 	}),
 });
 
@@ -36,6 +71,8 @@ export type Context = Awaited<ReturnType<typeof createContext>>;
 const fastify = Fastify({
 	logger: true,
 });
+
+fastify.register(FastifyBetterAuth, { auth });
 
 fastify.register(fastifyIO);
 
