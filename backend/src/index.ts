@@ -10,7 +10,11 @@ import {
 	fastifyTRPCPlugin,
 } from "@trpc/server/adapters/fastify";
 import { fromNodeHeaders } from "better-auth/node";
-import FastifyBetterAuth from "fastify-better-auth";
+import type FastifyBetterAuth from "fastify-better-auth";
+
+const fastifyBetterAuth: typeof FastifyBetterAuth = require("fix-esm").require(
+	"fastify-better-auth",
+);
 
 import fastifyIO from "@ericedouard/fastify-socket.io";
 import { and, eq, inArray } from "drizzle-orm";
@@ -72,7 +76,7 @@ const fastify = Fastify({
 	logger: true,
 });
 
-fastify.register(FastifyBetterAuth, { auth });
+fastify.register(fastifyBetterAuth, { auth });
 
 fastify.register(fastifyIO);
 

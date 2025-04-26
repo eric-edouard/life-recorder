@@ -37,6 +37,7 @@
 		"fastify": "^5.3.2",
 		"fastify-better-auth": "^1.0.1",
 		"ffmpeg-static": "^5.2.0",
+		"fix-esm": "^1.0.1",
 		"pg": "^8.14.1",
 		"socket.io": "^4.8.1",
 		"superjson": "^2.2.2",
