@@ -1,5 +1,4 @@
-import type { VoiceProfileType } from "@backend/src/types/VoiceProfileType";
-
+import type { VoiceProfileType } from "@shared/sharedTypes";
 export const voiceProfilesLabel: Record<VoiceProfileType, string> = {
 	normal: "Normal",
 	low: "Low",

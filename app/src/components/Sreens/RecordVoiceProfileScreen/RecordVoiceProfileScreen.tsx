@@ -11,8 +11,8 @@ import {
 import { useCustomColor } from "@app/src/contexts/ThemeContext";
 import { deviceService } from "@app/src/services/deviceService/deviceService";
 import { scanDevicesService } from "@app/src/services/deviceService/scanDevicesService";
-import type { VoiceProfileType } from "@backend/src/types/VoiceProfileType";
 import { use$ } from "@legendapp/state/react";
+import type { VoiceProfileType } from "@shared/sharedTypes";
 import { useLocalSearchParams } from "expo-router";
 import { SymbolView } from "expo-symbols";
 import { ScrollView, View } from "react-native";

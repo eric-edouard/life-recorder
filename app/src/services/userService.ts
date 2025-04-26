@@ -1,8 +1,8 @@
 import { backendUrl } from "@app/src/constants/backendUrl";
 import trpc from "@app/src/services/trpc";
 import type { InferQueryOutput } from "@app/src/types/trpcs";
-import type { VoiceProfileType } from "@backend/src/types/VoiceProfileType";
 import { observable } from "@legendapp/state";
+import type { VoiceProfileType } from "@shared/sharedTypes";
 import { authClient } from "./authClient";
 
 type VoiceProfile = InferQueryOutput<"userVoiceProfiles">[number];
