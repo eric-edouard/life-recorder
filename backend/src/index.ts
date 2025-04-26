@@ -45,6 +45,41 @@ const appRouter = router({
 			.where(and(eq(voiceProfilesTable.speakerId, speaker.id)));
 		return profiles;
 	}),
+
+	// createVoiceProfile: publicProcedure
+	// 	.input(octetInputParser)
+	// 	.mutation(async ({ ctx, input }) => {
+	// 		const chunks = [];
+
+	// 		const reader = input.getReader();
+	// 		while (true) {
+	// 			const { done, value } = await reader.read();
+	// 			if (done) {
+	// 				break;
+	// 			}
+	// 			chunks.push(value);
+	// 		}
+
+	// 		const content = Buffer.concat(chunks).toString("utf-8");
+
+	// 		console.log("File: ", content);
+	// 		// const speaker = await db
+	// 		// 	.select()
+	// 		// 	.from(speakersTable)
+	// 		// 	.where(eq(speakersTable.id, speakerId));
+	// 		// if (!speaker) throw new Error("Speaker not found");
+	// 		// const voiceProfile = await db.insert(voiceProfilesTable).values({
+	// 		// 	id: generateReadableUUID(),
+	// 		// 	speakerId,
+	// 		// 	duration: 0,
+	// 		// 	embedding: [],
+	// 		// 	fileId: "",
+	// 		// 	language: "",
+	// 		// 	userId: ctx.session?.user?.id,
+	// 		// 	type,
+	// 		// });
+	// 		// return voiceProfile;
+	// 	}),
 });
 
 export type AppRouter = typeof appRouter;
