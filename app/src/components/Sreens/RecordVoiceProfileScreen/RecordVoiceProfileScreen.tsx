@@ -14,14 +14,15 @@ import { use$ } from "@legendapp/state/react";
 import { useLocalSearchParams } from "expo-router";
 import { SymbolView } from "expo-symbols";
 import { ScrollView, View } from "react-native";
+import { State } from "react-native-ble-plx";
 
 export const RecordVoiceProfileScreen = () => {
 	const { type } = useLocalSearchParams<{ type: VoiceProfileType }>();
 	const bluetoothState = use$(scanDevicesService.bluetoothState$);
 	const permissionStatus = use$(scanDevicesService.permissionStatus$);
 
-	const disabled = false;
-	// bluetoothState !== State.PoweredOn || permissionStatus !== "granted";
+	const disabled =
+		bluetoothState !== State.PoweredOn || permissionStatus !== "granted";
 
 	const accent = useCustomColor("--accent");
 
@@ -40,30 +41,32 @@ export const RecordVoiceProfileScreen = () => {
 					</View>
 				)}
 			</ScrollView>
-			<View className="absolute bottom-safe-offset-20 w-full flex justify-center items-center">
-				<Button
-					icon={
-						<SymbolView
-							name="record.circle"
-							type="hierarchical"
-							tintColor={accent}
-							// type="palette"
-							// colors={[accent, accent]}
-							// animationSpec={{
-							// 	effect: {
-							// 		type: "bounce",
-							// 	},
-							// 	repeating: true,
-							// 	speed: 0.5,
-							// }}
-						/>
-					}
-					color="secondarySystemBackground"
-					textColor="secondaryLabel"
-					title="Start recording"
-					onPress={() => {}}
-				/>
-			</View>
+			{!disabled && (
+				<View className="absolute bottom-safe-offset-20 w-full flex justify-center items-center">
+					<Button
+						icon={
+							<SymbolView
+								name="record.circle"
+								type="hierarchical"
+								tintColor={accent}
+								// type="palette"
+								// colors={[accent, accent]}
+								// animationSpec={{
+								// 	effect: {
+								// 		type: "bounce",
+								// 	},
+								// 	repeating: true,
+								// 	speed: 0.5,
+								// }}
+							/>
+						}
+						color="secondarySystemBackground"
+						textColor="secondaryLabel"
+						title="Start recording"
+						onPress={() => {}}
+					/>
+				</View>
+			)}
 		</>
 	);
 };
