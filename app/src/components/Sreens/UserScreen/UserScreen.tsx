@@ -17,6 +17,7 @@ export const UserScreen = () => {
 				<InsetList.Row title="Fast & high voice" detail="Record" />
 			</InsetList>
 			<View className="flex-1 gap-5">
+				{/* TESTING BUTTONS */}
 				<RowButton
 					title="Get User"
 					onPress={() => {
@@ -34,6 +35,7 @@ export const UserScreen = () => {
 						});
 					}}
 				/>
+
 				<RowButton
 					title="Logout"
 					colorStyle="destructive"
