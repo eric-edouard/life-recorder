@@ -1,6 +1,6 @@
 import { backendUrl } from "@app/src/constants/backendUrl";
 import { authClient } from "@app/src/services/authClient";
-import type { AppRouter } from "@backend/index";
+import type { AppRouter } from "@backend/src/index";
 import { createTRPCClient, httpBatchLink } from "@trpc/client";
 
 const trpc = createTRPCClient<AppRouter>({

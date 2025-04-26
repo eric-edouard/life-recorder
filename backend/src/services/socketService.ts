@@ -1,13 +1,13 @@
-import { forwardLogsMiddleware } from "@backend/services/socketMiddlewares/forwardLogsMiddleware";
-import { handleAudioMiddleware } from "@backend/services/socketMiddlewares/handleAudioMiddleware";
-import { getUtterances } from "@backend/services/utterancesService";
+import { forwardLogsMiddleware } from "@backend/src/services/socketMiddlewares/forwardLogsMiddleware";
+import { handleAudioMiddleware } from "@backend/src/services/socketMiddlewares/handleAudioMiddleware";
+import { getUtterances } from "@backend/src/services/utterancesService";
 import type {
 	InterServerEvents,
 	SocketData,
 	SocketMiddleware,
 	TypedServer,
 	TypedSocket,
-} from "@backend/types/socket-events";
+} from "@backend/src/types/socket-events";
 import type {
 	ClientToServerEvents,
 	ServerToClientEvents,

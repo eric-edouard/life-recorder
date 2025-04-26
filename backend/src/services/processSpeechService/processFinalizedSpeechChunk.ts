@@ -1,14 +1,14 @@
-import { db } from "@backend/db/db";
-import { utterancesTable } from "@backend/db/schema";
-import { createAndSaveTranscript } from "@backend/services/processSpeechService/createAndSaveTranscript";
-import { saveAudioToGCS } from "@backend/services/processSpeechService/saveAudioToGcs";
-import { findMatchingVoiceProfile } from "@backend/services/processSpeechService/utils/findMatchingVoiceProfile";
-import { getSpeakerEmbeddingFromBuffer } from "@backend/services/processSpeechService/utils/getSpeakerEmbeddingFromBuffer";
-import { insertNewVoiceProfile } from "@backend/services/processSpeechService/utils/insertNewVoiceProfile";
-import type { Utterance } from "@backend/types/deepgram";
-import { convertFloat32ArrayToWavBuffer } from "@backend/utils/audio/audioUtils";
-import { getWavBufferDuration } from "@backend/utils/audio/getWavBufferDuration";
-import { generateReadableUUID } from "@backend/utils/generateReadableUUID";
+import { db } from "@backend/src/db/db";
+import { utterancesTable } from "@backend/src/db/schema";
+import { createAndSaveTranscript } from "@backend/src/services/processSpeechService/createAndSaveTranscript";
+import { saveAudioToGCS } from "@backend/src/services/processSpeechService/saveAudioToGcs";
+import { findMatchingVoiceProfile } from "@backend/src/services/processSpeechService/utils/findMatchingVoiceProfile";
+import { getSpeakerEmbeddingFromBuffer } from "@backend/src/services/processSpeechService/utils/getSpeakerEmbeddingFromBuffer";
+import { insertNewVoiceProfile } from "@backend/src/services/processSpeechService/utils/insertNewVoiceProfile";
+import type { Utterance } from "@backend/src/types/deepgram";
+import { convertFloat32ArrayToWavBuffer } from "@backend/src/utils/audio/audioUtils";
+import { getWavBufferDuration } from "@backend/src/utils/audio/getWavBufferDuration";
+import { generateReadableUUID } from "@backend/src/utils/generateReadableUUID";
 import { inArray } from "drizzle-orm";
 import fs from "node:fs";
 

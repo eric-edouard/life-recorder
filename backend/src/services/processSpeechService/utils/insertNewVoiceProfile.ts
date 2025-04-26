@@ -1,6 +1,6 @@
-import { db } from "@backend/db/db";
-import { voiceProfilesTable } from "@backend/db/schema";
-import { generateReadableUUID } from "@backend/utils/generateReadableUUID";
+import { db } from "@backend/src/db/db";
+import { voiceProfilesTable } from "@backend/src/db/schema";
+import { generateReadableUUID } from "@backend/src/utils/generateReadableUUID";
 
 type InsertNewVoiceProfileParams = {
 	embedding: number[];

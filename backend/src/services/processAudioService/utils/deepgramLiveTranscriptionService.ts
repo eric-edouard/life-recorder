@@ -1,5 +1,5 @@
-import { CHANNELS, SAMPLE_RATE } from "@backend/constants/audioConstants";
-import type { DeepgramLiveTranscriptionResult } from "@backend/types/deepgramLiveTranscriptionResult";
+import { CHANNELS, SAMPLE_RATE } from "@backend/src/constants/audioConstants";
+import type { DeepgramLiveTranscriptionResult } from "@backend/src/types/deepgramLiveTranscriptionResult";
 import {
 	type DeepgramError,
 	type ListenLiveClient,

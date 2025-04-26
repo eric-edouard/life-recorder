@@ -1,8 +1,8 @@
 import "dotenv/config";
 
-import { auth } from "@backend/auth";
-import { db } from "@backend/db/db";
-import { publicProcedure, router } from "@backend/services/trpc";
+import { auth } from "@backend/src/auth";
+import { db } from "@backend/src/db/db";
+import { publicProcedure, router } from "@backend/src/services/trpc";
 import type { CreateFastifyContextOptions } from "@trpc/server/adapters/fastify";
 import {
 	type FastifyTRPCPluginOptions,

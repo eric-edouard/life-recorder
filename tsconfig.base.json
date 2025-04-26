@@ -17,7 +17,7 @@
 		"baseUrl": ".",
 		"paths": {
 			"@app/*": ["app/*"],
-			"@backend/*": ["backend/src/*"],
+			"@backend/*": ["backend/*"],
 			"@shared/*": ["shared/*"]
 		}
 	}

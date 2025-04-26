@@ -1,4 +1,4 @@
-import type { auth } from "@backend/auth";
+import type { auth } from "@backend/src/auth";
 import { initTRPC } from "@trpc/server";
 
 // Define context type

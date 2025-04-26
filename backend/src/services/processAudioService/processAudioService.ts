@@ -1,9 +1,9 @@
-import { CHANNELS, SAMPLE_RATE } from "@backend/constants/audioConstants";
-import { DEEPGRAM_LIVE_TRANSCRIPTION_ENABLED } from "@backend/constants/features";
-import { deepgramLiveTranscriptionService } from "@backend/services/processAudioService/utils/deepgramLiveTranscriptionService";
-import { processFinalizedSpeechChunk } from "@backend/services/processSpeechService/processFinalizedSpeechChunk";
-import { socketService } from "@backend/services/socketService";
-import { convertPcmToFloat32Array } from "@backend/utils/audio/audioUtils";
+import { CHANNELS, SAMPLE_RATE } from "@backend/src/constants/audioConstants";
+import { DEEPGRAM_LIVE_TRANSCRIPTION_ENABLED } from "@backend/src/constants/features";
+import { deepgramLiveTranscriptionService } from "@backend/src/services/processAudioService/utils/deepgramLiveTranscriptionService";
+import { processFinalizedSpeechChunk } from "@backend/src/services/processSpeechService/processFinalizedSpeechChunk";
+import { socketService } from "@backend/src/services/socketService";
+import { convertPcmToFloat32Array } from "@backend/src/utils/audio/audioUtils";
 import { OpusEncoder } from "@discordjs/opus";
 import { RealTimeVAD } from "@ericedouard/vad-node-realtime";
 
