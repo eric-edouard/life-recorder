@@ -5,6 +5,7 @@ import { type StyleProp, TouchableOpacity, type ViewStyle } from "react-native";
 import { twMerge } from "tailwind-merge";
 
 export type ButtonProps = {
+	icon?: React.ReactNode;
 	title: string;
 	onPress: () => void;
 	color?: SystemColor;
@@ -14,6 +15,7 @@ export type ButtonProps = {
 };
 
 export const Button = ({
+	icon = null,
 	title,
 	onPress,
 	color = "blue",
@@ -28,7 +30,7 @@ export const Button = ({
 	return (
 		<TouchableOpacity
 			onPress={onPress}
-			className=" w-fit rounded-2xl min-w-28 px-6 items-center justify-center h-[44px]"
+			className=" w-fit rounded-2xl min-w-28 px-6 flex-row items-center justify-center h-[44px]"
 			style={[
 				{
 					borderCurve: "continuous",
@@ -40,10 +42,12 @@ export const Button = ({
 			]}
 			disabled={disabled}
 		>
+			{icon}
 			<Text
 				className={twMerge(
 					" text-center text-lg",
 					disabled && "text-secondary-label",
+					icon && "ml-2",
 				)}
 				style={
 					disabled ? undefined : { color: textColor ? _textColor : "white" }

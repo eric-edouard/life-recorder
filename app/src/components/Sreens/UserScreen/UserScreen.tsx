@@ -2,6 +2,7 @@ import React from "react";
 
 import { RowButton } from "@app/src/components/ui/Buttons/RowButton";
 import { InsetList } from "@app/src/components/ui/Lists/InsetList";
+import { voiceProfilesLabel } from "@app/src/constants/voiceProfilesText";
 import { authClient } from "@app/src/services/authClient";
 import { userService } from "@app/src/services/userService";
 import { use$ } from "@legendapp/state/react";
@@ -16,7 +17,7 @@ export const UserScreen = () => {
 		<ScrollView className="flex-1 px-5 pt-10">
 			<InsetList headerText="Voice Profiles" className="mb-5">
 				<InsetList.Row
-					title="Normal voice"
+					title={voiceProfilesLabel.normal}
 					detail={!voiceProfiles.normal ? "Record" : ""}
 					accessory={
 						voiceProfiles.normal ? <SymbolView name="info.circle" /> : null
@@ -26,23 +27,23 @@ export const UserScreen = () => {
 					}}
 				/>
 				<InsetList.Row
-					title="Slow & deep voice"
-					detail={!voiceProfiles.slowDeep ? "Record" : ""}
+					title={voiceProfilesLabel.slow_deep}
+					detail={!voiceProfiles.slow_deep ? "Record" : ""}
 					accessory={
-						voiceProfiles.slowDeep ? <SymbolView name="info.circle" /> : null
+						voiceProfiles.slow_deep ? <SymbolView name="info.circle" /> : null
 					}
 					onPress={() => {
-						router.push("/record-voice-profile?type=slow-deep");
+						router.push("/record-voice-profile?type=slow_deep");
 					}}
 				/>
 				<InsetList.Row
-					title="Fast & high voice"
-					detail={!voiceProfiles.fastHigh ? "Record" : ""}
+					title={voiceProfilesLabel.fast_high}
+					detail={!voiceProfiles.fast_high ? "Record" : ""}
 					accessory={
-						voiceProfiles.fastHigh ? <SymbolView name="info.circle" /> : null
+						voiceProfiles.fast_high ? <SymbolView name="info.circle" /> : null
 					}
 					onPress={() => {
-						router.push("/record-voice-profile?type=fast-high");
+						router.push("/record-voice-profile?type=fast°high");
 					}}
 				/>
 			</InsetList>
