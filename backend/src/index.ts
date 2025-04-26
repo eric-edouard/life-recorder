@@ -1,29 +1,16 @@
 import "dotenv/config";
 
+import { auth } from "@backend/auth";
 import { db } from "@backend/db/db";
-import { routes } from "@backend/routes";
-import { socketService } from "@backend/services/socketService";
-import { type Context, publicProcedure, router } from "@backend/services/trpc";
-import * as trpcExpress from "@trpc/server/adapters/express";
-import { fromNodeHeaders, toNodeHandler } from "better-auth/node";
-import cors from "cors";
-import express from "express";
-import { createServer } from "node:http";
-import { auth } from "./auth";
-
-/**
- * Create context for tRPC
- */
-export const createContext = async ({
-	req,
-	res,
-}: trpcExpress.CreateExpressContextOptions): Promise<Context> => {
-	const session = await auth.api.getSession({
-		headers: fromNodeHeaders(req.headers),
-	});
-
-	return { session };
-};
+import { publicProcedure, router } from "@backend/services/trpc";
+import type { CreateFastifyContextOptions } from "@trpc/server/adapters/fastify";
+import {
+	type FastifyTRPCPluginOptions,
+	fastifyTRPCPlugin,
+} from "@trpc/server/adapters/fastify";
+import { fromNodeHeaders } from "better-auth/node";
+import Fastify from "fastify";
+import fastifyIO from "fastify-socket.io";
 
 const appRouter = router({
 	userList: publicProcedure.query(async ({ ctx }) => {
@@ -36,47 +23,44 @@ const appRouter = router({
 
 export type AppRouter = typeof appRouter;
 
-const app = express();
+export async function createContext({ req, res }: CreateFastifyContextOptions) {
+	const session = await auth.api.getSession({
+		headers: fromNodeHeaders(req.headers),
+	});
 
-/**
- * Setup Routes
- */
-app.use(routes);
+	return { session };
+}
 
-/**
- * Setup TRPc Middleware
- */
-app.use(
-	"/trpc",
-	trpcExpress.createExpressMiddleware({
+export type Context = Awaited<ReturnType<typeof createContext>>;
+
+const fastify = Fastify({
+	logger: true,
+});
+
+fastify.register(fastifyIO);
+
+fastify.register(fastifyTRPCPlugin, {
+	prefix: "/trpc",
+	trpcOptions: {
 		router: appRouter,
 		createContext,
-	}),
-);
+		onError({ path, error }) {
+			// report to error monitoring
+			console.error(`Error in tRPC handler on path '${path}':`, error);
+		},
+	} satisfies FastifyTRPCPluginOptions<AppRouter>["trpcOptions"],
+});
 
-/**
- * Setup BetterAuth Middleware
- */
-app.all("/api/auth/*splat", toNodeHandler(auth));
+// Declare a route
+fastify.get("/health", (request, reply) => {
+	reply.send({ status: "ok" });
+});
 
-/**
- * Middleware
- */
-app.use(cors());
-app.use(express.json());
-
-/**
- * Create HTTP server
- */
-const server = createServer(app);
-
-/**
- * Initialize Socket.IO
- */
-socketService.initialize(server);
-
-// // Server
-server.listen(process.env.PORT || 3000, () => {
+// Run the server!
+fastify.listen({ port: Number(process.env.PORT ?? "3000") }, (err, address) => {
+	if (err) {
+		fastify.log.error(err);
+		process.exit(1);
+	}
 	console.log(`Server is running on port ${process.env.PORT || 3000}`);
-	console.log("Socket.IO server is running");
 });
