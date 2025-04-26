@@ -89,7 +89,7 @@ export const voiceProfilesTable = pgTable(
 		createdAt: timestamp("created_at").defaultNow().notNull(),
 		updatedAt: timestamp("updated_at").defaultNow().notNull(),
 		userId: text("user_id").references(() => usersTable.id),
-		type: text("type", { enum: ["normal", "slow_deep", "fast_high"] }),
+		type: text("type", { enum: ["normal", "low", "high"] }),
 	},
 	(table) => [
 		index("embeddingIndex").using(

@@ -13,18 +13,16 @@ const findUserVoiceProfiles = (
 ): UserVoiceProfiles => {
 	return {
 		normal: voiceProfiles.find((profile) => profile.type === "normal") ?? null,
-		slow_deep:
-			voiceProfiles.find((profile) => profile.type === "slow_deep") ?? null,
-		fast_high:
-			voiceProfiles.find((profile) => profile.type === "fast_high") ?? null,
+		low: voiceProfiles.find((profile) => profile.type === "low") ?? null,
+		high: voiceProfiles.find((profile) => profile.type === "high") ?? null,
 	};
 };
 
 export const userService = (() => {
 	const voiceProfiles$ = observable<UserVoiceProfiles>({
 		normal: null,
-		slow_deep: null,
-		fast_high: null,
+		low: null,
+		high: null,
 	});
 	return {
 		voiceProfiles$,

@@ -17,7 +17,7 @@ const fastifyBetterAuth: typeof FastifyBetterAuth = require("fix-esm").require(
 );
 
 import fastifyIO from "@ericedouard/fastify-socket.io";
-import { and, eq, inArray } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import Fastify from "fastify";
 
 const appRouter = router({
@@ -46,16 +46,7 @@ const appRouter = router({
 		const profiles = await db
 			.select()
 			.from(voiceProfilesTable)
-			.where(
-				and(
-					eq(voiceProfilesTable.speakerId, speaker.id),
-					inArray(voiceProfilesTable.type, [
-						"normal",
-						"slow_deep",
-						"fast_high",
-					]),
-				),
-			);
+			.where(and(eq(voiceProfilesTable.speakerId, speaker.id)));
 		return profiles;
 	}),
 });

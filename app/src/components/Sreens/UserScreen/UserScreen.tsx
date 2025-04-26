@@ -17,7 +17,7 @@ export const UserScreen = () => {
 		<ScrollView className="flex-1 px-5 pt-10">
 			<InsetList headerText="Voice Profiles" className="mb-5">
 				<InsetList.Row
-					title={voiceProfilesLabel.normal}
+					title={`${voiceProfilesLabel.normal} pitch`}
 					detail={!voiceProfiles.normal ? "Record" : ""}
 					accessory={
 						voiceProfiles.normal ? <SymbolView name="info.circle" /> : null
@@ -27,23 +27,23 @@ export const UserScreen = () => {
 					}}
 				/>
 				<InsetList.Row
-					title={voiceProfilesLabel.slow_deep}
-					detail={!voiceProfiles.slow_deep ? "Record" : ""}
+					title={`${voiceProfilesLabel.low} pitch`}
+					detail={!voiceProfiles.low ? "Record" : ""}
 					accessory={
-						voiceProfiles.slow_deep ? <SymbolView name="info.circle" /> : null
+						voiceProfiles.low ? <SymbolView name="info.circle" /> : null
 					}
 					onPress={() => {
-						router.push("/record-voice-profile?type=slow_deep");
+						router.push("/record-voice-profile?type=low");
 					}}
 				/>
 				<InsetList.Row
-					title={voiceProfilesLabel.fast_high}
-					detail={!voiceProfiles.fast_high ? "Record" : ""}
+					title={`${voiceProfilesLabel.high} pitch`}
+					detail={!voiceProfiles.high ? "Record" : ""}
 					accessory={
-						voiceProfiles.fast_high ? <SymbolView name="info.circle" /> : null
+						voiceProfiles.high ? <SymbolView name="info.circle" /> : null
 					}
 					onPress={() => {
-						router.push("/record-voice-profile?type=fast°high");
+						router.push("/record-voice-profile?type=high");
 					}}
 				/>
 			</InsetList>
