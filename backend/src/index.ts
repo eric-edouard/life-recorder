@@ -94,7 +94,7 @@ fastify.register(fastifyTRPCPlugin, {
 
 // Declare a route
 fastify.get("/health", (request, reply) => {
-	reply.send({ status: "ok" });
+	reply.status(200).send({ status: "ok" });
 });
 
 // Run the server!
