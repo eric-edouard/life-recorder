@@ -29,8 +29,8 @@ export function BluetoothStatusInfo() {
 				content={
 					<Button
 						style={{
+							margin: 32,
 							marginTop: 8,
-							padding: 32,
 						}}
 						onPress={() => {
 							if (canAskForPermission) {

@@ -31,6 +31,7 @@ export const Button = ({
 			className=" w-fit rounded-2xl min-w-28 px-6 items-center justify-center h-[44px]"
 			style={[
 				{
+					borderCurve: "continuous",
 					backgroundColor: disabled
 						? _disabledBackgroundColor
 						: _backgroundColor,
