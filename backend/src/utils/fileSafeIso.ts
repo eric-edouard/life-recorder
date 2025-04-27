@@ -13,7 +13,7 @@ export function dateToFileName(isoString: string): string {
 export function fileNameToDate(fileSafeString: string): string {
 	return fileSafeString
 		.replace(/-(\d+)Z$/, ".$1Z") // revert hyphen before milliseconds back to dot
-		.replace(/-/g, ":"); // revert other hyphens back to colon
+		.replace(/T(\d+)-(\d+)-(\d+)/g, "T$1:$2:$3"); // only replace hyphens in the time portion
 }
 
 export const fileSafeIso = {
