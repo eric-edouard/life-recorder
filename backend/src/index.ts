@@ -51,7 +51,13 @@ const appRouter = router({
 		if (!speaker) throw new Error("User speaker not found");
 		// Fetch the 3 special voice profiles for this speaker
 		const profiles = await db
-			.select()
+			.select({
+				id: voiceProfilesTable.id,
+				type: voiceProfilesTable.type,
+				fileId: voiceProfilesTable.fileId,
+				speakerId: voiceProfilesTable.speakerId,
+				language: voiceProfilesTable.language,
+			})
 			.from(voiceProfilesTable)
 			.where(and(eq(voiceProfilesTable.speakerId, speaker.id)));
 		return profiles;
