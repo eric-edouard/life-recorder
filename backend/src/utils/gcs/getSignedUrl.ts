@@ -4,7 +4,7 @@ import {
 } from "@backend/src/services/external/gcs";
 
 export const getSignedUrl = async (filename: string) => {
-	const file = gcsBucket.file(`${RECORDINGS_FOLDER}/${filename}`);
+	const file = gcsBucket.file(`${RECORDINGS_FOLDER}/${filename}.mp3`);
 	const [url] = await file.getSignedUrl({
 		version: "v4",
 		action: "read",

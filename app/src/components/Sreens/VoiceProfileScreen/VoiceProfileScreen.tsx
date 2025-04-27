@@ -1,5 +1,6 @@
 import React from "react";
 
+import { AudioPlayer } from "@app/src/components/AudioPlayer";
 import { Text } from "@app/src/components/ui/Text";
 import { trpcQuery } from "@app/src/services/trpc";
 import { userService } from "@app/src/services/userService";
@@ -13,7 +14,7 @@ export const VoiceProfileScreen = () => {
 	const voiceProfile = use$(userService.voiceProfiles$)?.[type];
 	console.log("🚀 ~ VoiceProfileScreen ~ voiceProfile:", voiceProfile);
 
-	const { data, isLoading } = useQuery(
+	const { data: fileUrl, isLoading } = useQuery(
 		trpcQuery.fileUrl.queryOptions(voiceProfile?.fileId!, {
 			enabled: !!voiceProfile?.fileId,
 		}),
@@ -21,12 +22,9 @@ export const VoiceProfileScreen = () => {
 
 	return (
 		<>
-			<Text className="text-label text-2xl font-bold">
-				Voice Profile {type}
-			</Text>
-			{data && (
-				<Text className="text-label text-2xl font-bold">File URL: {data}</Text>
-			)}
+			{isLoading && <Text>Loading...</Text>}
+			{fileUrl && <Text>File URL: {fileUrl}</Text>}
+			{fileUrl && <AudioPlayer title="test" fileUrl={fileUrl} />}
 		</>
 	);
 };
