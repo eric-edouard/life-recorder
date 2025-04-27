@@ -12,6 +12,7 @@ import {
 	router,
 } from "@backend/src/services/trpc";
 import { convertPcmToFloat32Array } from "@backend/src/utils/audio/audioUtils";
+import { getSignedUrl } from "@backend/src/utils/gcs/getSignedUrl";
 import { OpusEncoder } from "@discordjs/opus";
 import { SupportedLanguage, VoiceProfileType } from "@shared/sharedTypes";
 import { TRPCError } from "@trpc/server";
@@ -30,7 +31,9 @@ const appRouter = router({
 		console.log("Session:", ctx.session);
 		return users;
 	}),
-
+	fileUrl: publicProcedure.input(z.string()).query(async ({ input }) => {
+		return await getSignedUrl(input);
+	}),
 	userVoiceProfiles: publicProcedure.query(async ({ ctx }) => {
 		if (!ctx.session?.user?.id) throw new Error("Not authenticated");
 		// Find the speaker record for the current user
