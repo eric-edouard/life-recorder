@@ -1,12 +1,12 @@
 import { BouncyPressable } from "@app/src/components/ui/Buttons/BouncyPressable";
 import { rgbaToHex } from "@app/src/utils/rgbaToHex";
+// import { Button, ContextMenu } from "@expo/ui/swift-ui";
 import { format } from "date-fns";
 import { useAudioPlayer, useAudioPlayerStatus } from "expo-audio";
 import { SymbolView } from "expo-symbols";
 import React from "react";
 import { Text, View } from "react-native";
 import { useColor } from "react-native-uikit-colors";
-
 // Helper function to format time in minutes:seconds
 const formatTime = (timeInSeconds: number) => {
 	const minutes = Math.floor(timeInSeconds / 60);
@@ -73,6 +73,28 @@ export function AudioPlayer({
 					</View>
 				</View>
 				<View className="w-7 ">
+					{/* <ContextMenu style={{ width: 150, height: 50 }}>
+						<ContextMenu.Items>
+							<Button
+								systemImage="person.crop.circle.badge.xmark"
+								onPress={() => console.log("Pressed1")}
+							>
+								Hello
+							</Button>
+							<Button
+								variant="bordered"
+								systemImage="heart"
+								onPress={() => console.log("Pressed2")}
+							>
+								I love
+							</Button>
+						</ContextMenu.Items>
+						<ContextMenu.Trigger>
+							<Button variant="bordered" style={{ width: 150, height: 50 }}>
+								Show Menu
+							</Button>
+						</ContextMenu.Trigger>
+					</ContextMenu> */}
 					<SymbolView
 						name="ellipsis.circle"
 						size={24}
