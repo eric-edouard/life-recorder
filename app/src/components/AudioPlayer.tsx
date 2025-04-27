@@ -132,7 +132,7 @@ export function AudioPlayer({
 					<BouncyPressable speed="fast" onPress={handlePlayPause}>
 						<SymbolView
 							name={status.playing ? "pause.fill" : "play.fill"}
-							size={50}
+							size={46}
 							tintColor={rgbaToHex(fillColor)}
 						/>
 					</BouncyPressable>
