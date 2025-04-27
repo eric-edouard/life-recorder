@@ -1,7 +1,9 @@
-import { Ionicons } from "@expo/vector-icons";
+import { BouncyPressable } from "@app/src/components/ui/Buttons/BouncyPressable";
+import { useCustomColor } from "@app/src/contexts/ThemeContext";
 import { useAudioPlayer, useAudioPlayerStatus } from "expo-audio";
-import React, { useEffect, useRef } from "react";
-import { Animated, Text, TouchableOpacity, View } from "react-native";
+import { SymbolView } from "expo-symbols";
+import React from "react";
+import { Text, View } from "react-native";
 
 // Helper function to format time in minutes:seconds
 const formatTime = (timeInSeconds: number) => {
@@ -18,20 +20,11 @@ interface AudioPlayerProps {
 export function AudioPlayer({ fileUrl, title }: AudioPlayerProps) {
 	const player = useAudioPlayer({ uri: fileUrl });
 	const status = useAudioPlayerStatus(player);
-	const progressWidthAnimation = useRef(new Animated.Value(0)).current;
 
 	const formattedCurrentTime = formatTime(status.currentTime);
 	const formattedDuration = formatTime(status.duration);
 
-	useEffect(() => {
-		// Animate progress when currentTime changes
-		Animated.timing(progressWidthAnimation, {
-			toValue: calculateProgressWidth(),
-			duration: 250,
-			useNativeDriver: false, // width cannot use native driver
-		}).start();
-	}, [status.currentTime, status.duration]);
-
+	const accentColor = useCustomColor("--accent");
 	const handlePlayPause = () => {
 		if (status.playing) {
 			player.pause();
@@ -50,27 +43,20 @@ export function AudioPlayer({ fileUrl, title }: AudioPlayerProps) {
 
 	const calculateProgressWidth = () => {
 		if (status.duration === 0) return 0;
-		return status.currentTime / status.duration;
+		return (status.currentTime / status.duration) * 100;
 	};
 
-	// Calculate width percentage for progress bar
-	const widthPercent = progressWidthAnimation.interpolate({
-		inputRange: [0, 1],
-		outputRange: ["0%", "100%"],
-		extrapolate: "clamp",
-	});
-
 	return (
-		<View className="w-full bg-system-background rounded-3xl p-4 shadow-sm">
+		<View className="w-full flex-1 flex justify-center  rounded-3xl p-4 shadow-sm">
 			<Text className="text-lg font-semibold text-label mb-4 text-center">
 				{title}
 			</Text>
 
 			<View className="mb-4">
 				<View className="h-2 bg-secondary-system-fill rounded-full overflow-hidden relative">
-					<Animated.View
-						className="h-full bg-blue rounded-full"
-						style={{ width: widthPercent }}
+					<View
+						className="h-full  bg-red rounded-full"
+						style={{ width: `${calculateProgressWidth()}%` }}
 					/>
 				</View>
 				<View className="flex-row justify-between mt-1.5">
@@ -83,27 +69,29 @@ export function AudioPlayer({ fileUrl, title }: AudioPlayerProps) {
 				</View>
 			</View>
 
-			<View className="flex-row justify-between items-center">
-				<TouchableOpacity onPress={handleSeekBackward} className="items-center">
-					<Ionicons name="play-back" size={24} color="#333" />
-					<Text className="text-xs text-secondary-label mt-1">-10s</Text>
-				</TouchableOpacity>
-
-				<TouchableOpacity
-					onPress={handlePlayPause}
-					className="bg-blue w-16 h-16 rounded-full justify-center items-center"
-				>
-					<Ionicons
-						name={status.playing ? "pause" : "play"}
-						size={32}
-						color="#fff"
+			<View className="flex-row justify-center gap-12 items-center">
+				<BouncyPressable speed="fast" onPress={handleSeekBackward}>
+					<SymbolView
+						name={"10.arrow.trianglehead.counterclockwise"}
+						size={30}
+						tintColor={accentColor}
 					/>
-				</TouchableOpacity>
+				</BouncyPressable>
+				<BouncyPressable speed="fast" onPress={handlePlayPause}>
+					<SymbolView
+						name={status.playing ? "pause.fill" : "play.fill"}
+						size={56}
+						tintColor={accentColor}
+					/>
+				</BouncyPressable>
 
-				<TouchableOpacity onPress={handleSeekForward} className="items-center">
-					<Ionicons name="play-forward" size={24} color="#333" />
-					<Text className="text-xs text-secondary-label mt-1">+10s</Text>
-				</TouchableOpacity>
+				<BouncyPressable speed="fast" onPress={handleSeekForward}>
+					<SymbolView
+						name={"10.arrow.trianglehead.clockwise"}
+						size={30}
+						tintColor={accentColor}
+					/>
+				</BouncyPressable>
 			</View>
 		</View>
 	);

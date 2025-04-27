@@ -7,7 +7,7 @@ import { use$ } from "@legendapp/state/react";
 import type { VoiceProfileType } from "@shared/sharedTypes";
 import { useQuery } from "@tanstack/react-query";
 import { useLocalSearchParams } from "expo-router";
-import { ActivityIndicator } from "react-native";
+import { ActivityIndicator, View } from "react-native";
 
 export const VoiceProfileScreen = () => {
 	const { type } = useLocalSearchParams<{ type: VoiceProfileType }>();
@@ -21,10 +21,10 @@ export const VoiceProfileScreen = () => {
 	);
 
 	return (
-		<>
+		<View className="flex-1 ">
 			{isLoading && <ActivityIndicator size="large" color="#0000ff" />}
 			{/* {fileUrl && <Text>File URL: {fileUrl}</Text>} */}
 			{fileUrl && <AudioPlayer title="test" fileUrl={fileUrl} />}
-		</>
+		</View>
 	);
 };
