@@ -11,6 +11,7 @@ import {
 	publicProcedure,
 	router,
 } from "@backend/src/services/trpc";
+import { convertPcmToFloat32Array } from "@backend/src/utils/audio/audioUtils";
 import { OpusEncoder } from "@discordjs/opus";
 import { SupportedLanguage, VoiceProfileType } from "@shared/sharedTypes";
 import { TRPCError } from "@trpc/server";
@@ -43,6 +44,7 @@ const appRouter = router({
 				),
 			)
 			.then((rows) => rows[0]);
+		console.log("🪲 SPEAKER", speaker);
 		if (!speaker) throw new Error("User speaker not found");
 		// Fetch the 3 special voice profiles for this speaker
 		const profiles = await db
@@ -52,10 +54,21 @@ const appRouter = router({
 		return profiles;
 	}),
 
+	test: publicProcedure
+		.input(
+			z.object({
+				opusFramesB64: z.string(),
+				type: z.enum(VoiceProfileType),
+				language: z.enum(SupportedLanguage),
+			}),
+		)
+		.mutation(async ({ ctx, input }) => {
+			return input;
+		}),
 	createVoiceProfile: publicProcedure
 		.input(
 			z.object({
-				opusFramesB64: z.base64(),
+				opusFramesB64: z.array(z.string()),
 				type: z.enum(VoiceProfileType),
 				language: z.enum(SupportedLanguage),
 			}),
@@ -68,15 +81,32 @@ const appRouter = router({
 				});
 			const opusEncoder = new OpusEncoder(SAMPLE_RATE, CHANNELS);
 
-			const opusFrames = Buffer.from(input.opusFramesB64, "base64");
-			const audioData = opusEncoder.decode(opusFrames);
-			await processFinalizedSpeechChunkForVoiceProfile({
-				audio: new Float32Array(audioData),
+			const float32Array = input.opusFramesB64.map((frame) =>
+				convertPcmToFloat32Array(
+					opusEncoder.decode(Buffer.from(frame, "base64")),
+				),
+			);
+			console.log("float32Array", float32Array.length);
+
+			// Concatenate the Float32Arrays into a single Float32Array
+			const totalLength = float32Array.reduce(
+				(acc, arr) => acc + arr.length,
+				0,
+			);
+			const concatenatedAudio = new Float32Array(totalLength);
+			let offset = 0;
+
+			for (const chunk of float32Array) {
+				concatenatedAudio.set(chunk, offset);
+				offset += chunk.length;
+			}
+
+			return await processFinalizedSpeechChunkForVoiceProfile({
+				audio: concatenatedAudio,
 				type: input.type,
 				userId: ctx.session.user.id,
 				language: input.language,
 			});
-			console.log("File processed");
 		}),
 });
 
@@ -105,6 +135,13 @@ const routes = express.Router();
 // Health check endpoint
 routes.get("/health", (req: Request, res: Response) => {
 	res.status(200).json({ status: "ok" });
+});
+// Get current user
+app.get("/api/me", async (req, res) => {
+	const session = await auth.api.getSession({
+		headers: fromNodeHeaders(req.headers),
+	});
+	return res.json(session);
 });
 app.use(routes);
 

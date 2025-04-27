@@ -1,5 +1,5 @@
 import { db } from "@backend/src/db/db";
-import { voiceProfilesTable } from "@backend/src/db/schema";
+import { speakersTable, voiceProfilesTable } from "@backend/src/db/schema";
 import { saveAudioToGCS } from "@backend/src/services/processSpeechService/saveAudioToGcs";
 import { getSpeakerEmbeddingFromBuffer } from "@backend/src/services/processSpeechService/utils/getSpeakerEmbeddingFromBuffer";
 import { convertFloat32ArrayToWavBuffer } from "@backend/src/utils/audio/audioUtils";
@@ -7,6 +7,7 @@ import { getWavBufferDuration } from "@backend/src/utils/audio/getWavBufferDurat
 import { generateReadableUUID } from "@backend/src/utils/generateReadableUUID";
 import { now } from "@backend/src/utils/now";
 import type { VoiceProfileType } from "@shared/sharedTypes";
+import { eq } from "drizzle-orm";
 import fs from "node:fs";
 
 const DEBUG = true;
@@ -32,9 +33,13 @@ export const processFinalizedSpeechChunkForVoiceProfile = async ({
 	if (DEBUG) console.log("🪲 1 DURATION", durationMs);
 
 	const id = generateReadableUUID(speechStartTime, durationMs);
-
+	console.log("🪲 1 ID", id);
 	const embedding = await getSpeakerEmbeddingFromBuffer(wavBuffer);
-
+	console.log("🪲 2 EMBEDDING", embedding.length);
+	const speaker = await db.query.speakersTable.findFirst({
+		where: eq(speakersTable.userId, userId),
+	});
+	if (!speaker) throw new Error("Speaker not found");
 	const voiceProfile = await db.insert(voiceProfilesTable).values({
 		id,
 		embedding,
@@ -45,8 +50,10 @@ export const processFinalizedSpeechChunkForVoiceProfile = async ({
 		fileId: id,
 		type,
 		userId,
+		speakerId: speaker.id,
 	});
+	console.log("🪲 3 VOICE PROFILE", voiceProfile);
 	await saveAudioToGCS(id, wavBuffer, speechStartTime, durationMs);
-
-	return voiceProfile;
+	console.log("🪲 4 SAVED AUDIO TO GCS");
+	return { fileId: id };
 };

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 
 import { BluetoothStatusInfo } from "@app/src/components/Sreens/DeviceBottomSheet/BluetoothStatusInfo";
 import { Button } from "@app/src/components/ui/Buttons/Button";
@@ -11,24 +11,30 @@ import {
 import { useCustomColor } from "@app/src/contexts/ThemeContext";
 import { deviceService } from "@app/src/services/deviceService/deviceService";
 import { scanDevicesService } from "@app/src/services/deviceService/scanDevicesService";
+import { recordAudioDataService } from "@app/src/services/recordAudioDataService";
+import { userService } from "@app/src/services/userService";
 import { use$ } from "@legendapp/state/react";
 import type { VoiceProfileType } from "@shared/sharedTypes";
+import { toast } from "burnt";
 import { useLocalSearchParams } from "expo-router";
 import { SymbolView } from "expo-symbols";
-import { ScrollView, View } from "react-native";
+import { ActivityIndicator, ScrollView, View } from "react-native";
 import { State } from "react-native-ble-plx";
 
 export const RecordVoiceProfileScreen = () => {
+	const [isLoading, setIsLoading] = useState(false);
 	const { type } = useLocalSearchParams<{ type: VoiceProfileType }>();
 	const bluetoothState = use$(scanDevicesService.bluetoothState$);
 	const permissionStatus = use$(scanDevicesService.permissionStatus$);
 	const connectedDeviceId = use$(deviceService.connectedDeviceId$);
 	const accent = useCustomColor("--accent");
 
+	const isRecording = use$(recordAudioDataService.isRecording$);
 	const bluetoothEnabled =
 		bluetoothState === State.PoweredOn && permissionStatus === "granted";
 	const deviceConnected = !!connectedDeviceId;
 	const disabled = !bluetoothEnabled || !deviceConnected;
+
 	return (
 		<>
 			<ScrollView contentContainerClassName="flex-1 px-5  flex items-center h-full">
@@ -60,6 +66,7 @@ export const RecordVoiceProfileScreen = () => {
 						<Text className="text-label text-3xl leading-relaxed font-light mx-2 ">
 							{voiceProfilesText[type]}
 						</Text>
+						{isLoading && <ActivityIndicator size={"large"} color={"black"} />}
 					</View>
 				)}
 			</ScrollView>
@@ -84,8 +91,34 @@ export const RecordVoiceProfileScreen = () => {
 						}
 						color="secondarySystemBackground"
 						textColor="secondaryLabel"
-						title="Start recording"
-						onPress={() => {}}
+						title={isRecording ? "Stop recording" : "Start recording"}
+						onPress={async () => {
+							if (!isRecording) {
+								await userService.startRecordingVoiceProfile();
+							} else {
+								setIsLoading(true);
+								try {
+									const result =
+										await userService.createVoiceProfileFromRecording(type);
+									if (!result) {
+										toast({
+											preset: "error",
+											title: "Failed to start recording",
+											message: "Please try again",
+										});
+									}
+								} catch (error) {
+									console.error(error);
+									toast({
+										preset: "error",
+										title: "Failed to start recording",
+										message: "Please try again",
+									});
+								} finally {
+									setIsLoading(false);
+								}
+							}
+						}}
 					/>
 				</View>
 			)}

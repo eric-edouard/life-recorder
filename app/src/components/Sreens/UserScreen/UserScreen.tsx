@@ -4,6 +4,7 @@ import { RowButton } from "@app/src/components/ui/Buttons/RowButton";
 import { InsetList } from "@app/src/components/ui/Lists/InsetList";
 import { voiceProfilesLabel } from "@app/src/constants/voiceProfilesText";
 import { authClient } from "@app/src/services/authClient";
+import trpc from "@app/src/services/trpc";
 import { userService } from "@app/src/services/userService";
 import { use$ } from "@legendapp/state/react";
 import { useRouter } from "expo-router";
@@ -58,14 +59,14 @@ export const UserScreen = () => {
 					}}
 				/>
 
-				{/* <RowButton
+				<RowButton
 					title="List users"
 					onPress={() => {
-						userService.listUsers().then((users) => {
+						trpc.userList.query().then((users) => {
 							Alert.alert("Users", JSON.stringify(users, null, 2));
 						});
 					}}
-				/> */}
+				/>
 
 				<RowButton
 					title="Logout"

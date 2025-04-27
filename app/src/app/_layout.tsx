@@ -4,16 +4,18 @@ import "../../global.css";
 
 import { ThemeProvider } from "@app/src/contexts/ThemeContext";
 import "@app/src/tasks/locationTask";
+import { prefetch } from "@app/src/utils/prefetch";
 import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
 
-// Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 SplashScreen.setOptions({
 	fade: true,
 });
+
+prefetch();
 
 export default function RootLayout() {
 	const [loaded] = useFonts({

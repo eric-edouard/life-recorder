@@ -2,9 +2,10 @@ import { backendUrl } from "@app/src/constants/backendUrl";
 import trpc from "@app/src/services/trpc";
 import type { InferQueryOutput } from "@app/src/types/trpcs";
 import { observable } from "@legendapp/state";
-import type { VoiceProfileType } from "@shared/sharedTypes";
+import { SupportedLanguage, type VoiceProfileType } from "@shared/sharedTypes";
+import { btoa } from "react-native-quick-base64";
 import { authClient } from "./authClient";
-
+import { recordAudioDataService } from "./recordAudioDataService";
 type VoiceProfile = InferQueryOutput<"userVoiceProfiles">[number];
 type UserVoiceProfiles = Record<VoiceProfileType, VoiceProfile | null>;
 
@@ -30,6 +31,26 @@ export const userService = (() => {
 			voiceProfiles$.set(
 				findUserVoiceProfiles(await trpc.userVoiceProfiles.query()),
 			);
+		},
+		async startRecordingVoiceProfile() {
+			return recordAudioDataService.startRecording();
+		},
+		async createVoiceProfileFromRecording(type: VoiceProfileType) {
+			const audioFrames = await recordAudioDataService.stopRecording();
+
+			console.log("received audioFrames", audioFrames.length);
+
+			const opusFramesB64 = audioFrames.map((frame) =>
+				btoa(String.fromCharCode(...frame)),
+			);
+
+			console.log("opusFramesB64", opusFramesB64.length);
+
+			return trpc.createVoiceProfile.mutate({
+				language: SupportedLanguage.English,
+				type,
+				opusFramesB64,
+			});
 		},
 		async fetchMe() {
 			const response = await fetch(`${backendUrl}/api/me`, {
