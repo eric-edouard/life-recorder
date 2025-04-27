@@ -1,13 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useAudioPlayer, useAudioPlayerStatus } from "expo-audio";
-import React, { useEffect, useRef } from "react";
-import {
-	Animated,
-	StyleSheet,
-	Text,
-	TouchableOpacity,
-	View,
-} from "react-native";
+import React from "react";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 // Helper function to format time in minutes:seconds
 const formatTime = (timeInSeconds: number) => {
@@ -24,19 +18,9 @@ interface AudioPlayerProps {
 export function AudioPlayer({ fileUrl, title }: AudioPlayerProps) {
 	const player = useAudioPlayer({ uri: fileUrl });
 	const status = useAudioPlayerStatus(player);
-	const progressWidthAnimation = useRef(new Animated.Value(0)).current;
 
 	const formattedCurrentTime = formatTime(status.currentTime);
 	const formattedDuration = formatTime(status.duration);
-
-	useEffect(() => {
-		// Animate progress when currentTime changes
-		Animated.timing(progressWidthAnimation, {
-			toValue: calculateProgressWidth(),
-			duration: 250,
-			useNativeDriver: false, // width cannot use native driver
-		}).start();
-	}, [status.currentTime, status.duration]);
 
 	const handlePlayPause = () => {
 		if (status.playing) {
@@ -56,15 +40,8 @@ export function AudioPlayer({ fileUrl, title }: AudioPlayerProps) {
 
 	const calculateProgressWidth = () => {
 		if (status.duration === 0) return 0;
-		return status.currentTime / status.duration;
+		return (status.currentTime / status.duration) * 100;
 	};
-
-	// Calculate width percentage for progress bar
-	const widthPercent = progressWidthAnimation.interpolate({
-		inputRange: [0, 1],
-		outputRange: ["0%", "100%"],
-		extrapolate: "clamp",
-	});
 
 	return (
 		<View style={styles.container}>
@@ -72,7 +49,9 @@ export function AudioPlayer({ fileUrl, title }: AudioPlayerProps) {
 
 			<View style={styles.progressContainer}>
 				<View style={styles.progressBar}>
-					<Animated.View style={[styles.progress, { width: widthPercent }]} />
+					<View
+						style={[styles.progress, { width: `${calculateProgressWidth()}%` }]}
+					/>
 				</View>
 				<View style={styles.timeContainer}>
 					<Text style={styles.timeText}>{formattedCurrentTime}</Text>
@@ -138,7 +117,6 @@ const styles = StyleSheet.create({
 		backgroundColor: "#E0E0E0",
 		borderRadius: 4,
 		overflow: "hidden",
-		position: "relative",
 	},
 	progress: {
 		height: "100%",
