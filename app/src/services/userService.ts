@@ -1,5 +1,5 @@
 import { backendUrl } from "@app/src/constants/backendUrl";
-import trpc from "@app/src/services/trpc";
+import { trpcClient } from "@app/src/services/trpc";
 import type { InferQueryOutput } from "@app/src/types/trpcs";
 import { observable } from "@legendapp/state";
 import { SupportedLanguage, type VoiceProfileType } from "@shared/sharedTypes";
@@ -29,7 +29,7 @@ export const userService = (() => {
 		voiceProfiles$,
 		async fetchCurrentUserVoiceProfiles() {
 			voiceProfiles$.set(
-				findUserVoiceProfiles(await trpc.userVoiceProfiles.query()),
+				findUserVoiceProfiles(await trpcClient.userVoiceProfiles.query()),
 			);
 		},
 		async startRecordingVoiceProfile() {
@@ -46,7 +46,7 @@ export const userService = (() => {
 
 			console.log("opusFramesB64", opusFramesB64.length);
 
-			return trpc.createVoiceProfile.mutate({
+			return trpcClient.createVoiceProfile.mutate({
 				language: SupportedLanguage.English,
 				type,
 				opusFramesB64,
