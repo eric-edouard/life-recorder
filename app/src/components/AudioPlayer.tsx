@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useAudioPlayer, useAudioPlayerStatus } from "expo-audio";
-import React from "react";
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import React, { useEffect, useRef } from "react";
+import { Animated, Text, TouchableOpacity, View } from "react-native";
 
 // Helper function to format time in minutes:seconds
 const formatTime = (timeInSeconds: number) => {
@@ -18,9 +18,19 @@ interface AudioPlayerProps {
 export function AudioPlayer({ fileUrl, title }: AudioPlayerProps) {
 	const player = useAudioPlayer({ uri: fileUrl });
 	const status = useAudioPlayerStatus(player);
+	const progressWidthAnimation = useRef(new Animated.Value(0)).current;
 
 	const formattedCurrentTime = formatTime(status.currentTime);
 	const formattedDuration = formatTime(status.duration);
+
+	useEffect(() => {
+		// Animate progress when currentTime changes
+		Animated.timing(progressWidthAnimation, {
+			toValue: calculateProgressWidth(),
+			duration: 250,
+			useNativeDriver: false, // width cannot use native driver
+		}).start();
+	}, [status.currentTime, status.duration]);
 
 	const handlePlayPause = () => {
 		if (status.playing) {
@@ -40,37 +50,48 @@ export function AudioPlayer({ fileUrl, title }: AudioPlayerProps) {
 
 	const calculateProgressWidth = () => {
 		if (status.duration === 0) return 0;
-		return (status.currentTime / status.duration) * 100;
+		return status.currentTime / status.duration;
 	};
 
-	return (
-		<View style={styles.container}>
-			<Text style={styles.title}>{title}</Text>
+	// Calculate width percentage for progress bar
+	const widthPercent = progressWidthAnimation.interpolate({
+		inputRange: [0, 1],
+		outputRange: ["0%", "100%"],
+		extrapolate: "clamp",
+	});
 
-			<View style={styles.progressContainer}>
-				<View style={styles.progressBar}>
-					<View
-						style={[styles.progress, { width: `${calculateProgressWidth()}%` }]}
+	return (
+		<View className="w-full bg-system-background rounded-3xl p-4 shadow-sm">
+			<Text className="text-lg font-semibold text-label mb-4 text-center">
+				{title}
+			</Text>
+
+			<View className="mb-4">
+				<View className="h-2 bg-secondary-system-fill rounded-full overflow-hidden relative">
+					<Animated.View
+						className="h-full bg-blue rounded-full"
+						style={{ width: widthPercent }}
 					/>
 				</View>
-				<View style={styles.timeContainer}>
-					<Text style={styles.timeText}>{formattedCurrentTime}</Text>
-					<Text style={styles.timeText}>{formattedDuration}</Text>
+				<View className="flex-row justify-between mt-1.5">
+					<Text className="text-xs text-secondary-label">
+						{formattedCurrentTime}
+					</Text>
+					<Text className="text-xs text-secondary-label">
+						{formattedDuration}
+					</Text>
 				</View>
 			</View>
 
-			<View style={styles.controls}>
-				<TouchableOpacity
-					onPress={handleSeekBackward}
-					style={styles.controlButton}
-				>
+			<View className="flex-row justify-between items-center">
+				<TouchableOpacity onPress={handleSeekBackward} className="items-center">
 					<Ionicons name="play-back" size={24} color="#333" />
-					<Text style={styles.controlText}>-10s</Text>
+					<Text className="text-xs text-secondary-label mt-1">-10s</Text>
 				</TouchableOpacity>
 
 				<TouchableOpacity
 					onPress={handlePlayPause}
-					style={styles.playPauseButton}
+					className="bg-blue w-16 h-16 rounded-full justify-center items-center"
 				>
 					<Ionicons
 						name={status.playing ? "pause" : "play"}
@@ -79,78 +100,11 @@ export function AudioPlayer({ fileUrl, title }: AudioPlayerProps) {
 					/>
 				</TouchableOpacity>
 
-				<TouchableOpacity
-					onPress={handleSeekForward}
-					style={styles.controlButton}
-				>
+				<TouchableOpacity onPress={handleSeekForward} className="items-center">
 					<Ionicons name="play-forward" size={24} color="#333" />
-					<Text style={styles.controlText}>+10s</Text>
+					<Text className="text-xs text-secondary-label mt-1">+10s</Text>
 				</TouchableOpacity>
 			</View>
 		</View>
 	);
 }
-
-const styles = StyleSheet.create({
-	container: {
-		backgroundColor: "#fff",
-		borderRadius: 12,
-		padding: 16,
-		shadowColor: "#000",
-		shadowOffset: { width: 0, height: 2 },
-		shadowOpacity: 0.1,
-		shadowRadius: 4,
-		elevation: 2,
-		width: "100%",
-	},
-	title: {
-		fontSize: 18,
-		fontWeight: "600",
-		marginBottom: 16,
-		textAlign: "center",
-	},
-	progressContainer: {
-		marginBottom: 16,
-	},
-	progressBar: {
-		height: 8,
-		backgroundColor: "#E0E0E0",
-		borderRadius: 4,
-		overflow: "hidden",
-	},
-	progress: {
-		height: "100%",
-		backgroundColor: "#3D7DFF",
-		borderRadius: 4,
-	},
-	timeContainer: {
-		flexDirection: "row",
-		justifyContent: "space-between",
-		marginTop: 6,
-	},
-	timeText: {
-		fontSize: 12,
-		color: "#666",
-	},
-	controls: {
-		flexDirection: "row",
-		justifyContent: "space-between",
-		alignItems: "center",
-	},
-	controlButton: {
-		alignItems: "center",
-	},
-	controlText: {
-		fontSize: 12,
-		marginTop: 4,
-		color: "#666",
-	},
-	playPauseButton: {
-		backgroundColor: "#3D7DFF",
-		width: 64,
-		height: 64,
-		borderRadius: 32,
-		justifyContent: "center",
-		alignItems: "center",
-	},
-});

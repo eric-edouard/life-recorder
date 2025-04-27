@@ -60,6 +60,7 @@ export default function RootLayout() {
 						name="modals/voice-profile"
 						options={{
 							presentation: "modal",
+							title: "Voice Profile",
 						}}
 					/>
 					<Stack.Screen name="+not-found" />
