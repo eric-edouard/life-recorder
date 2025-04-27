@@ -11,42 +11,43 @@ import { useRouter } from "expo-router";
 import { SymbolView } from "expo-symbols";
 import { Alert, ScrollView, View } from "react-native";
 
+type VoiceProfileType = "normal" | "low" | "high";
+
+const VoiceProfileRow = ({
+	type,
+	hasProfile,
+	hideBorder,
+}: {
+	type: VoiceProfileType;
+	hasProfile: boolean;
+	hideBorder?: boolean;
+}) => {
+	const router = useRouter();
+
+	return (
+		<InsetList.Row
+			title={`${voiceProfilesLabel[type]} pitch`}
+			detail={!hasProfile ? "Record" : ""}
+			accessory={hasProfile ? <SymbolView name="info.circle" /> : null}
+			hideBorder={hideBorder}
+			onPress={() => {
+				hasProfile
+					? router.push(`/modals/voice-profile?type=${type}`)
+					: router.push(`/record-voice-profile?type=${type}`);
+			}}
+		/>
+	);
+};
+
 export const UserScreen = () => {
 	const voiceProfiles = use$(userService.voiceProfiles$);
 	const router = useRouter();
 	return (
 		<ScrollView className="flex-1 px-5 pt-10">
 			<InsetList headerText="Voice Profiles" className="mb-5">
-				<InsetList.Row
-					title={`${voiceProfilesLabel.normal} pitch`}
-					detail={!voiceProfiles.normal ? "Record" : ""}
-					accessory={
-						voiceProfiles.normal ? <SymbolView name="info.circle" /> : null
-					}
-					onPress={() => {
-						router.push("/record-voice-profile?type=normal");
-					}}
-				/>
-				<InsetList.Row
-					title={`${voiceProfilesLabel.low} pitch`}
-					detail={!voiceProfiles.low ? "Record" : ""}
-					accessory={
-						voiceProfiles.low ? <SymbolView name="info.circle" /> : null
-					}
-					onPress={() => {
-						router.push("/record-voice-profile?type=low");
-					}}
-				/>
-				<InsetList.Row
-					title={`${voiceProfilesLabel.high} pitch`}
-					detail={!voiceProfiles.high ? "Record" : ""}
-					accessory={
-						voiceProfiles.high ? <SymbolView name="info.circle" /> : null
-					}
-					onPress={() => {
-						router.push("/record-voice-profile?type=high");
-					}}
-				/>
+				<VoiceProfileRow type="normal" hasProfile={!!voiceProfiles.normal} />
+				<VoiceProfileRow type="low" hasProfile={!!voiceProfiles.low} />
+				<VoiceProfileRow type="high" hasProfile={!!voiceProfiles.high} />
 			</InsetList>
 			<View className="flex-1 gap-5">
 				{/* TESTING BUTTONS */}

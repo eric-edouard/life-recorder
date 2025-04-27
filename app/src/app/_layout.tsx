@@ -53,7 +53,12 @@ export default function RootLayout() {
 						animation: "none",
 					}}
 				/>
-
+				<Stack.Screen
+					name="modals/voice-profile"
+					options={{
+						presentation: "modal",
+					}}
+				/>
 				<Stack.Screen name="+not-found" />
 				<Stack.Screen
 					name="user"
