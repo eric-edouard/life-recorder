@@ -1,10 +1,12 @@
 import { backendUrl } from "@app/src/constants/backendUrl";
 import { authClient } from "@app/src/services/authClient";
+import { queryClient } from "@app/src/services/reactQuery";
 import type { AppRouter } from "@backend/src/index";
 import { createTRPCClient, httpBatchLink } from "@trpc/client";
+import { createTRPCOptionsProxy } from "@trpc/tanstack-react-query";
 import SuperJSON from "superjson";
 
-const trpc = createTRPCClient<AppRouter>({
+export const trpcClient = createTRPCClient<AppRouter>({
 	links: [
 		httpBatchLink({
 			url: `${backendUrl}/trpc`,
@@ -21,4 +23,7 @@ const trpc = createTRPCClient<AppRouter>({
 	],
 });
 
-export default trpc;
+export const trpcQuery = createTRPCOptionsProxy<AppRouter>({
+	client: trpcClient,
+	queryClient,
+});
