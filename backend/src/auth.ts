@@ -1,15 +1,15 @@
 import { expo } from "@better-auth/expo";
-import { betterAuth } from "better-auth";
+import { type BetterAuthPlugin, betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { createAuthMiddleware } from "better-auth/api";
-import { db } from "./db/db";
+import { db } from "./db/db.js";
 import {
 	accountsTable,
 	sessionsTable,
 	speakersTable,
 	usersTable,
 	verificationsTable,
-} from "./db/schema";
+} from "./db/schema.js";
 
 export const auth = betterAuth({
 	database: drizzleAdapter(db, {
@@ -24,7 +24,7 @@ export const auth = betterAuth({
 	emailAndPassword: {
 		enabled: true,
 	},
-	plugins: [expo()],
+	plugins: [expo() as unknown as BetterAuthPlugin],
 	trustedOrigins: ["life-recorder://"],
 	hooks: {
 		after: createAuthMiddleware(async (ctx) => {

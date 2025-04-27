@@ -1,16 +1,16 @@
-import fs from "node:fs";
-import { db } from "@backend/src/db/db";
-import { utterancesTable } from "@backend/src/db/schema";
-import { createAndSaveTranscript } from "@backend/src/services/processSpeechService/createAndSaveTranscript";
-import { saveAudioToGCS } from "@backend/src/services/processSpeechService/saveAudioToGcs";
-import { findMatchingVoiceProfile } from "@backend/src/services/processSpeechService/utils/findMatchingVoiceProfile";
-import { getSpeakerEmbeddingFromBuffer } from "@backend/src/services/processSpeechService/utils/getSpeakerEmbeddingFromBuffer";
-import { insertNewVoiceProfile } from "@backend/src/services/processSpeechService/utils/insertNewVoiceProfile";
-import type { Utterance } from "@backend/src/types/deepgram";
-import { convertFloat32ArrayToWavBuffer } from "@backend/src/utils/audio/audioUtils";
-import { getWavBufferDuration } from "@backend/src/utils/audio/getWavBufferDuration";
-import { generateReadableUUID } from "@backend/src/utils/generateReadableUUID";
+import { db } from "@backend/src/db/db.js";
+import { utterancesTable } from "@backend/src/db/schema.js";
+import { createAndSaveTranscript } from "@backend/src/services/processSpeechService/createAndSaveTranscript.js";
+import { saveAudioToGCS } from "@backend/src/services/processSpeechService/saveAudioToGcs.js";
+import { findMatchingVoiceProfile } from "@backend/src/services/processSpeechService/utils/findMatchingVoiceProfile.js";
+import { getSpeakerEmbeddingFromBuffer } from "@backend/src/services/processSpeechService/utils/getSpeakerEmbeddingFromBuffer.js";
+import { insertNewVoiceProfile } from "@backend/src/services/processSpeechService/utils/insertNewVoiceProfile.js";
+import type { Utterance } from "@backend/src/types/deepgram.js";
+import { convertFloat32ArrayToWavBuffer } from "@backend/src/utils/audio/audioUtils.js";
+import { getWavBufferDuration } from "@backend/src/utils/audio/getWavBufferDuration.js";
+import { generateReadableUUID } from "@backend/src/utils/generateReadableUUID.js";
 import { inArray } from "drizzle-orm";
+import fs from "node:fs";
 
 const DEBUG = true;
 export const processFinalizedSpeechChunk = async (

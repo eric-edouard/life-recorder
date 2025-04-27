@@ -1,4 +1,4 @@
-import { generateReadableUUID } from "@backend/src/utils/generateReadableUUID";
+import { generateReadableUUID } from "@backend/src/utils/generateReadableUUID.js";
 
 export function generateUtteranceId(
 	recordingStartTimestamp: number, // timestamp in ms

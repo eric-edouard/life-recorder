@@ -1,18 +1,18 @@
-import type { Server as HttpServer } from "node:http";
-import { forwardLogsMiddleware } from "@backend/src/services/socketMiddlewares/forwardLogsMiddleware";
-import { handleAudioMiddleware } from "@backend/src/services/socketMiddlewares/handleAudioMiddleware";
-import { getUtterances } from "@backend/src/services/utterancesService";
+import { forwardLogsMiddleware } from "@backend/src/services/socketMiddlewares/forwardLogsMiddleware.js";
+import { handleAudioMiddleware } from "@backend/src/services/socketMiddlewares/handleAudioMiddleware.js";
+import { getUtterances } from "@backend/src/services/utterancesService.js";
 import type {
 	InterServerEvents,
 	SocketData,
 	SocketMiddleware,
 	TypedServer,
 	TypedSocket,
-} from "@backend/src/types/socket-events";
+} from "@backend/src/types/socket-events.js";
 import type {
 	ClientToServerEvents,
 	ServerToClientEvents,
-} from "@shared/socketEvents";
+} from "@shared/socketEvents.js";
+import type { Server as HttpServer } from "node:http";
 import { Server as SocketIOServer } from "socket.io";
 
 // The middlewares that will be applied to all socket connections

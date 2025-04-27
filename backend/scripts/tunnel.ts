@@ -1,13 +1,18 @@
+import * as ngrok from "ngrok";
 import * as fs from "node:fs";
 import * as path from "node:path";
-import * as ngrok from "ngrok";
+import { dirname } from "node:path";
+import { fileURLToPath } from "node:url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 (async (): Promise<void> => {
 	console.log("🌍 Starting ngrok ...");
 
 	const url: string = await ngrok.connect({
 		addr: 3000,
-		authtoken: process.env.NGROK_AUTH_TOKEN, // Optional if you've already authed locally
+		authtoken: process.env.NGROK_AUTH_TOKEN,
 	});
 
 	console.log("🌍 ngrok URL:", url);
@@ -22,6 +27,4 @@ export const backendUrl = "${url}";\n`;
 
 	fs.writeFileSync(frontendPath, content, "utf8");
 	console.log("✅ Updated localBackendUrl.ts");
-
-	// Keep the tunnel open
 })();

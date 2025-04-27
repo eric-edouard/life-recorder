@@ -1,6 +1,9 @@
-import { spawn } from "node:child_process";
-import { CHANNELS, SAMPLE_RATE } from "@backend/src/constants/audioConstants";
+import {
+	CHANNELS,
+	SAMPLE_RATE,
+} from "@backend/src/constants/audioConstants.js";
 import ffmpeg from "ffmpeg-static";
+import { spawn } from "node:child_process";
 
 /**
  * Convert WAV buffer to MP3 using ffmpeg
@@ -28,7 +31,7 @@ export async function convertWavToMp3(wavBuffer: Buffer): Promise<Buffer> {
 			"pipe:1", // output to stdout
 		];
 
-		const proc = spawn(ffmpeg, ffmpegArgs, {
+		const proc = spawn(ffmpeg as unknown as string, ffmpegArgs, {
 			stdio: ["pipe", "pipe", "pipe"],
 		});
 

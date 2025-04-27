@@ -1,7 +1,7 @@
 import type {
 	ClientToServerEvents,
 	ServerToClientEvents,
-} from "@shared/socketEvents";
+} from "@shared/socketEvents.js";
 import type { Server, Socket } from "socket.io";
 
 export interface InterServerEvents {

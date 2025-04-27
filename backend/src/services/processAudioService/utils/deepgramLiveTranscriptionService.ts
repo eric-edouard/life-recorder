@@ -1,11 +1,14 @@
-import { CHANNELS, SAMPLE_RATE } from "@backend/src/constants/audioConstants";
-import type { DeepgramLiveTranscriptionResult } from "@backend/src/types/deepgramLiveTranscriptionResult";
+import {
+	CHANNELS,
+	SAMPLE_RATE,
+} from "@backend/src/constants/audioConstants.js";
+import type { DeepgramLiveTranscriptionResult } from "@backend/src/types/deepgramLiveTranscriptionResult.js";
 import {
 	type DeepgramError,
 	type ListenLiveClient,
 	LiveTranscriptionEvents,
 } from "@deepgram/sdk";
-import { deepgram } from "../../external/deepgram";
+import { deepgram } from "../../external/deepgram.js";
 
 export const deepgramLiveTranscriptionService = (() => {
 	let liveTranscription: ListenLiveClient | null = null;

@@ -1,19 +1,22 @@
 import "dotenv/config";
 
-import { auth } from "@backend/src/auth";
-import { CHANNELS, SAMPLE_RATE } from "@backend/src/constants/audioConstants";
-import { db } from "@backend/src/db/db";
-import { speakersTable, voiceProfilesTable } from "@backend/src/db/schema";
-import { processFinalizedSpeechChunkForVoiceProfile } from "@backend/src/services/processSpeechService/processFinalizedSpeechChunkForVoiceProfile";
-import { socketService } from "@backend/src/services/socketService";
+import { auth } from "@backend/src/auth.js";
+import {
+	CHANNELS,
+	SAMPLE_RATE,
+} from "@backend/src/constants/audioConstants.js";
+import { db } from "@backend/src/db/db.js";
+import { speakersTable, voiceProfilesTable } from "@backend/src/db/schema.js";
+import { processFinalizedSpeechChunkForVoiceProfile } from "@backend/src/services/processSpeechService/processFinalizedSpeechChunkForVoiceProfile.js";
+import { socketService } from "@backend/src/services/socketService.js";
 import {
 	type Context,
 	publicProcedure,
 	router,
-} from "@backend/src/services/trpc";
-import { convertPcmToFloat32Array } from "@backend/src/utils/audio/audioUtils";
-import { OpusEncoder } from "@discordjs/opus";
-import { SupportedLanguage, VoiceProfileType } from "@shared/sharedTypes";
+} from "@backend/src/services/trpc.js";
+import { convertPcmToFloat32Array } from "@backend/src/utils/audio/audioUtils.js";
+import { OpusEncoder } from "@backend/src/utils/opusEncoder.js";
+import { SupportedLanguage, VoiceProfileType } from "@shared/sharedTypes.js";
 import { TRPCError } from "@trpc/server";
 import * as trpcExpress from "@trpc/server/adapters/express";
 import { fromNodeHeaders, toNodeHandler } from "better-auth/node";

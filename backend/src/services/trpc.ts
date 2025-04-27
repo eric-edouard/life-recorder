@@ -1,7 +1,7 @@
-import type { auth } from "@backend/src/auth";
+import type { auth } from "@backend/src/auth.js";
 import { initTRPC } from "@trpc/server";
-import type SuperJSON from "superjson";
-const superjson: SuperJSON = require("fix-esm").require("superjson");
+import SuperJSON from "superjson";
+// const superjson: SuperJSON = require("fix-esm").require("superjson");
 
 // Define context type
 export interface Context {
@@ -13,7 +13,7 @@ export interface Context {
  * Should be done only once per backend!
  */
 const t = initTRPC.context<Context>().create({
-	transformer: superjson,
+	transformer: SuperJSON,
 });
 
 /**

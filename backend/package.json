@@ -3,6 +3,7 @@
 	"version": "1.0.0",
 	"description": "Backend API server",
 	"main": "dist/backend/src/index.js",
+	"type": "module",
 	"scripts": {
 		"postinstall": "npm run install-resemblyzer",
 		"build": "tsc && tsc-alias && mkdir -p dist/backend/resemblyzer && cp resemblyzer/*.py resemblyzer/requirements.txt dist/backend/resemblyzer/",

@@ -1,5 +1,5 @@
-import { db } from "@backend/src/db/db";
-import { voiceProfilesTable } from "@backend/src/db/schema";
+import { db } from "@backend/src/db/db.js";
+import { voiceProfilesTable } from "@backend/src/db/schema.js";
 import { cosineDistance, desc, gt, sql } from "drizzle-orm";
 
 export const findMatchingVoiceProfile = async (

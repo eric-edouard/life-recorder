@@ -1,5 +1,9 @@
-import { CHANNELS, SAMPLE_RATE } from "@backend/src/constants/audioConstants";
-import { WaveFile } from "wavefile";
+import {
+	CHANNELS,
+	SAMPLE_RATE,
+} from "@backend/src/constants/audioConstants.js";
+import wavefile from "wavefile";
+const { WaveFile } = wavefile;
 
 /**
  * Converts a PCM buffer to a Float32Array for audio processing

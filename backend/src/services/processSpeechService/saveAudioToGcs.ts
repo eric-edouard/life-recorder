@@ -1,9 +1,9 @@
-import { SAVE_RECORDINGS_TO_GCS_ENABLED } from "@backend/src/constants/features";
+import { SAVE_RECORDINGS_TO_GCS_ENABLED } from "@backend/src/constants/features.js";
 import {
 	RECORDINGS_FOLDER,
 	gcsBucket,
-} from "@backend/src/services/external/gcs";
-import { convertWavToMp3 } from "@backend/src/utils/audio/convertWavToMp3";
+} from "@backend/src/services/external/gcs.js";
+import { convertWavToMp3 } from "@backend/src/utils/audio/convertWavToMp3.js";
 
 /**
  * Upload an audio file to Google Cloud Storage

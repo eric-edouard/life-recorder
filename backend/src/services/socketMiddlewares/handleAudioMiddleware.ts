@@ -1,5 +1,5 @@
-import { processAudioService } from "@backend/src/services/processAudioService/processAudioService";
-import type { SocketMiddleware } from "@backend/src/types/socket-events";
+import { processAudioService } from "@backend/src/services/processAudioService/processAudioService.js";
+import type { SocketMiddleware } from "@backend/src/types/socket-events.js";
 
 /**
  * Socket middleware for handling audio-related socket events

@@ -1,8 +1,8 @@
-import type { GetUtterancesResponse } from "@shared/socketEvents";
+import type { GetUtterancesResponse } from "@shared/socketEvents.js";
 
-import { db } from "@backend/src/db/db";
-import { utterancesTable } from "@backend/src/db/schema";
-import type { GetUtterancesParams } from "@shared/socketEvents";
+import { db } from "@backend/src/db/db.js";
+import { utterancesTable } from "@backend/src/db/schema.js";
+import type { GetUtterancesParams } from "@shared/socketEvents.js";
 import { and, between } from "drizzle-orm";
 
 export const getUtterances = async (

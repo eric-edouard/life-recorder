@@ -1,10 +1,13 @@
-import { CHANNELS, SAMPLE_RATE } from "@backend/src/constants/audioConstants";
-import { db } from "@backend/src/db/db";
-import { utterancesTable } from "@backend/src/db/schema";
-import { deepgram } from "@backend/src/services/external/deepgram";
-import { socketService } from "@backend/src/services/socketService";
-import type { Utterance } from "@backend/src/types/deepgram";
-import { generateUtteranceId } from "@backend/src/utils/generateUtteranceId";
+import {
+	CHANNELS,
+	SAMPLE_RATE,
+} from "@backend/src/constants/audioConstants.js";
+import { db } from "@backend/src/db/db.js";
+import { utterancesTable } from "@backend/src/db/schema.js";
+import { deepgram } from "@backend/src/services/external/deepgram.js";
+import { socketService } from "@backend/src/services/socketService.js";
+import type { Utterance } from "@backend/src/types/deepgram.js";
+import { generateUtteranceId } from "@backend/src/utils/generateUtteranceId.js";
 import type { SyncPrerecordedResponse } from "@deepgram/sdk";
 
 const transcribeWithDeepgram = async (

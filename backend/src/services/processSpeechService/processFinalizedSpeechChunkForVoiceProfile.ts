@@ -1,12 +1,12 @@
-import { db } from "@backend/src/db/db";
-import { speakersTable, voiceProfilesTable } from "@backend/src/db/schema";
-import { saveAudioToGCS } from "@backend/src/services/processSpeechService/saveAudioToGcs";
-import { getSpeakerEmbeddingFromBuffer } from "@backend/src/services/processSpeechService/utils/getSpeakerEmbeddingFromBuffer";
-import { convertFloat32ArrayToWavBuffer } from "@backend/src/utils/audio/audioUtils";
-import { getWavBufferDuration } from "@backend/src/utils/audio/getWavBufferDuration";
-import { generateReadableUUID } from "@backend/src/utils/generateReadableUUID";
-import { now } from "@backend/src/utils/now";
-import type { VoiceProfileType } from "@shared/sharedTypes";
+import { db } from "@backend/src/db/db.js";
+import { speakersTable, voiceProfilesTable } from "@backend/src/db/schema.js";
+import { saveAudioToGCS } from "@backend/src/services/processSpeechService/saveAudioToGcs.js";
+import { getSpeakerEmbeddingFromBuffer } from "@backend/src/services/processSpeechService/utils/getSpeakerEmbeddingFromBuffer.js";
+import { convertFloat32ArrayToWavBuffer } from "@backend/src/utils/audio/audioUtils.js";
+import { getWavBufferDuration } from "@backend/src/utils/audio/getWavBufferDuration.js";
+import { generateReadableUUID } from "@backend/src/utils/generateReadableUUID.js";
+import { now } from "@backend/src/utils/now.js";
+import type { VoiceProfileType } from "@shared/sharedTypes.js";
 import { eq } from "drizzle-orm";
 import fs from "node:fs";
 
