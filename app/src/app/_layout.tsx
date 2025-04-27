@@ -59,8 +59,9 @@ export default function RootLayout() {
 					<Stack.Screen
 						name="modals/voice-profile"
 						options={{
-							presentation: "modal",
-							title: "Voice Profile",
+							presentation: "containedTransparentModal",
+							headerShown: false,
+							animation: "none",
 						}}
 					/>
 					<Stack.Screen name="+not-found" />

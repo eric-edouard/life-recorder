@@ -27,9 +27,8 @@ export const VoiceProfileScreen = () => {
 		: { date: new Date(), durationSeconds: undefined };
 
 	return (
-		<View className="flex-1 ">
+		<View>
 			{isLoading && <ActivityIndicator size="large" color="#0000ff" />}
-			{/* {fileUrl && <Text>File URL: {fileUrl}</Text>} */}
 			{fileUrl && (
 				<AudioPlayer
 					title={`${voiceProfilesLabel[type]} Voice`}

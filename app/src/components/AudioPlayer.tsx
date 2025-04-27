@@ -1,5 +1,4 @@
 import { BouncyPressable } from "@app/src/components/ui/Buttons/BouncyPressable";
-import { useCustomColor } from "@app/src/contexts/ThemeContext";
 import { rgbaToHex } from "@app/src/utils/rgbaToHex";
 import { format } from "date-fns";
 import { useAudioPlayer, useAudioPlayerStatus } from "expo-audio";
@@ -33,8 +32,6 @@ export function AudioPlayer({
 
 	const formattedCurrentTime = formatTime(status.currentTime);
 	const formattedDuration = formatTime(status.duration);
-
-	const accentColor = useCustomColor("--accent");
 	const fillColor = useColor("label");
 
 	const handlePlayPause = () => {
@@ -59,22 +56,32 @@ export function AudioPlayer({
 	};
 
 	return (
-		<View className="w-full flex-1 flex rounded-3xl p-4 shadow-sm">
-			<View className="mb-4 px-5 flex-1 h-full flex justify-center">
-				<Text className="text-3xl font-semibold text-label text-center">
-					{title}
-				</Text>
-				<View className="flex-row justify-center gap-2 items-center">
-					<Text className="mt-3 text-md font-bold text-secondary-label text-center">
-						{format(date, "dd MMM yyyy")}
+		<View className="w-full flex-1 flex rounded-3xl shadow-sm">
+			<View className="px-5 flex-1 h-full flex justify-center my-20 flex-row items-center">
+				<View className="w-7" />
+				<View className="flex-1">
+					<Text className="text-3xl font-semibold text-label text-center mb-1">
+						{title}
 					</Text>
-					<Text className="mt-3 text-md text-secondary-label text-center">
-						{formatTime(duration)}
-					</Text>
+					<View className="flex-row justify-center gap-2 items-center">
+						<Text className="text-md font-bold text-secondary-label text-center">
+							{format(date, "dd MMM yyyy")}
+						</Text>
+						<Text className="text-md text-secondary-label text-center">
+							{formatTime(duration)}
+						</Text>
+					</View>
+				</View>
+				<View className="w-7 ">
+					<SymbolView
+						name="ellipsis.circle"
+						size={24}
+						tintColor={rgbaToHex(fillColor)}
+					/>
 				</View>
 			</View>
 
-			<View className="mb-safe-offset-20 left-0 right-0 px-5">
+			<View className="mb-safe-offset-20 left-0 right-0 px-5 ">
 				<View className="px-3 mb-14">
 					<View className="h-2 bg-secondary-system-fill rounded-full overflow-hidden relative">
 						<View
