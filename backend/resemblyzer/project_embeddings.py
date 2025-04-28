@@ -50,21 +50,35 @@ def main():
         embeddings_2d = pca.fit_transform(embeddings)
 
     # Create a scatter plot
-    plt.figure(figsize=(12, 10))
+    plt.figure(figsize=(14, 12))
+    
+    # Extract speaker names for coloring (first part of each label before any space or parenthesis)
+    speaker_names = []
+    for label in labels:
+        name = label.split(' ')[0].split('(')[0].split('-')[0]
+        speaker_names.append(name)
+    
+    # Get unique speaker names for coloring
+    unique_speakers = list(set(speaker_names))
+    color_indices = [unique_speakers.index(name) for name in speaker_names]
     
     # Plot points
-    scatter = plt.scatter(embeddings_2d[:, 0], embeddings_2d[:, 1], c=np.arange(len(embeddings)), 
-               cmap='viridis', s=100, alpha=0.8)
+    scatter = plt.scatter(embeddings_2d[:, 0], embeddings_2d[:, 1], 
+                          c=color_indices, cmap='tab20', s=100, alpha=0.8)
     
     # Add labels for each point
-    for i, (label, id_val) in enumerate(zip(labels, ids)):
+    for i, label in enumerate(labels):
         plt.annotate(label,
                     (embeddings_2d[i, 0], embeddings_2d[i, 1]),
                     textcoords="offset points",
-                    xytext=(0, 5),
-                    ha='center')
+                    xytext=(0, 7),
+                    ha='center',
+                    fontsize=9)
     
-    plt.colorbar(scatter, label='Speaker Index')
+    # Add a legend with unique speaker names
+    handles, _ = scatter.legend_elements(prop="colors")
+    plt.legend(handles, unique_speakers, title="Speakers", loc="upper right")
+    
     plt.title('Voice Profile Embeddings Projection')
     plt.xlabel('Dimension 1')
     plt.ylabel('Dimension 2')

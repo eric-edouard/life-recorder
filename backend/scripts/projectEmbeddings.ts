@@ -1,9 +1,10 @@
 import "dotenv/config";
+import { eq } from "drizzle-orm";
 import { spawn } from "node:child_process";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { db } from "../src/db/db";
-import { voiceProfilesTable } from "../src/db/schema";
+import { speakersTable, voiceProfilesTable } from "../src/db/schema";
 
 /**
  * Script to fetch all voice profile embeddings and project them into 2D space
@@ -18,6 +19,7 @@ async function main() {
 			id: voiceProfilesTable.id,
 			embedding: voiceProfilesTable.embedding,
 			speakerId: voiceProfilesTable.speakerId,
+			createdAt: voiceProfilesTable.createdAt,
 			type: voiceProfilesTable.type,
 		})
 		.from(voiceProfilesTable);
@@ -29,13 +31,35 @@ async function main() {
 		return;
 	}
 
+	// Get speaker names for each profile
+	const speakerMap = new Map();
+	for (const profile of voiceProfiles) {
+		if (profile.speakerId && !speakerMap.has(profile.speakerId)) {
+			const speaker = await db
+				.select({ name: speakersTable.name })
+				.from(speakersTable)
+				.where(eq(speakersTable.id, profile.speakerId))
+				.limit(1);
+
+			if (speaker.length > 0) {
+				speakerMap.set(profile.speakerId, speaker[0].name);
+			}
+		}
+	}
+
 	// Prepare data for Python script
 	const data = {
 		embeddings: voiceProfiles.map((profile) => profile.embedding),
-		labels: voiceProfiles.map(
-			(profile) =>
-				`${profile.speakerId}${profile.type ? `-${profile.type}` : ""}`,
-		),
+		labels: voiceProfiles.map((profile) => {
+			const speakerName = profile.speakerId
+				? speakerMap.get(profile.speakerId) || profile.speakerId
+				: "unknown";
+			const dateTime = profile.createdAt
+				? new Date(profile.createdAt).toLocaleString()
+				: "";
+			const type = profile.type ? `-${profile.type}` : "";
+			return `${speakerName}${type} (${dateTime})`;
+		}),
 		ids: voiceProfiles.map((profile) => profile.id),
 	};
 
