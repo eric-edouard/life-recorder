@@ -4,7 +4,6 @@ import { RowButton } from "@app/src/components/ui/Buttons/RowButton";
 import { InsetList } from "@app/src/components/ui/Lists/InsetList";
 import { voiceProfilesLabel } from "@app/src/constants/voiceProfilesText";
 import { authClient } from "@app/src/services/authClient";
-import { trpcClient } from "@app/src/services/trpc";
 import { userService } from "@app/src/services/userService";
 import { use$ } from "@legendapp/state/react";
 import { useRouter } from "expo-router";
@@ -56,15 +55,6 @@ export const UserScreen = () => {
 					onPress={() => {
 						userService.fetchMe().then((user) => {
 							Alert.alert("User", JSON.stringify(user, null, 2));
-						});
-					}}
-				/>
-
-				<RowButton
-					title="List users"
-					onPress={() => {
-						trpcClient.userList.query().then((users) => {
-							Alert.alert("Users", JSON.stringify(users, null, 2));
 						});
 					}}
 				/>

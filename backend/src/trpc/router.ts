@@ -1,6 +1,10 @@
 import { CHANNELS, SAMPLE_RATE } from "@backend/src/constants/audioConstants";
 import { db } from "@backend/src/db/db";
-import { speakersTable, voiceProfilesTable } from "@backend/src/db/schema";
+import {
+	speakersTable,
+	utterancesTable,
+	voiceProfilesTable,
+} from "@backend/src/db/schema";
 import { processFinalizedSpeechChunkForVoiceProfile } from "@backend/src/services/processSpeechService/processFinalizedSpeechChunkForVoiceProfile";
 import { protectedProcedure, router } from "@backend/src/services/trpc";
 import { convertPcmToFloat32Array } from "@backend/src/utils/audio/audioUtils";
@@ -11,11 +15,24 @@ import { and, eq } from "drizzle-orm";
 import z from "zod";
 
 export const appRouter = router({
-	userList: protectedProcedure.query(async ({ ctx }) => {
-		const users = await db.query.usersTable.findMany();
-		console.log(users);
-		console.log("Session:", ctx.session);
-		return users;
+	utterances: protectedProcedure.query(async ({ ctx }) => {
+		const userId = ctx.session.user.id;
+		const utterances = await db
+			.select({
+				utterance: utterancesTable,
+				speaker: speakersTable,
+			})
+			.from(utterancesTable)
+			.leftJoin(
+				voiceProfilesTable,
+				eq(utterancesTable.voiceProfileId, voiceProfilesTable.id),
+			)
+			.leftJoin(
+				speakersTable,
+				eq(voiceProfilesTable.speakerId, speakersTable.id),
+			)
+			.where(eq(utterancesTable.userId, userId));
+		return utterances;
 	}),
 	fileUrl: protectedProcedure.input(z.string()).query(async ({ input }) => {
 		return await getSignedUrl(input);
