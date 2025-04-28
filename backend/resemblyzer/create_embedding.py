@@ -2,7 +2,6 @@
 import sys
 import json
 from resemblyzer import VoiceEncoder, preprocess_wav
-import numpy as np
 from pathlib import Path
 
 def main():
