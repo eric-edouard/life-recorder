@@ -17,6 +17,7 @@
 		"db:generate": "drizzle-kit generate",
 		"db:migrate": "drizzle-kit migrate",
 		"db:studio": "drizzle-kit studio",
+		"db:run-migration": "tsx src/scripts/run-migration.ts",
 		"embeddings:project": "npm run install-resemblyzer && tsx scripts/projectEmbeddings.ts",
 		"test": "echo \"Error: no test specified\" && exit 1"
 	},

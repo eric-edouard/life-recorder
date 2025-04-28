@@ -113,5 +113,7 @@ export const utterancesTable = pgTable("utterances", {
 	words: jsonb("words").notNull(),
 	languages: text("languages").array(),
 	createdAt: timestamp("created_at").defaultNow().notNull(),
-	userId: text("user_id").references(() => usersTable.id),
+	userId: text("user_id")
+		.notNull()
+		.references(() => usersTable.id),
 });

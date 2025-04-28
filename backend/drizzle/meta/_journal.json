@@ -1,5 +1,13 @@
 {
-	"version": "7",
-	"dialect": "postgresql",
-	"entries": []
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1745840611605,
+      "tag": "0000_add_not_null_to_utterances_user_id",
+      "breakpoints": true
+    }
+  ]
 }
