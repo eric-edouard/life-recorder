@@ -36,40 +36,44 @@ export const RecordVoiceProfileScreen = () => {
 	const disabled = !bluetoothEnabled || !deviceConnected;
 
 	return (
-		<>
+		<View className="flex-1 items-center justify-center ">
 			{disabled && (
-				<View className="flex-1 items-center justify-center pb-20">
-					{!bluetoothEnabled && <BluetoothStatusInfo />}
-					{!deviceConnected && (
-						<IconAndText
-							title="Device not connected"
-							message="Please connect to a device to record a voice profile"
-							icon={
-								<SymbolView
-									name="microphone"
-									type="hierarchical"
-									tintColor={"gray"}
-									size={64}
-								/>
-							}
-						/>
+				<View className="flex-1 items-center justify-center ">
+					{!bluetoothEnabled ? (
+						<BluetoothStatusInfo />
+					) : (
+						!deviceConnected && (
+							<IconAndText
+								className="mt-8 mx-5 mb-safe-offset-5"
+								title="Device not connected"
+								message="Please connect to a device to record a voice profile"
+								icon={
+									<SymbolView
+										name="microphone"
+										type="hierarchical"
+										tintColor={"gray"}
+										size={64}
+									/>
+								}
+							/>
+						)
 					)}
 				</View>
 			)}
 
 			{!disabled && (
-				<View className="flex-1 items-start w-full gap-8 pt-12 ">
+				<View className="flex-1 items-start w-full gap-8 pt-12 p-5 mb-10">
 					<Text className="text-label  text-3xl font-bold mx-2 ">
 						{voiceProfilesLabel[type]} pitch
 					</Text>
-					<Text className="text-label text-3xl leading-relaxed font-light mx-2 ">
+					<Text className="text-label text-2xl leading-relaxed font-light mx-2 ">
 						{voiceProfilesText[type]}
 					</Text>
 					{isLoading && <ActivityIndicator size={"large"} color={"black"} />}
 				</View>
 			)}
 			{!disabled && (
-				<View className="absolute bottom-safe-offset-20 w-full flex justify-center items-center">
+				<View className=" mb-safe-offset-16 w-full flex justify-center items-center">
 					<Button
 						icon={
 							<SymbolView
@@ -87,7 +91,7 @@ export const RecordVoiceProfileScreen = () => {
 								// }}
 							/>
 						}
-						color="secondarySystemBackground"
+						color="tertiarySystemBackground"
 						textColor="secondaryLabel"
 						title={isRecording ? "Stop recording" : "Start recording"}
 						onPress={async () => {
@@ -120,6 +124,6 @@ export const RecordVoiceProfileScreen = () => {
 					/>
 				</View>
 			)}
-		</>
+		</View>
 	);
 };

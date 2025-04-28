@@ -18,7 +18,7 @@ export function BluetoothStatusInfo() {
 	if (permissionStatus !== "granted") {
 		return (
 			<IconAndText
-				className="m-5 mb-safe-offset-2"
+				className="mt-8 mx-5 mb-safe-offset-5"
 				icon={<Bluetooth size={56} color={gray2} />}
 				title="Missing Permissions"
 				message={
@@ -49,7 +49,7 @@ export function BluetoothStatusInfo() {
 	if (bluetoothState !== State.PoweredOn) {
 		return (
 			<IconAndText
-				className="m-5 mb-safe-offset-5"
+				className="mt-8 mx-5 mb-safe-offset-5"
 				icon={<BluetoothOff size={56} color={gray2} />}
 				title="Bluetooth is off"
 				message="Please enable Bluetooth to connect to your device"
