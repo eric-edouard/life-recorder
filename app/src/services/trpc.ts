@@ -2,12 +2,16 @@ import { backendUrl } from "@app/src/constants/backendUrl";
 import { authClient } from "@app/src/services/authClient";
 import { queryClient } from "@app/src/services/reactQuery";
 import type { AppRouter } from "@backend/src/index";
-import { createTRPCClient, httpBatchLink } from "@trpc/client";
+import { createTRPCClient, httpBatchLink, loggerLink } from "@trpc/client";
 import { createTRPCOptionsProxy } from "@trpc/tanstack-react-query";
 import SuperJSON from "superjson";
 
 export const trpcClient = createTRPCClient<AppRouter>({
 	links: [
+		loggerLink({
+			enabled: (opts) => process.env.NODE_ENV === "development",
+			colorMode: "ansi",
+		}),
 		httpBatchLink({
 			url: `${backendUrl}/trpc`,
 			headers: () => {
