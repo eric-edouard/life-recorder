@@ -24,6 +24,7 @@ export function AudioPlayer({
 }: AudioPlayerProps) {
 	const player = useAudioPlayer({ uri: fileUrl });
 	const status = useAudioPlayerStatus(player);
+	console.log("🚀 ~ status:", status);
 
 	const formattedCurrentTime = formatTime(status.currentTime);
 	const formattedDuration = formatTime(status.duration);
@@ -130,7 +131,11 @@ export function AudioPlayer({
 					</BouncyPressable>
 					<BouncyPressable speed="fast" onPress={handlePlayPause}>
 						<SymbolView
-							name={status.playing ? "pause.fill" : "play.fill"}
+							name={
+								status.playing && !status.didJustFinish
+									? "pause.fill"
+									: "play.fill"
+							}
 							size={46}
 							tintColor={rgbaToHex(fillColor)}
 						/>
