@@ -1,7 +1,6 @@
 import type { auth } from "@backend/src/auth";
-import { initTRPC } from "@trpc/server";
+import { TRPCError, initTRPC } from "@trpc/server";
 import type SuperJSON from "superjson";
-import type { OpenApiMeta } from "trpc-to-openapi";
 const superjson: SuperJSON = require("fix-esm").require("superjson");
 
 // Define context type
@@ -13,7 +12,7 @@ export interface Context {
  * Initialization of tRPC backend
  * Should be done only once per backend!
  */
-const t = initTRPC.context<Context>().meta<OpenApiMeta>().create({
+const t = initTRPC.context<Context>().create({
 	transformer: superjson,
 });
 
@@ -23,3 +22,17 @@ const t = initTRPC.context<Context>().meta<OpenApiMeta>().create({
  */
 export const router = t.router;
 export const publicProcedure = t.procedure;
+
+export const protectedProcedure = t.procedure.use(
+	async function isAuthed(opts) {
+		const { ctx } = opts;
+		if (!ctx.session?.user) {
+			throw new TRPCError({ code: "UNAUTHORIZED" });
+		}
+		return opts.next({
+			ctx: {
+				session: ctx.session,
+			},
+		});
+	},
+);

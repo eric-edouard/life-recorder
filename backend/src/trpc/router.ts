@@ -2,27 +2,25 @@ import { CHANNELS, SAMPLE_RATE } from "@backend/src/constants/audioConstants";
 import { db } from "@backend/src/db/db";
 import { speakersTable, voiceProfilesTable } from "@backend/src/db/schema";
 import { processFinalizedSpeechChunkForVoiceProfile } from "@backend/src/services/processSpeechService/processFinalizedSpeechChunkForVoiceProfile";
-import { publicProcedure, router } from "@backend/src/services/trpc";
+import { protectedProcedure, router } from "@backend/src/services/trpc";
 import { convertPcmToFloat32Array } from "@backend/src/utils/audio/audioUtils";
 import { getSignedUrl } from "@backend/src/utils/gcs/getSignedUrl";
 import { OpusEncoder } from "@discordjs/opus";
 import { SupportedLanguage, VoiceProfileType } from "@shared/sharedTypes";
-import { TRPCError } from "@trpc/server";
 import { and, eq } from "drizzle-orm";
 import z from "zod";
 
 export const appRouter = router({
-	userList: publicProcedure.query(async ({ ctx }) => {
+	userList: protectedProcedure.query(async ({ ctx }) => {
 		const users = await db.query.usersTable.findMany();
 		console.log(users);
 		console.log("Session:", ctx.session);
 		return users;
 	}),
-	fileUrl: publicProcedure.input(z.string()).query(async ({ input }) => {
+	fileUrl: protectedProcedure.input(z.string()).query(async ({ input }) => {
 		return await getSignedUrl(input);
 	}),
-	userVoiceProfiles: publicProcedure.query(async ({ ctx }) => {
-		if (!ctx.session?.user?.id) throw new Error("Not authenticated");
+	userVoiceProfiles: protectedProcedure.query(async ({ ctx }) => {
 		// Find the speaker record for the current user
 		const speaker = await db
 			.select()
@@ -49,18 +47,7 @@ export const appRouter = router({
 			.where(and(eq(voiceProfilesTable.speakerId, speaker.id)));
 		return profiles;
 	}),
-	test: publicProcedure
-		.input(
-			z.object({
-				opusFramesB64: z.string(),
-				type: z.nativeEnum(VoiceProfileType),
-				language: z.nativeEnum(SupportedLanguage),
-			}),
-		)
-		.mutation(async ({ ctx, input }) => {
-			return input;
-		}),
-	createVoiceProfile: publicProcedure
+	createVoiceProfile: protectedProcedure
 		.input(
 			z.object({
 				opusFramesB64: z.array(z.string()),
@@ -69,11 +56,6 @@ export const appRouter = router({
 			}),
 		)
 		.mutation(async ({ ctx, input }) => {
-			if (!ctx.session?.user?.id)
-				throw new TRPCError({
-					code: "UNAUTHORIZED",
-					message: "Not authenticated",
-				});
 			const opusEncoder = new OpusEncoder(SAMPLE_RATE, CHANNELS);
 
 			const float32Array = input.opusFramesB64.map((frame) =>
@@ -103,14 +85,9 @@ export const appRouter = router({
 				language: input.language,
 			});
 		}),
-	deleteVoiceProfile: publicProcedure
+	deleteVoiceProfile: protectedProcedure
 		.input(z.nativeEnum(VoiceProfileType))
 		.mutation(async ({ ctx, input }) => {
-			if (!ctx.session?.user?.id)
-				throw new TRPCError({
-					code: "UNAUTHORIZED",
-					message: "Not authenticated",
-				});
 			return await db
 				.delete(voiceProfilesTable)
 				.where(
