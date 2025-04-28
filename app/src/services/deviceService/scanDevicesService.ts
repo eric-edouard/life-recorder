@@ -5,8 +5,6 @@ import { observable } from "@legendapp/state";
 import { Linking } from "react-native";
 import { type Device, State, type Subscription } from "react-native-ble-plx";
 
-// const MY_DEVICE = "D65CD59F-3E9A-4BF0-016E-141BB478E1B8";
-
 const COMPATIBLE_SERVICES = [OMI_SERVICE_UUID];
 
 export const scanDevicesService = (() => {
