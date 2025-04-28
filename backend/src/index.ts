@@ -67,24 +67,19 @@ export const appRouter = router({
 		.input(
 			z.object({
 				opusFramesB64: z.string(),
-				type: z.enum(VoiceProfileType),
-				language: z.enum(SupportedLanguage),
+				type: z.nativeEnum(VoiceProfileType),
+				language: z.nativeEnum(SupportedLanguage),
 			}),
 		)
 		.mutation(async ({ ctx, input }) => {
 			return input;
 		}),
-	getAllVoiceProfiles: publicProcedure
-		.meta({ openapi: { method: "GET", path: "/voice-profiles" } })
-		.query(async ({ ctx }) => {
-			return await db.query.voiceProfilesTable.findMany();
-		}),
 	createVoiceProfile: publicProcedure
 		.input(
 			z.object({
 				opusFramesB64: z.array(z.string()),
-				type: z.enum(VoiceProfileType),
-				language: z.enum(SupportedLanguage),
+				type: z.nativeEnum(VoiceProfileType),
+				language: z.nativeEnum(SupportedLanguage),
 			}),
 		)
 		.mutation(async ({ ctx, input }) => {
@@ -123,7 +118,7 @@ export const appRouter = router({
 			});
 		}),
 	deleteVoiceProfile: publicProcedure
-		.input(z.enum(VoiceProfileType))
+		.input(z.nativeEnum(VoiceProfileType))
 		.mutation(async ({ ctx, input }) => {
 			if (!ctx.session?.user?.id)
 				throw new TRPCError({
@@ -168,12 +163,13 @@ routes.get("/health", (req: Request, res: Response) => {
 	res.status(200).json({ status: "ok" });
 });
 // Get current user
-app.get("/api/me", async (req, res) => {
+routes.get("/api/me", async (req, res) => {
 	const session = await auth.api.getSession({
 		headers: fromNodeHeaders(req.headers),
 	});
 	return res.json(session);
 });
+
 app.use(routes);
 
 /**
