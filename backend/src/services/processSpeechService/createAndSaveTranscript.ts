@@ -2,8 +2,8 @@ import { CHANNELS, SAMPLE_RATE } from "@backend/src/constants/audioConstants";
 import { db } from "@backend/src/db/db";
 import { utterancesTable } from "@backend/src/db/schema";
 import { deepgram } from "@backend/src/services/external/deepgram";
-import { socketService } from "@backend/src/services/socketService";
 import type { Utterance } from "@backend/src/types/deepgram";
+import type { TypedSocket } from "@backend/src/types/socket-events";
 import { generateUtteranceId } from "@backend/src/utils/generateUtteranceId";
 import type { SyncPrerecordedResponse } from "@deepgram/sdk";
 
@@ -39,16 +39,16 @@ const transcribeWithDeepgram = async (
 };
 
 export const createAndSaveTranscript = async (
-	userId: string,
+	socket: TypedSocket,
 	fileId: string,
 	audioBuffer: Buffer,
 	startTime: number,
 ): Promise<Utterance[] | undefined> => {
 	console.log("Creating and saving transcript...");
 
-	socketService.socket?.emit("processingAudioUpdate", "2-transcribing");
+	socket.emit("processingAudioUpdate", "2-transcribing");
 	const result = await transcribeWithDeepgram(audioBuffer);
-	socketService.socket?.emit("processingAudioUpdate", "3-done");
+	socket.emit("processingAudioUpdate", "3-done");
 
 	const utterances = result?.results.utterances;
 	const transcript = result?.results.channels[0].alternatives[0].transcript;
@@ -61,7 +61,7 @@ export const createAndSaveTranscript = async (
 		return;
 	}
 
-	socketService.socket?.emit("liveTranscript", {
+	socket.emit("liveTranscript", {
 		startTime,
 		transcript,
 		utteranceId: fileId,
@@ -81,7 +81,7 @@ export const createAndSaveTranscript = async (
 				nonIdentifiedDeepgramSpeaker: u.speaker!,
 				// Deepgram does return this in  the data but it's not typed by their SDK
 				languages: (u as Utterance & { languages: string[] }).languages,
-				userId,
+				userId: socket.data.auth.user.id,
 			}),
 		),
 	);

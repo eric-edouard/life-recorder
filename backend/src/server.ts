@@ -1,8 +1,8 @@
 import { auth } from "@backend/src/auth";
 import { routes } from "@backend/src/routes";
-import { socketService } from "@backend/src/services/socketService";
+import { socketService } from "@backend/src/services/socketService/socketService";
+import { appRouter } from "@backend/src/trpc/appRouter";
 import { createContext } from "@backend/src/trpc/context";
-import { appRouter } from "@backend/src/trpc/router";
 import * as trpcExpress from "@trpc/server/adapters/express";
 import { toNodeHandler } from "better-auth/node";
 import cors from "cors";

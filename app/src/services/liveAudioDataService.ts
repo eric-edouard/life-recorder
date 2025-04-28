@@ -19,11 +19,7 @@ export const liveAudioDataService = (() => {
 	 * Send collected audio packets via socket.io
 	 */
 	const sendAudioPackets = async (): Promise<void> => {
-		if (
-			audioPacketsBuffer.length === 0 ||
-			!socketService.isConnected() ||
-			isSending
-		) {
+		if (audioPacketsBuffer.length === 0 || isSending) {
 			return;
 		}
 
@@ -46,19 +42,19 @@ export const liveAudioDataService = (() => {
 					packets: packets, // Send array of packets instead of concatenated buffer
 					timestamp: Date.now(),
 				},
-				(success: boolean) => {
-					if (success) {
-						savedAudioCount += packetsToSend.length;
-						console.log(
-							`Successfully sent ${packetsToSend.length} audio packets`,
-						);
-					} else {
-						console.error("Failed to send audio data, will retry later");
-						// Re-add the packets to the buffer for retry
-						audioPacketsBuffer = [...packetsToSend, ...audioPacketsBuffer];
-					}
-					isSending = false;
-				},
+				// (success: boolean) => {
+				// 	if (success) {
+				// 		savedAudioCount += packetsToSend.length;
+				// 		console.log(
+				// 			`Successfully sent ${packetsToSend.length} audio packets`,
+				// 		);
+				// 	} else {
+				// 		console.error("Failed to send audio data, will retry later");
+				// 		// Re-add the packets to the buffer for retry
+				// 		audioPacketsBuffer = [...packetsToSend, ...audioPacketsBuffer];
+				// 	}
+				// 	isSending = false;
+				// },
 			);
 		} catch (error) {
 			console.error("Error sending audio data:", error);

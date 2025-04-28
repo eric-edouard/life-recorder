@@ -23,7 +23,6 @@ export type LiveTranscriptSpeaker = {
 };
 
 export interface ServerToClientEvents {
-	serverLog: (logData: ServerLog) => void;
 	speechStarted: () => void;
 	speechStopped: () => void;
 	processingAudioUpdate: (phase: ProcessingAudioPhase) => void;
@@ -33,36 +32,6 @@ export interface ServerToClientEvents {
 	) => void;
 }
 
-export type GetUtterancesParams = {
-	from: number;
-	to: number;
-};
-
-export type GetUtterancesResponse = {
-	utterances: {
-		id: string;
-		transcript: string;
-		createdAt: number;
-		nonIdentifiedSpeaker: number | null;
-		speaker: string | null;
-		words: {
-			word: string;
-			start: number;
-			end: number;
-		}[];
-	}[];
-};
-
 export type ClientToServerEvents = {
-	audioData: (
-		data: { packets: number[][]; timestamp: number },
-		callback: (success: boolean) => void,
-	) => void;
-	startLogForwarding: (callback: (success: boolean) => void) => void;
-	stopLogForwarding: (callback: (success: boolean) => void) => void;
-	ping: (nb: number) => void;
-	getUtterances: (
-		params: GetUtterancesParams,
-		callback: (response: GetUtterancesResponse, error: string | null) => void,
-	) => void;
+	audioData: (data: { packets: number[][]; timestamp: number }) => void;
 };

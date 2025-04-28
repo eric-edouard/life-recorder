@@ -1,3 +1,4 @@
+import type { createProcessAudioService } from "@backend/src/services/processAudioService/processAudioService";
 import type {
 	ClientToServerEvents,
 	ServerToClientEvents,
@@ -14,6 +15,7 @@ export interface SocketData {
 		session: Session;
 		user: User;
 	};
+	processAudioService?: ReturnType<typeof createProcessAudioService>;
 }
 
 export type TypedSocket = Socket<

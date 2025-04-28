@@ -33,18 +33,20 @@ export const socketService = (() => {
 		});
 
 		socket.on("connect", () => {
-			console.log("Connected to socket server using WebSockets");
+			console.log(
+				"[socketService] Connected to socket server using WebSockets",
+			);
 			connectionState$.set(SocketConnectionState.CONNECTED);
 
 			// Log the active transport method
 			if (socket) {
 				const transport = socket.io.engine.transport.name;
-				console.log(`Active transport method: ${transport}`);
+				console.log(`[socketService] Active transport method: ${transport}`);
 			}
 		});
 
 		socket.on("disconnect", () => {
-			console.log("Disconnected from socket server");
+			console.log("[socketService] Disconnected from socket server");
 			connectionState$.set(SocketConnectionState.DISCONNECTED);
 		});
 	};

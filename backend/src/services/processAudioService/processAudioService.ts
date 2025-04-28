@@ -2,7 +2,7 @@ import { CHANNELS, SAMPLE_RATE } from "@backend/src/constants/audioConstants";
 import { DEEPGRAM_LIVE_TRANSCRIPTION_ENABLED } from "@backend/src/constants/features";
 import { deepgramLiveTranscriptionService } from "@backend/src/services/processAudioService/utils/deepgramLiveTranscriptionService";
 import { processFinalizedSpeechChunk } from "@backend/src/services/processSpeechService/processFinalizedSpeechChunk";
-import { socketService } from "@backend/src/services/socketService";
+import type { TypedSocket } from "@backend/src/types/socket-events";
 import { convertPcmToFloat32Array } from "@backend/src/utils/audio/audioUtils";
 import { OpusEncoder } from "@discordjs/opus";
 import { RealTimeVAD } from "@ericedouard/vad-node-realtime";
@@ -10,7 +10,7 @@ import { RealTimeVAD } from "@ericedouard/vad-node-realtime";
 /**
  * Audio processor for real-time voice activity detection
  */
-export const createProcessAudioService = (userId: string) => {
+export const createProcessAudioService = (socket: TypedSocket) => {
 	let streamVAD: RealTimeVAD | null = null;
 	let speechStartTime = 0;
 	let lastTimestamp = 0;
@@ -24,23 +24,23 @@ export const createProcessAudioService = (userId: string) => {
 	 * Initialize VAD
 	 */
 	async function initVAD(): Promise<void> {
-		console.log("[VAD] initializing vad");
+		console.log("[processAudioService] initializing VAD");
 		streamVAD = await RealTimeVAD.new({
 			model: "v5",
 			onSpeechStart: () => {
-				console.log("Speech started");
+				console.log("[processAudioService] Speech started");
 				speechStartTime = lastTimestamp;
 				isSpeechActive = true;
 
-				socketService.socket?.emit("speechStarted");
+				socket.emit("speechStarted");
 
 				if (DEEPGRAM_LIVE_TRANSCRIPTION_ENABLED) {
 					deepgramLiveTranscriptionService.startTranscription();
 				}
 			},
 			onVADMisfire: () => {
-				socketService.socket?.emit("speechStopped");
-				console.log("VAD misfire");
+				socket.emit("speechStopped");
+				console.log("[processAudioService] VAD misfire");
 			},
 
 			onSpeechEnd: async (audio: Float32Array) => {
@@ -48,18 +48,14 @@ export const createProcessAudioService = (userId: string) => {
 					`Speech ended, audio duration: ${audio.length / SAMPLE_RATE} seconds`,
 				);
 				isSpeechActive = false;
-				socketService.socket?.emit("speechStopped");
+				socket.emit("speechStopped");
 
 				if (DEEPGRAM_LIVE_TRANSCRIPTION_ENABLED) {
 					deepgramLiveTranscriptionService.stopTranscription();
 				}
 
-				socketService.socket?.emit(
-					"processingAudioUpdate",
-					"1-converting-to-wav",
-				);
-				// TODO: get user id from socket
-				processFinalizedSpeechChunk(userId, audio, speechStartTime);
+				socket.emit("processingAudioUpdate", "1-converting-to-wav");
+				processFinalizedSpeechChunk(socket, audio, speechStartTime);
 			},
 			preSpeechPadFrames: 4,
 			minSpeechFrames: 3,
@@ -67,7 +63,7 @@ export const createProcessAudioService = (userId: string) => {
 		});
 
 		streamVAD.start();
-		console.log("[VAD] vad initialized");
+		console.log("[processAudioService] VAD initialized");
 	}
 
 	/**
@@ -104,7 +100,10 @@ export const createProcessAudioService = (userId: string) => {
 				}
 			}
 		} catch (error) {
-			console.error("Error processing audio packet:", error);
+			console.error(
+				"[processAudioService] Error processing audio packet:",
+				error,
+			);
 		}
 	};
 

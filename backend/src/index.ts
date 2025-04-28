@@ -10,5 +10,5 @@ server.listen(process.env.PORT || 3000, () => {
 });
 
 // Export routers for client use
-export { appRouter } from "@backend/src/trpc/router";
-export type { AppRouter } from "@backend/src/trpc/router";
+export { appRouter } from "@backend/src/trpc/appRouter";
+export type { AppRouter } from "@backend/src/trpc/appRouter";

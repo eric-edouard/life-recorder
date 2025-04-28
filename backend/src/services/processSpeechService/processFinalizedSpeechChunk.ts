@@ -5,8 +5,8 @@ import { saveAudioToGCS } from "@backend/src/services/processSpeechService/saveA
 import { findMatchingVoiceProfile } from "@backend/src/services/processSpeechService/utils/findMatchingVoiceProfile";
 import { getSpeakerEmbeddingFromBuffer } from "@backend/src/services/processSpeechService/utils/getSpeakerEmbeddingFromBuffer";
 import { insertNewVoiceProfile } from "@backend/src/services/processSpeechService/utils/insertNewVoiceProfile";
-import { socketService } from "@backend/src/services/socketService";
 import type { Utterance } from "@backend/src/types/deepgram";
+import type { TypedSocket } from "@backend/src/types/socket-events";
 import { convertFloat32ArrayToWavBuffer } from "@backend/src/utils/audio/audioUtils";
 import { getWavBufferDuration } from "@backend/src/utils/audio/getWavBufferDuration";
 import { generateReadableUUID } from "@backend/src/utils/generateReadableUUID";
@@ -15,7 +15,7 @@ import fs from "node:fs";
 
 const DEBUG = true;
 export const processFinalizedSpeechChunk = async (
-	userId: string,
+	socket: TypedSocket,
 	audio: Float32Array,
 	speechStartTime: number,
 ) => {
@@ -30,7 +30,7 @@ export const processFinalizedSpeechChunk = async (
 
 	// 2. Transcribe and store utterances
 	const utterances = await createAndSaveTranscript(
-		userId,
+		socket,
 		fileId,
 		wavBuffer,
 		speechStartTime,
@@ -82,7 +82,7 @@ export const processFinalizedSpeechChunk = async (
 					.from(speakersTable)
 					.where(eq(speakersTable.id, matched.speakerId));
 				const speaker = speakers[0];
-				socketService.socket?.emit("liveTranscriptSpeakerIdentified", {
+				socket.emit("liveTranscriptSpeakerIdentified", {
 					utteranceId: fileId,
 					speakerId: voiceProfileId,
 					speakerName: speaker?.name,
@@ -90,7 +90,7 @@ export const processFinalizedSpeechChunk = async (
 				});
 			}
 		} else {
-			socketService.socket?.emit("liveTranscriptSpeakerIdentified", {
+			socket.emit("liveTranscriptSpeakerIdentified", {
 				utteranceId: fileId,
 				matched: false,
 			});
