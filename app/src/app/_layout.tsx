@@ -64,17 +64,19 @@ export default function RootLayout() {
 							animation: "none",
 						}}
 					/>
+					<Stack.Screen
+						name="modals/record-voice-profile"
+						options={{
+							presentation: "containedTransparentModal",
+							headerShown: false,
+							animation: "none",
+						}}
+					/>
 					<Stack.Screen name="+not-found" />
 					<Stack.Screen
 						name="user"
 						options={{
 							headerTitle: "User",
-						}}
-					/>
-					<Stack.Screen
-						name="record-voice-profile"
-						options={{
-							headerTitle: "Record voice profile",
 						}}
 					/>
 				</Stack>

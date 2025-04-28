@@ -4,7 +4,7 @@ import { RowButton } from "@app/src/components/ui/Buttons/RowButton";
 import { InsetList } from "@app/src/components/ui/Lists/InsetList";
 import { voiceProfilesLabel } from "@app/src/constants/voiceProfilesText";
 import { authClient } from "@app/src/services/authClient";
-import trpc from "@app/src/services/trpc";
+import { trpcClient } from "@app/src/services/trpc";
 import { userService } from "@app/src/services/userService";
 import { use$ } from "@legendapp/state/react";
 import { useRouter } from "expo-router";
@@ -33,7 +33,7 @@ const VoiceProfileRow = ({
 			onPress={() => {
 				hasProfile
 					? router.push(`/modals/voice-profile?type=${type}`)
-					: router.push(`/record-voice-profile?type=${type}`);
+					: router.push(`/modals/record-voice-profile?type=${type}`);
 			}}
 		/>
 	);
@@ -63,7 +63,7 @@ export const UserScreen = () => {
 				<RowButton
 					title="List users"
 					onPress={() => {
-						trpc.userList.query().then((users) => {
+						trpcClient.userList.query().then((users) => {
 							Alert.alert("Users", JSON.stringify(users, null, 2));
 						});
 					}}
