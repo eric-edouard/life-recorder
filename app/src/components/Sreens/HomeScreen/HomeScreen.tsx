@@ -3,6 +3,7 @@ import { Image, TouchableOpacity, View } from "react-native";
 
 import { DeviceStatusButton } from "@app/src/components/DeviceStatusButton";
 import { ScreenScrollView } from "@app/src/components/ScreenScrollView/ScreenScrollView";
+import { LiveTranscriptsWidget } from "@app/src/components/Sreens/HomeScreen/LiveTranscriptsWidget";
 import { Text } from "@app/src/components/ui/Text";
 import { deviceService } from "@app/src/services/deviceService/deviceService";
 import { use$ } from "@legendapp/state/react";
@@ -21,30 +22,31 @@ export const HomeScreen = () => {
 	return (
 		<ScreenScrollView.Container title="Life Recorder" className="pt-5">
 			<View className="px-lg flex items-start gap-3">
-				<ScreenScrollView.Title>
-					<View className=" w-full flex-row flex-1 justify-between items-end mb-4">
-						<View className="flex items-start gap-3">
-							<DeviceStatusButton />
+				<View className=" w-full flex-row flex-1 justify-between items-end mb-4">
+					<View className="flex items-start gap-3">
+						<DeviceStatusButton />
+						<ScreenScrollView.Title>
 							<View className=" flex-row justify-between items-center w-full">
 								<Text className="text-4xl font-extrabold text-label">
 									Life Recorder
 								</Text>
 							</View>
-						</View>
-						<TouchableOpacity
-							onPress={() => {
-								router.push("/user");
-							}}
-						>
-							<Image
-								source={{
-									uri: "https://ng0taspu2n.ufs.sh/f/U6TZ1KbvcdmTGQifCw2ULDWxUQCZ2BsqE7bVmwygO0Y3f6vz",
-								}}
-								className="w-10 h-10 rounded-full mb-1"
-							/>
-						</TouchableOpacity>
+						</ScreenScrollView.Title>
 					</View>
-				</ScreenScrollView.Title>
+					<TouchableOpacity
+						onPress={() => {
+							router.push("/user");
+						}}
+					>
+						<Image
+							source={{
+								uri: "https://ng0taspu2n.ufs.sh/f/U6TZ1KbvcdmTGQifCw2ULDWxUQCZ2BsqE7bVmwygO0Y3f6vz",
+							}}
+							className="w-10 h-10 rounded-full mb-1"
+						/>
+					</TouchableOpacity>
+				</View>
+				<LiveTranscriptsWidget />
 			</View>
 		</ScreenScrollView.Container>
 	);

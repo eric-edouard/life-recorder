@@ -10,10 +10,10 @@ export const AnimatedScreenTitle = ({
 		<Animated.View
 			style={{
 				width: "100%",
-				opacity: scrollAnimatedValue.interpolate({
-					inputRange: [-100, 10, 15],
-					outputRange: [1, 1, 0],
-				}),
+				// opacity: scrollAnimatedValue.interpolate({
+				// 	inputRange: [-100, 10, 15],
+				// 	outputRange: [1, 1, 0],
+				// }),
 				transform: [
 					{
 						scale: scrollAnimatedValue.interpolate({
