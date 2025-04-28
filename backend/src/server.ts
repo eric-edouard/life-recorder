@@ -12,9 +12,8 @@ import { createServer } from "node:http";
 export const createAppServer = () => {
 	const app = express();
 
-	// Middleware
-	app.use(cors());
-	app.use(express.json());
+	// BetterAuth
+	app.all("/api/auth/*splat", toNodeHandler(auth));
 
 	// Routes
 	app.use(routes);
@@ -28,8 +27,9 @@ export const createAppServer = () => {
 		}),
 	);
 
-	// BetterAuth
-	app.all("/api/auth/*splat", toNodeHandler(auth));
+	// Middleware
+	app.use(cors());
+	app.use(express.json());
 
 	// Create HTTP server
 	const server = createServer(app);
