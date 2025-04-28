@@ -1,4 +1,4 @@
-import type { Server as HttpServer } from "node:http";
+import { auth } from "@backend/src/auth";
 import { forwardLogsMiddleware } from "@backend/src/services/socketMiddlewares/forwardLogsMiddleware";
 import { handleAudioMiddleware } from "@backend/src/services/socketMiddlewares/handleAudioMiddleware";
 import { getUtterances } from "@backend/src/services/utterancesService";
@@ -13,8 +13,9 @@ import type {
 	ClientToServerEvents,
 	ServerToClientEvents,
 } from "@shared/socketEvents";
+import { fromNodeHeaders } from "better-auth/node";
+import type { Server as HttpServer } from "node:http";
 import { Server as SocketIOServer } from "socket.io";
-
 // The middlewares that will be applied to all socket connections
 const middlewares: SocketMiddleware[] = [
 	handleAudioMiddleware,
@@ -41,6 +42,27 @@ export const socketService = (() => {
 				methods: ["GET", "POST"],
 			},
 			maxHttpBufferSize: 5 * 1024 * 1024, // 5MB max buffer size for audio data
+		});
+
+		// Authenticate the socket connection
+		io.use(async (socket, next) => {
+			try {
+				const session = await auth.api.getSession({
+					headers: fromNodeHeaders(socket.request.headers),
+				});
+
+				if (!session) {
+					return next(new Error("User not authenticated"));
+				}
+
+				// Attach the session to the socket object for later use
+				socket.data.session = session;
+
+				next();
+			} catch (error) {
+				console.error("Authentication error:", error);
+				next(new Error("Authentication failed"));
+			}
 		});
 
 		io.on("connection", (_socket) => {

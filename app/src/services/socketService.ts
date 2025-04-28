@@ -1,4 +1,5 @@
 import { backendUrl } from "@app/src/constants/backendUrl";
+import { authClient } from "@app/src/services/authClient";
 import type { TypedSocket } from "@app/src/types/socket-events";
 import { observable } from "@legendapp/state";
 import { io } from "socket.io-client";
@@ -26,9 +27,9 @@ export const socketService = (() => {
 
 		socket = io(backendUrl, {
 			transports: ["websocket", "polling"],
-			// auth: {
-			// 	token: clerk.user.get,
-			// },
+			auth: {
+				cookies: authClient.getCookie(),
+			},
 		});
 
 		socket.on("connect", () => {
