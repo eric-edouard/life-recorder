@@ -1,18 +1,13 @@
 import { BouncyPressable } from "@app/src/components/ui/Buttons/BouncyPressable";
+import { formatTime } from "@app/src/utils/formatTime";
 import { rgbaToHex } from "@app/src/utils/rgbaToHex";
-// import { Button, ContextMenu } from "@expo/ui/swift-ui";
+import { Button, ContextMenu } from "@expo/ui/swift-ui";
 import { format } from "date-fns";
 import { useAudioPlayer, useAudioPlayerStatus } from "expo-audio";
 import { SymbolView } from "expo-symbols";
 import React from "react";
 import { Text, View } from "react-native";
 import { useColor } from "react-native-uikit-colors";
-// Helper function to format time in minutes:seconds
-const formatTime = (timeInSeconds: number) => {
-	const minutes = Math.floor(timeInSeconds / 60);
-	const seconds = Math.floor(timeInSeconds % 60);
-	return `${minutes}:${seconds.toString().padStart(2, "0")}`;
-};
 
 interface AudioPlayerProps {
 	fileUrl: string;
@@ -72,34 +67,38 @@ export function AudioPlayer({
 						</Text>
 					</View>
 				</View>
-				<View className="w-7 ">
-					{/* <ContextMenu style={{ width: 150, height: 50 }}>
+				<View className="w-7">
+					<ContextMenu
+						style={{
+							width: 30,
+							height: 30,
+						}}
+					>
 						<ContextMenu.Items>
 							<Button
-								systemImage="person.crop.circle.badge.xmark"
-								onPress={() => console.log("Pressed1")}
-							>
-								Hello
-							</Button>
-							<Button
-								variant="bordered"
-								systemImage="heart"
+								role="destructive"
+								systemImage="trash"
 								onPress={() => console.log("Pressed2")}
 							>
-								I love
+								Delete recording
+							</Button>
+							<Button
+								systemImage="arrow.left.arrow.right"
+								onPress={() => console.log("Pressed1")}
+							>
+								Replace recording
 							</Button>
 						</ContextMenu.Items>
 						<ContextMenu.Trigger>
-							<Button variant="bordered" style={{ width: 150, height: 50 }}>
-								Show Menu
-							</Button>
+							<View className="w-7 h-7 flex justify-center items-center ">
+								<SymbolView
+									name="ellipsis.circle"
+									size={24}
+									tintColor={rgbaToHex(fillColor)}
+								/>
+							</View>
 						</ContextMenu.Trigger>
-					</ContextMenu> */}
-					<SymbolView
-						name="ellipsis.circle"
-						size={24}
-						tintColor={rgbaToHex(fillColor)}
-					/>
+					</ContextMenu>
 				</View>
 			</View>
 

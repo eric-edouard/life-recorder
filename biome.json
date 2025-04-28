@@ -36,6 +36,9 @@
 			},
 			"suspicious": {
 				"noExplicitAny": "warn"
+			},
+			"a11y": {
+				"useValidAriaRole": "off"
 			}
 		}
 	},

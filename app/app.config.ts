@@ -126,7 +126,7 @@ export default ({ config }: ConfigContext) => ({
 			"expo-task-manager",
 			"expo-updates",
 			"expo-video",
-			// "expo-web-browser",
+			"expo-web-browser",
 			[
 				"react-native-ble-plx",
 				{
