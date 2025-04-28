@@ -19,7 +19,9 @@ export type LiveTranscript = {
 
 export type LiveTranscriptSpeaker = {
 	utteranceId: string;
-	speakerId: string | null;
+	speakerId?: string;
+	speakerName?: string;
+	matched: boolean;
 };
 
 export interface ServerToClientEvents {

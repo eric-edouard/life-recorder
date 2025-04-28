@@ -181,11 +181,18 @@ export const deviceService = (() => {
 
 		return audioDataStreamCharacteristic.monitor((error, characteristic) => {
 			if (error) {
-				if (error.message === "Operation was cancelled") {
-					console.log("Audio data stream notification cancelled");
+				if (
+					error.message === "Operation was cancelled" ||
+					error.message.includes("was disconnected")
+				) {
+					console.log(
+						"[deviceService] Audio data stream notification cancelled",
+					);
 					return;
 				}
-				throw new Error("[deviceService] Audio data stream notification error");
+				throw new Error(
+					`[deviceService] Audio data stream notification error: ${error.message}`,
+				);
 			}
 			if (!characteristic?.value) {
 				throw new Error(

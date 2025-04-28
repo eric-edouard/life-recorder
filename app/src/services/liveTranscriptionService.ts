@@ -67,6 +67,36 @@ export const liveTranscriptionService = (() => {
 		);
 	});
 
+	socketService.socket?.on("liveTranscriptSpeakerIdentified", (speaker) => {
+		const foundIndex = transcripts$
+			.peek()
+			.findIndex((t) => t.utteranceId === speaker.utteranceId);
+		if (foundIndex === -1) {
+			return;
+		}
+
+		console.log(
+			"[liveTranscriptionService] liveTranscriptSpeakerIdentified",
+			speaker,
+		);
+
+		transcripts$[foundIndex].speaker.set(
+			speaker.matched
+				? {
+						speakerId: speaker.speakerId as string,
+						speakerName: speaker.speakerName as string,
+						identified: speaker.matched,
+						isLoading: false,
+					}
+				: {
+						speakerId: null,
+						speakerName: null,
+						identified: false,
+						isLoading: false,
+					},
+		);
+	});
+
 	return {
 		isSpeechDetected$,
 		processingAudioPhase$,

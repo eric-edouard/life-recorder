@@ -6,21 +6,23 @@ export const findMatchingVoiceProfile = async (
 	newEmbedding: number[],
 	threshold = 0.75,
 ) => {
-	const similarity = sql<number>`1 - (${cosineDistance(
+	// Define similarity calculation expression
+	const similarityExpression = sql<number>`1 - (${cosineDistance(
 		voiceProfilesTable.embedding,
 		newEmbedding,
-	)})`.as("similarity");
+	)})`;
 
 	const matches = await db
 		.select({
 			id: voiceProfilesTable.id,
 			language: voiceProfilesTable.language,
 			duration: voiceProfilesTable.duration,
-			similarity,
+			similarity: similarityExpression,
+			speakerId: voiceProfilesTable.speakerId,
 		})
 		.from(voiceProfilesTable)
-		.where(gt(similarity, threshold))
-		.orderBy(desc(similarity))
+		.where(gt(similarityExpression, threshold))
+		.orderBy(desc(similarityExpression))
 		.limit(1);
 
 	return matches[0] ?? null;

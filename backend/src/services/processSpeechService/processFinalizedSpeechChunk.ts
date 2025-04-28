@@ -1,16 +1,17 @@
-import fs from "node:fs";
 import { db } from "@backend/src/db/db";
-import { utterancesTable } from "@backend/src/db/schema";
+import { speakersTable, utterancesTable } from "@backend/src/db/schema";
 import { createAndSaveTranscript } from "@backend/src/services/processSpeechService/createAndSaveTranscript";
 import { saveAudioToGCS } from "@backend/src/services/processSpeechService/saveAudioToGcs";
 import { findMatchingVoiceProfile } from "@backend/src/services/processSpeechService/utils/findMatchingVoiceProfile";
 import { getSpeakerEmbeddingFromBuffer } from "@backend/src/services/processSpeechService/utils/getSpeakerEmbeddingFromBuffer";
 import { insertNewVoiceProfile } from "@backend/src/services/processSpeechService/utils/insertNewVoiceProfile";
+import { socketService } from "@backend/src/services/socketService";
 import type { Utterance } from "@backend/src/types/deepgram";
 import { convertFloat32ArrayToWavBuffer } from "@backend/src/utils/audio/audioUtils";
 import { getWavBufferDuration } from "@backend/src/utils/audio/getWavBufferDuration";
 import { generateReadableUUID } from "@backend/src/utils/generateReadableUUID";
-import { inArray } from "drizzle-orm";
+import { eq, inArray } from "drizzle-orm";
+import fs from "node:fs";
 
 const DEBUG = true;
 export const processFinalizedSpeechChunk = async (
@@ -72,7 +73,25 @@ export const processFinalizedSpeechChunk = async (
 		if (matched) {
 			if (DEBUG) console.log("🪲 4 matchedVoiceProfile:", matched);
 			voiceProfileId = matched.id;
+
+			if (matched.speakerId) {
+				const speakers = await db
+					.select()
+					.from(speakersTable)
+					.where(eq(speakersTable.id, matched.speakerId));
+				const speaker = speakers[0];
+				socketService.socket?.emit("liveTranscriptSpeakerIdentified", {
+					utteranceId: fileId,
+					speakerId: voiceProfileId,
+					speakerName: speaker?.name,
+					matched: true,
+				});
+			}
 		} else {
+			socketService.socket?.emit("liveTranscriptSpeakerIdentified", {
+				utteranceId: fileId,
+				matched: false,
+			});
 			// 6. No match → create a new voiceProfile
 			voiceProfileId = await insertNewVoiceProfile({
 				duration: durationMs / 1000,
