@@ -15,7 +15,7 @@ export const HomeScreen = () => {
 		if (!connectedDeviceId) {
 			return;
 		}
-		// audioDataService.startAudioCollection();
+		// liveAudioDataService.startAudioCollection();
 	}, [connectedDeviceId]);
 
 	return (

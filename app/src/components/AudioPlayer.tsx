@@ -32,7 +32,6 @@ export function AudioPlayer({
 }: AudioPlayerProps) {
 	const player = useAudioPlayer({ uri: fileUrl });
 	const status = useAudioPlayerStatus(player);
-	console.log("🚀 ~ status:", status);
 
 	const formattedCurrentTime = formatTime(status.currentTime);
 	const formattedDuration = formatTime(status.duration);

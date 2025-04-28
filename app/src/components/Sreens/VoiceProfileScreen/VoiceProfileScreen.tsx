@@ -20,7 +20,6 @@ export const VoiceProfileScreen = ({
 	closeModal,
 }: VoiceProfileScreenProps) => {
 	const voiceProfile = use$(userService.voiceProfiles$)?.[type];
-	console.log("🚀 ~ VoiceProfileScreen ~ voiceProfile:", voiceProfile);
 
 	const { data: fileUrl, isLoading } = useQuery(
 		trpcQuery.fileUrl.queryOptions(voiceProfile?.fileId!, {
