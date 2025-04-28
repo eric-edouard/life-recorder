@@ -107,6 +107,7 @@ export const RecordVoiceProfileScreen = ({
 								try {
 									const result =
 										await userService.createVoiceProfileFromRecording(type);
+									await userService.fetchCurrentUserVoiceProfiles();
 									closeModal();
 									if (!result) {
 										toast({
