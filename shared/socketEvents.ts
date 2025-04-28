@@ -10,12 +10,27 @@ export type ProcessingAudioPhase =
 	| "1-converting-to-wav"
 	| "2-transcribing"
 	| "3-done";
+
+export type LiveTranscript = {
+	utteranceId: string;
+	transcript: string;
+	startTime: number;
+};
+
+export type LiveTranscriptSpeaker = {
+	utteranceId: string;
+	speakerId: string | null;
+};
+
 export interface ServerToClientEvents {
 	serverLog: (logData: ServerLog) => void;
 	speechStarted: () => void;
 	speechStopped: () => void;
 	processingAudioUpdate: (phase: ProcessingAudioPhase) => void;
-	transcriptReceived: (transcript: string, startTime: number) => void;
+	liveTranscript: (transcript: LiveTranscript) => void;
+	liveTranscriptSpeakerIdentified: (
+		transcriptSpeaker: LiveTranscriptSpeaker,
+	) => void;
 }
 
 export type GetUtterancesParams = {

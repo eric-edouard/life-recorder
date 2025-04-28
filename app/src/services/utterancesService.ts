@@ -13,7 +13,6 @@ export const utterancesService = (() => {
 		utterances$,
 		fetchUtterances: async (from: number, to: number) => {
 			loading$.set(true);
-
 			socketService
 				.getSocket()
 				.emit("getUtterances", { from, to }, (data: GetUtterancesResponse) => {

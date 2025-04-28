@@ -60,7 +60,11 @@ export const createAndSaveTranscript = async (
 		return;
 	}
 
-	socketService.socket?.emit("transcriptReceived", transcript, startTime);
+	socketService.socket?.emit("liveTranscript", {
+		startTime,
+		transcript,
+		utteranceId: fileId,
+	});
 
 	await Promise.all(
 		utterances.map((u) =>
