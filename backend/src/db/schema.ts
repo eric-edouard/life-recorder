@@ -99,21 +99,32 @@ export const voiceProfilesTable = pgTable(
 	],
 );
 
-export const utterancesTable = pgTable("utterances", {
-	id: text("id").primaryKey(),
-	fileId: text("file_id").notNull(),
-	start: real("start").notNull(),
-	end: real("end").notNull(),
-	transcript: text("transcript").notNull(),
-	confidence: real("confidence").notNull(),
-	voiceProfileId: text("voice_profile_id").references(
-		() => voiceProfilesTable.id,
-	),
-	nonIdentifiedSpeaker: integer("non_identified_speaker").notNull(),
-	words: jsonb("words").notNull(),
-	languages: text("languages").array(),
-	createdAt: timestamp("created_at").defaultNow().notNull(),
-	userId: text("user_id")
-		.notNull()
-		.references(() => usersTable.id),
-});
+export const utterancesTable = pgTable(
+	"utterances",
+	{
+		id: text("id").primaryKey(),
+		fileId: text("file_id").notNull(),
+		start: real("start").notNull(),
+		end: real("end").notNull(),
+		transcript: text("transcript").notNull(),
+		confidence: real("confidence").notNull(),
+		voiceProfileId: text("voice_profile_id").references(
+			() => voiceProfilesTable.id,
+		),
+		speakerId: text("speaker_id").references(() => speakersTable.id),
+		nonIdentifiedDeepgramSpeaker: integer(
+			"non_identified_deepgram_speaker",
+		).notNull(),
+		words: jsonb("words").notNull(),
+		languages: text("languages").array(),
+		createdAt: timestamp("created_at").defaultNow().notNull(),
+		userId: text("user_id")
+			.notNull()
+			.references(() => usersTable.id),
+	},
+	(table) => ({
+		speakerOrVoiceProfileCheck: {
+			check: `("speaker_id" IS NOT NULL OR "voice_profile_id" IS NOT NULL)`,
+		},
+	}),
+);
