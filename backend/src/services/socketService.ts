@@ -1,11 +1,9 @@
-import { auth } from "@backend/src/auth";
-import { forwardLogsMiddleware } from "@backend/src/services/socketMiddlewares/forwardLogsMiddleware";
-import { handleAudioMiddleware } from "@backend/src/services/socketMiddlewares/handleAudioMiddleware";
+import { socketHandleAudioData } from "@backend/src/services/socketHandleAudioData";
+import { authenticateSocket } from "@backend/src/services/socketService/authenticateSocket";
 import { getUtterances } from "@backend/src/services/utterancesService";
 import type {
 	InterServerEvents,
 	SocketData,
-	SocketMiddleware,
 	TypedServer,
 	TypedSocket,
 } from "@backend/src/types/socket-events";
@@ -13,23 +11,73 @@ import type {
 	ClientToServerEvents,
 	ServerToClientEvents,
 } from "@shared/socketEvents";
-import { fromNodeHeaders } from "better-auth/node";
 import type { Server as HttpServer } from "node:http";
 import { Server as SocketIOServer } from "socket.io";
-// The middlewares that will be applied to all socket connections
-const middlewares: SocketMiddleware[] = [
-	handleAudioMiddleware,
-	forwardLogsMiddleware,
-];
+
+type SocketHandlerMap = {
+	[K in keyof ClientToServerEvents]: (
+		socket: TypedSocket,
+		...args: Parameters<ClientToServerEvents[K]>
+	) => void;
+};
+
+const socketHandlers: SocketHandlerMap = {
+	ping: (_socket, nb) => {
+		console.log("[socketService] Ping received", nb);
+	},
+
+	getUtterances: async (_socket, params, callback) => {
+		console.log("[socketService] getUtterances received");
+
+		const utterances = await getUtterances(params);
+		callback(utterances, null);
+	},
+
+	audioData: (_socket, data, callback) => {
+		console.log("[socketService] Audio data received");
+		socketHandleAudioData(data, callback);
+	},
+
+	startLogForwarding: (_socket, callback) => {
+		console.log("[socketService] Start log forwarding");
+		callback(true);
+	},
+
+	stopLogForwarding: (_socket, callback) => {
+		console.log("[socketService] Stop log forwarding");
+		callback(true);
+	},
+};
 
 export const socketService = (() => {
 	let io: TypedServer | undefined;
-	let socket: TypedSocket | undefined;
+	const sockets = new Map<string, TypedSocket>();
 
-	/**
-	 * Initialize the Socket.IO server
-	 * @param server HTTP server instance
-	 */
+	const onSocketConnection = (socket: TypedSocket) => {
+		sockets.set(socket.id, socket);
+
+		console.log(
+			"[socketService] Client connected:",
+			socket.data.auth.user.email,
+		);
+
+		// Register all handlers dynamically
+		for (const [event, handler] of Object.entries(socketHandlers) as [
+			keyof typeof socketHandlers,
+			(typeof socketHandlers)[keyof typeof socketHandlers],
+		][]) {
+			socket.on(event, (...args: any[]) => handler(socket, ...args));
+		}
+
+		socket.on("disconnect", () => {
+			console.log(
+				"[socketService] Client disconnected:",
+				socket.data.auth.user.email,
+			);
+			sockets.delete(socket.id);
+		});
+	};
+
 	const initialize = (server: HttpServer): void => {
 		io = new SocketIOServer<
 			ClientToServerEvents,
@@ -44,59 +92,21 @@ export const socketService = (() => {
 			maxHttpBufferSize: 5 * 1024 * 1024, // 5MB max buffer size for audio data
 		});
 
-		// Authenticate the socket connection
-		io.use(async (socket, next) => {
-			try {
-				const session = await auth.api.getSession({
-					headers: fromNodeHeaders(socket.request.headers),
-				});
+		io.use(authenticateSocket);
 
-				if (!session) {
-					return next(new Error("User not authenticated"));
-				}
-
-				// Attach the session to the socket object for later use
-				socket.data.session = session;
-
-				next();
-			} catch (error) {
-				console.error("Authentication error:", error);
-				next(new Error("Authentication failed"));
-			}
-		});
-
-		io.on("connection", (_socket) => {
-			console.log("Client connected");
-			socket = _socket;
-			// Apply all registered middlewares
-			for (const middleware of middlewares) {
-				// biome-ignore lint/style/noNonNullAssertion: Initialized in initialize()
-				middleware(_socket, io!);
-			}
-
-			_socket.on("ping", (nb: number) => {
-				console.log("Ping received", nb);
-			});
-
-			// Basic disconnect logging
-			_socket.on("disconnect", () => {
-				console.log("Client disconnected");
-			});
-
-			_socket.on("getUtterances", async (params, callback) => {
-				const utterances = await getUtterances(params);
-				callback(utterances, null);
-			});
-		});
+		io.on("connection", onSocketConnection);
 	};
 
 	return {
-		get socket() {
-			return socket;
-		},
 		get io() {
 			return io;
 		},
+		get sockets() {
+			return sockets;
+		},
 		initialize,
+		getSocket(id: string): TypedSocket | undefined {
+			return sockets.get(id);
+		},
 	};
 })();

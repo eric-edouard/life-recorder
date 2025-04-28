@@ -2,6 +2,7 @@ import type {
 	ClientToServerEvents,
 	ServerToClientEvents,
 } from "@shared/socketEvents";
+import type { Session, User } from "better-auth/types";
 import type { Server, Socket } from "socket.io";
 
 export interface InterServerEvents {
@@ -9,8 +10,10 @@ export interface InterServerEvents {
 }
 
 export interface SocketData {
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	[key: string]: any;
+	auth: {
+		session: Session;
+		user: User;
+	};
 }
 
 export type TypedSocket = Socket<

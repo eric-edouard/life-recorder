@@ -1,10 +1,9 @@
-import { processAudioService } from "@backend/src/services/processAudioService/processAudioService";
-import type { SocketMiddleware } from "@backend/src/types/socket-events";
+import type { TypedSocket } from "@backend/src/types/socket-events";
 
 /**
  * Socket middleware for handling audio-related socket events
  */
-export const handleAudioMiddleware: SocketMiddleware = (socket) => {
+export const socketHandleAudioData = (socket: TypedSocket) => {
 	// Handle audio data
 	socket.on("audioData", (data, callback) => {
 		// Immediately acknowledge receipt

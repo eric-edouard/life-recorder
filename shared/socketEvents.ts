@@ -1,5 +1,3 @@
-import type { VoiceProfileType } from "@shared/sharedTypes";
-
 export type ServerLog = {
 	type: "log" | "warn" | "error";
 	message: string;
@@ -55,7 +53,7 @@ export type GetUtterancesResponse = {
 	}[];
 };
 
-export interface ClientToServerEvents {
+export type ClientToServerEvents = {
 	audioData: (
 		data: { packets: number[][]; timestamp: number },
 		callback: (success: boolean) => void,
@@ -67,12 +65,4 @@ export interface ClientToServerEvents {
 		params: GetUtterancesParams,
 		callback: (response: GetUtterancesResponse, error: string | null) => void,
 	) => void;
-	createVoiceProfile: (
-		type: VoiceProfileType,
-		callback: (
-			reponse:
-				| { success: true; id: string; fileId: string }
-				| { success: false; error: string },
-		) => void,
-	) => void;
-}
+};

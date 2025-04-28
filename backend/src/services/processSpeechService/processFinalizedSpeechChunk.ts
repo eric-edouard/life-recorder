@@ -15,6 +15,7 @@ import fs from "node:fs";
 
 const DEBUG = true;
 export const processFinalizedSpeechChunk = async (
+	userId: string,
 	audio: Float32Array,
 	speechStartTime: number,
 ) => {
@@ -29,6 +30,7 @@ export const processFinalizedSpeechChunk = async (
 
 	// 2. Transcribe and store utterances
 	const utterances = await createAndSaveTranscript(
+		userId,
 		fileId,
 		wavBuffer,
 		speechStartTime,

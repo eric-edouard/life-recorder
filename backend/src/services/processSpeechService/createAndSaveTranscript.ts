@@ -39,6 +39,7 @@ const transcribeWithDeepgram = async (
 };
 
 export const createAndSaveTranscript = async (
+	userId: string,
 	fileId: string,
 	audioBuffer: Buffer,
 	startTime: number,
@@ -77,9 +78,10 @@ export const createAndSaveTranscript = async (
 				confidence: u.confidence,
 				createdAt: new Date(startTime),
 				words: u.words,
-				nonIdentifiedSpeaker: u.speaker!,
+				nonIdentifiedDeepgramSpeaker: u.speaker!,
 				// Deepgram does return this in  the data but it's not typed by their SDK
 				languages: (u as Utterance & { languages: string[] }).languages,
+				userId,
 			}),
 		),
 	);

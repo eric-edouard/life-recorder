@@ -10,7 +10,7 @@ import { RealTimeVAD } from "@ericedouard/vad-node-realtime";
 /**
  * Audio processor for real-time voice activity detection
  */
-export const processAudioService = (() => {
+export const createProcessAudioService = (userId: string) => {
 	let streamVAD: RealTimeVAD | null = null;
 	let speechStartTime = 0;
 	let lastTimestamp = 0;
@@ -58,8 +58,8 @@ export const processAudioService = (() => {
 					"processingAudioUpdate",
 					"1-converting-to-wav",
 				);
-
-				processFinalizedSpeechChunk(audio, speechStartTime);
+				// TODO: get user id from socket
+				processFinalizedSpeechChunk(userId, audio, speechStartTime);
 			},
 			preSpeechPadFrames: 4,
 			minSpeechFrames: 3,
@@ -129,4 +129,4 @@ export const processAudioService = (() => {
 		processAudioPacket,
 		handleClientDisconnect,
 	};
-})();
+};
