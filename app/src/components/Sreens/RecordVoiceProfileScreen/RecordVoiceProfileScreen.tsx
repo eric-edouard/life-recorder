@@ -18,7 +18,7 @@ import type { VoiceProfileType } from "@shared/sharedTypes";
 import { toast } from "burnt";
 import { useLocalSearchParams } from "expo-router";
 import { SymbolView } from "expo-symbols";
-import { ActivityIndicator, ScrollView, View } from "react-native";
+import { ActivityIndicator, View } from "react-native";
 import { State } from "react-native-ble-plx";
 
 export const RecordVoiceProfileScreen = () => {
@@ -37,39 +37,37 @@ export const RecordVoiceProfileScreen = () => {
 
 	return (
 		<>
-			<ScrollView contentContainerClassName="flex-1 px-5  flex items-center h-full">
-				{disabled && (
-					<View className="flex-1 items-center justify-center pb-20">
-						{!bluetoothEnabled && <BluetoothStatusInfo />}
-						{!deviceConnected && (
-							<IconAndText
-								title="Device not connected"
-								message="Please connect to a device to record a voice profile"
-								icon={
-									<SymbolView
-										name="microphone"
-										type="hierarchical"
-										tintColor={"gray"}
-										size={64}
-									/>
-								}
-							/>
-						)}
-					</View>
-				)}
+			{disabled && (
+				<View className="flex-1 items-center justify-center pb-20">
+					{!bluetoothEnabled && <BluetoothStatusInfo />}
+					{!deviceConnected && (
+						<IconAndText
+							title="Device not connected"
+							message="Please connect to a device to record a voice profile"
+							icon={
+								<SymbolView
+									name="microphone"
+									type="hierarchical"
+									tintColor={"gray"}
+									size={64}
+								/>
+							}
+						/>
+					)}
+				</View>
+			)}
 
-				{!disabled && (
-					<View className="flex-1 items-start w-full gap-8 pt-12 ">
-						<Text className="text-label  text-3xl font-bold mx-2 ">
-							{voiceProfilesLabel[type]} pitch
-						</Text>
-						<Text className="text-label text-3xl leading-relaxed font-light mx-2 ">
-							{voiceProfilesText[type]}
-						</Text>
-						{isLoading && <ActivityIndicator size={"large"} color={"black"} />}
-					</View>
-				)}
-			</ScrollView>
+			{!disabled && (
+				<View className="flex-1 items-start w-full gap-8 pt-12 ">
+					<Text className="text-label  text-3xl font-bold mx-2 ">
+						{voiceProfilesLabel[type]} pitch
+					</Text>
+					<Text className="text-label text-3xl leading-relaxed font-light mx-2 ">
+						{voiceProfilesText[type]}
+					</Text>
+					{isLoading && <ActivityIndicator size={"large"} color={"black"} />}
+				</View>
+			)}
 			{!disabled && (
 				<View className="absolute bottom-safe-offset-20 w-full flex justify-center items-center">
 					<Button
