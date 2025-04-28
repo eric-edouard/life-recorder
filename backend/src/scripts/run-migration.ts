@@ -1,11 +1,15 @@
-import { migrateUtterancesUserId } from "../db/migrations/add_not_null_to_utterances_user_id";
+import { db } from "@backend/src/db/db";
+import { utterancesTable } from "@backend/src/db/schema";
 
 async function main() {
 	try {
-		console.log(
-			"Running migration to add NOT NULL constraint to utterances.user_id",
-		);
-		await migrateUtterancesUserId();
+		const speakerId = "tkV0j1bnYVeY9VB3qqinjCxlYbAQIezE";
+
+		// Update all utterances to have the specified speaker ID
+		await db.update(utterancesTable).set({
+			speakerId,
+		});
+
 		console.log("Migration completed successfully");
 		process.exit(0);
 	} catch (error) {

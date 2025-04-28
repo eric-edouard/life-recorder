@@ -1,5 +1,7 @@
+import { sql } from "drizzle-orm";
 import {
 	boolean,
+	check,
 	index,
 	integer,
 	jsonb,
@@ -98,7 +100,6 @@ export const voiceProfilesTable = pgTable(
 		),
 	],
 );
-
 export const utterancesTable = pgTable(
 	"utterances",
 	{
@@ -122,9 +123,10 @@ export const utterancesTable = pgTable(
 			.notNull()
 			.references(() => usersTable.id),
 	},
-	(table) => ({
-		speakerOrVoiceProfileCheck: {
-			check: `("speaker_id" IS NOT NULL OR "voice_profile_id" IS NOT NULL)`,
-		},
-	}),
+	(_table) => [
+		check(
+			"speakerOrVoiceProfileCheck",
+			sql`("speaker_id" IS NOT NULL OR "voice_profile_id" IS NOT NULL)`,
+		),
+	],
 );
