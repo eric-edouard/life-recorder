@@ -24,7 +24,7 @@ import express, { type Request, type Response } from "express";
 import { createServer } from "node:http";
 import z from "zod";
 
-const appRouter = router({
+export const appRouter = router({
 	userList: publicProcedure.query(async ({ ctx }) => {
 		const users = await db.query.usersTable.findMany();
 		console.log(users);
@@ -73,6 +73,11 @@ const appRouter = router({
 		)
 		.mutation(async ({ ctx, input }) => {
 			return input;
+		}),
+	getAllVoiceProfiles: publicProcedure
+		.meta({ openapi: { method: "GET", path: "/voice-profiles" } })
+		.query(async ({ ctx }) => {
+			return await db.query.voiceProfilesTable.findMany();
 		}),
 	createVoiceProfile: publicProcedure
 		.input(
