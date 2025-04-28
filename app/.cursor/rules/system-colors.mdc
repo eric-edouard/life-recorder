@@ -3,143 +3,88 @@ description:
 globs: 
 alwaysApply: false
 ---
-This app's UI is heavily apple-focused, do your best do adhere to apple standard guidelines.
-These colors are the standard ones from Apple and are imported in tailwaind (using NativeWind)
-
-to use one of them just prepend the use. Example for background: bg-system-background . Example for text-color: text-secondary-label.
-Never use direct colors (like #FFFFFF) always use the system ones.
 
 
+⸻
 
-  "placeholder-text": "rgb(var(--color-placeholderText) / <alpha-value>)",
-  separator: "rgba(var(--color-separator))",
-  "opaque-separator": "rgb(var(--color-opaqueSeparator) / <alpha-value>)",
-  "non-opaque-separator": "rgba(var(--color-nonOpaqueSeparator))",
-  link: "rgb(var(--color-link) / <alpha-value>)",
-  "system-background": "rgb(var(--color-systemBackground) / <alpha-value>)",
-  "secondary-system-background":
-    "rgb(var(--color-secondarySystemBackground) / <alpha-value>)",
-  "tertiary-system-background":
-    "rgb(var(--color-tertiarySystemBackground) / <alpha-value>)",
-  "system-grouped-background":
-    "rgb(var(--color-systemGroupedBackground) / <alpha-value>)",
-  "secondary-system-grouped-background":
-    "rgb(var(--color-secondarySystemGroupedBackground) / <alpha-value>)",
-  "tertiary-system-grouped-background":
-    "rgb(var(--color-tertiarySystemGroupedBackground) / <alpha-value>)",
-  "system-fill": "rgba(var(--color-systemFill))",
-  "secondary-system-fill": "rgba(var(--color-secondarySystemFill))",
-  "tertiary-system-fill": "rgba(var(--color-tertiarySystemFill))",
-  "quaternary-system-fill": "rgba(var(--color-quaternarySystemFill))",
-  label: "rgb(var(--color-label) / <alpha-value>)",
-  text: "rgb(var(--color-text) / <alpha-value>)",
-  "secondary-label": "rgba(var(--color-secondaryLabel))",
-  "tertiary-label": "rgba(var(--color-tertiaryLabel))",
-  "quaternary-label": "rgba(var(--color-quaternaryLabel))",
-  "red-light": "rgb(var(--color-red-light) / <alpha-value>)",
-  "orange-light": "rgb(var(--color-orange-light) / <alpha-value>)",
-  "yellow-light": "rgb(var(--color-yellow-light) / <alpha-value>)",
-  "green-light": "rgb(var(--color-green-light) / <alpha-value>)",
-  "mint-light": "rgb(var(--color-mint-light) / <alpha-value>)",
-  "teal-light": "rgb(var(--color-teal-light) / <alpha-value>)",
-  "cyan-light": "rgb(var(--color-cyan-light) / <alpha-value>)",
-  "blue-light": "rgb(var(--color-blue-light) / <alpha-value>)",
-  "indigo-light": "rgb(var(--color-indigo-light) / <alpha-value>)",
-  "purple-light": "rgb(var(--color-purple-light) / <alpha-value>)",
-  "pink-light": "rgb(var(--color-pink-light) / <alpha-value>)",
-  "brown-light": "rgb(var(--color-brown-light) / <alpha-value>)",
-  "gray-light": "rgb(var(--color-gray-light) / <alpha-value>)",
-  "gray2-light": "rgb(var(--color-gray2-light) / <alpha-value>)",
-  "gray3-light": "rgb(var(--color-gray3-light) / <alpha-value>)",
-  "gray4-light": "rgb(var(--color-gray4-light) / <alpha-value>)",
-  "gray5-light": "rgb(var(--color-gray5-light) / <alpha-value>)",
-  "gray6-light": "rgb(var(--color-gray6-light) / <alpha-value>)",
-  "placeholder-text-light":
-    "rgb(var(--color-placeholderText-light) / <alpha-value>)",
-  "separator-light": "rgba(var(--color-separator-light))",
-  "opaque-separator-light":
-    "rgb(var(--color-opaqueSeparator-light) / <alpha-value>)",
-  "non-opaque-separator-light": "rgba(var(--color-nonOpaqueSeparator-light))",
-  "link-light": "rgb(var(--color-link-light) / <alpha-value>)",
-  "system-background-light":
-    "rgb(var(--color-systemBackground-light) / <alpha-value>)",
-  "secondary-system-background-light":
-    "rgb(var(--color-secondarySystemBackground-light) / <alpha-value>)",
-  "tertiary-system-background-light":
-    "rgb(var(--color-tertiarySystemBackground-light) / <alpha-value>)",
-  "system-grouped-background-light":
-    "rgb(var(--color-systemGroupedBackground-light) / <alpha-value>)",
-  "secondary-system-grouped-background-light":
-    "rgb(var(--color-secondarySystemGroupedBackground-light) / <alpha-value>)",
-  "tertiary-system-grouped-background-light":
-    "rgb(var(--color-tertiarySystemGroupedBackground-light) / <alpha-value>)",
-  "system-fill-light": "rgba(var(--color-systemFill-light))",
-  "secondary-system-fill-light": "rgba(var(--color-secondarySystemFill-light))",
-  "tertiary-system-fill-light": "rgba(var(--color-tertiarySystemFill-light))",
-  "quaternary-system-fill-light":
-    "rgba(var(--color-quaternarySystemFill-light))",
-  "label-light": "rgb(var(--color-label-light) / <alpha-value>)",
-  "text-light": "rgb(var(--color-text-light) / <alpha-value>)",
-  "secondary-label-light": "rgba(var(--color-secondaryLabel-light))",
-  "tertiary-label-light": "rgba(var(--color-tertiaryLabel-light))",
-  "quaternary-label-light": "rgba(var(--color-quaternaryLabel-light))",
-  "red-dark": "rgb(var(--color-red-dark) / <alpha-value>)",
-  "orange-dark": "rgb(var(--color-orange-dark) / <alpha-value>)",
-  "yellow-dark": "rgb(var(--color-yellow-dark) / <alpha-value>)",
-  "green-dark": "rgb(var(--color-green-dark) / <alpha-value>)",
-  "mint-dark": "rgb(var(--color-mint-dark) / <alpha-value>)",
-  "teal-dark": "rgb(var(--color-teal-dark) / <alpha-value>)",
-  "cyan-dark": "rgb(var(--color-cyan-dark) / <alpha-value>)",
-  "blue-dark": "rgb(var(--color-blue-dark) / <alpha-value>)",
-  "indigo-dark": "rgb(var(--color-indigo-dark) / <alpha-value>)",
-  "purple-dark": "rgb(var(--color-purple-dark) / <alpha-value>)",
-  "pink-dark": "rgb(var(--color-pink-dark) / <alpha-value>)",
-  "brown-dark": "rgb(var(--color-brown-dark) / <alpha-value>)",
-  "gray-dark": "rgb(var(--color-gray-dark) / <alpha-value>)",
-  "gray2-dark": "rgb(var(--color-gray2-dark) / <alpha-value>)",
-  "gray3-dark": "rgb(var(--color-gray3-dark) / <alpha-value>)",
-  "gray4-dark": "rgb(var(--color-gray4-dark) / <alpha-value>)",
-  "gray5-dark": "rgb(var(--color-gray5-dark) / <alpha-value>)",
-  "gray6-dark": "rgb(var(--color-gray6-dark) / <alpha-value>)",
-  "placeholder-text-dark":
-    "rgb(var(--color-placeholderText-dark) / <alpha-value>)",
-  "separator-dark": "rgba(var(--color-separator-dark))",
-  "opaque-separator-dark":
-    "rgb(var(--color-opaqueSeparator-dark) / <alpha-value>)",
-  "non-opaque-separator-dark": "rgba(var(--color-nonOpaqueSeparator-dark))",
-  "link-dark": "rgb(var(--color-link-dark) / <alpha-value>)",
-  "system-background-dark":
-    "rgb(var(--color-systemBackground-dark) / <alpha-value>)",
-  "secondary-system-background-dark":
-    "rgb(var(--color-secondarySystemBackground-dark) / <alpha-value>)",
-  "tertiary-system-background-dark":
-    "rgb(var(--color-tertiarySystemBackground-dark) / <alpha-value>)",
-  "system-grouped-background-dark":
-    "rgb(var(--color-systemGroupedBackground-dark) / <alpha-value>)",
-  "secondary-system-grouped-background-dark":
-    "rgb(var(--color-secondarySystemGroupedBackground-dark) / <alpha-value>)",
-  "tertiary-system-grouped-background-dark":
-    "rgb(var(--color-tertiarySystemGroupedBackground-dark) / <alpha-value>)",
-  "system-fill-dark": "rgba(var(--color-systemFill-dark))",
-  "secondary-system-fill-dark": "rgba(var(--color-secondarySystemFill-dark))",
-  "tertiary-system-fill-dark": "rgba(var(--color-tertiarySystemFill-dark))",
-  "quaternary-system-fill-dark": "rgba(var(--color-quaternarySystemFill-dark))",
-  "label-dark": "rgb(var(--color-label-dark) / <alpha-value>)",
-  "text-dark": "rgb(var(--color-text-dark) / <alpha-value>)",
-  "secondary-label-dark": "rgba(var(--color-secondaryLabel-dark))",
-  "tertiary-label-dark": "rgba(var(--color-tertiaryLabel-dark))",
-  "quaternary-label-dark": "rgba(var(--color-quaternaryLabel-dark))",
-};
+📜 System Colors Rules
 
-export const withUIKit = (config: Config) => {
-  config.theme = config.theme || {};
-  config.theme.extend = config.theme.extend || {};
-  config.theme.extend.colors = config.theme.extend.colors || {};
-  config.theme.extend.colors = {
-    ...config.theme.extend.colors,
-    ...configColors,
-  };
-  return config;
-};
+Applies to: All UI code (Expo, NativeWind, Tailwind)
 
-export { configColors as colors };
+⸻
+
+🧠 Guiding Principles
+	•	Use only system colors (Apple UIKit colors adapted to Tailwind).
+	•	Never use raw hex codes or custom colors (e.g., #ffffff, #000000) under any circumstance.
+	•	Backgrounds should use system background colors (importance order: tertiary → secondary → system).
+	•	Text/Labels should use system label colors (importance order: label → secondary-label → tertiary-label → quaternary-label).
+	•	Icons and borders should also follow this system.
+
+⸻
+
+🎨 How to use
+	•	For backgrounds, use:
+bg-system-background, bg-secondary-system-background, bg-tertiary-system-background
+	•	For text, use:
+text-label, text-secondary-label, text-tertiary-label, text-quaternary-label
+	•	For separators, use:
+bg-separator or bg-opaque-separator
+	•	For links, use:
+text-link
+
+✅ Examples:
+
+<Text className="text-secondary-label" />
+<View className="bg-secondary-system-background" />
+
+❌ Wrong:
+
+<Text style={{ color: '#FFFFFF' }} />
+<View className="bg-white" />
+
+
+
+⸻
+
+🎯 System Colors Available
+
+Backgrounds:
+	•	system-background
+	•	secondary-system-background
+	•	tertiary-system-background
+	•	system-grouped-background
+	•	secondary-system-grouped-background
+	•	tertiary-system-grouped-background
+
+Labels (Text):
+	•	label
+	•	secondary-label
+	•	tertiary-label
+	•	quaternary-label
+
+Separators and Fills:
+	•	separator
+	•	opaque-separator
+	•	non-opaque-separator
+	•	system-fill
+	•	secondary-system-fill
+	•	tertiary-system-fill
+	•	quaternary-system-fill
+
+Others:
+	•	placeholder-text
+	•	link
+
+⸻
+
+✍️ Notes
+	•	Colors automatically adapt between light and dark mode (you don’t need to specify).
+	•	Prioritize clarity and hierarchy:
+	•	More important elements = stronger color (label, system-background)
+	•	Less important = softer color (tertiary-label, tertiary-system-background)
+
+⸻
+
+Would you like me to also create a strict lint rule suggestion (like an ESLint/Tailwind plugin rule) so that you can enforce this automatically? 🚀
+It would block usage of raw colors like #fff and bg-white at compile time.
+Let me know!

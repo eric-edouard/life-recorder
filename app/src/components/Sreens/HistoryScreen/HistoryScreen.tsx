@@ -26,24 +26,30 @@ const UtteranceItem = ({
 			<View
 				className={`rounded-2xl px-4 py-3 ${
 					isCurrentUser
-						? "bg-blue-400 dark:bg-blue-600 rounded-tr-none"
-						: "bg-gray-200 dark:bg-gray-700 rounded-tl-none"
+						? "bg-blue-light rounded-tr-none"
+						: "bg-secondary-system-background rounded-tl-none"
 				}`}
 			>
 				<Text
-					className={`font-medium ${isCurrentUser ? "text-white" : "text-black dark:text-white"}`}
+					className={`font-medium ${
+						isCurrentUser ? "text-label" : "text-label"
+					}`}
 				>
 					{transcript}
 				</Text>
 
 				<View className="flex-row justify-between items-center mt-1">
 					<Text
-						className={`text-xs ${isCurrentUser ? "text-gray-100 dark:text-gray-300" : "text-gray-500 dark:text-gray-400"}`}
+						className={`text-xs ${
+							isCurrentUser ? "text-quaternary-label" : "text-secondary-label"
+						}`}
 					>
 						{speakerName || "Unknown"}
 					</Text>
 					<Text
-						className={`text-xs ml-2 ${isCurrentUser ? "text-gray-100 dark:text-gray-300" : "text-gray-500 dark:text-gray-400"}`}
+						className={`text-xs ml-2 ${
+							isCurrentUser ? "text-quaternary-label" : "text-secondary-label"
+						}`}
 					>
 						{format(timestamp, "MMM d, h:mm a")}
 					</Text>
@@ -51,7 +57,9 @@ const UtteranceItem = ({
 
 				<View className="mt-1">
 					<Text
-						className={`text-xs ${isCurrentUser ? "text-gray-100 dark:text-gray-300" : "text-gray-500 dark:text-gray-400"}`}
+						className={`text-xs ${
+							isCurrentUser ? "text-quaternary-label" : "text-secondary-label"
+						}`}
 					>
 						Confidence: {Math.round(confidence * 100)}%
 					</Text>
@@ -63,10 +71,8 @@ const UtteranceItem = ({
 
 const EmptyState = () => (
 	<View className="flex-1 items-center justify-center">
-		<Text className="text-gray-500 dark:text-gray-400 text-lg">
-			No conversations yet
-		</Text>
-		<Text className="text-gray-400 dark:text-gray-500 text-sm mt-2 text-center">
+		<Text className="text-secondary-label text-lg">No conversations yet</Text>
+		<Text className="text-tertiary-label text-sm mt-2 text-center">
 			Your conversation history will appear here
 		</Text>
 	</View>
@@ -75,12 +81,11 @@ const EmptyState = () => (
 export const HistoryScreen = () => {
 	const { data, isLoading } = useQuery(trpcQuery.utterances.queryOptions());
 
-	console.log("🪲 DATA", data);
 	if (isLoading) {
 		return (
 			<View className="flex-1 items-center justify-center">
 				<ActivityIndicator size="large" />
-				<Text className="text-gray-500 dark:text-gray-400 mt-4">
+				<Text className="text-secondary-label mt-4">
 					Loading conversations...
 				</Text>
 			</View>
@@ -88,8 +93,8 @@ export const HistoryScreen = () => {
 	}
 
 	return (
-		<View className="mt-safe-offset-5 p-5 flex-1 w-full bg-white dark:bg-black">
-			<Text className="text-2xl font-bold mb-6 text-black dark:text-white">
+		<View className="mt-safe-offset-5 p-5 flex-1 w-full bg-system-background">
+			<Text className="text-2xl font-bold mb-6 text-label">
 				Conversation History
 			</Text>
 
