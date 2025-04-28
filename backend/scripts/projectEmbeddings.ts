@@ -1,8 +1,8 @@
 import "dotenv/config";
-import { eq } from "drizzle-orm";
 import { spawn } from "node:child_process";
 import fs from "node:fs/promises";
 import path from "node:path";
+import { eq } from "drizzle-orm";
 import { db } from "../src/db/db";
 import { speakersTable, voiceProfilesTable } from "../src/db/schema";
 

@@ -1,3 +1,4 @@
+import fs from "node:fs";
 import { db } from "@backend/src/db/db";
 import { speakersTable, voiceProfilesTable } from "@backend/src/db/schema";
 import { saveAudioToGCS } from "@backend/src/services/processSpeechService/saveAudioToGcs";
@@ -8,7 +9,6 @@ import { generateReadableUUID } from "@backend/src/utils/generateReadableUUID";
 import { now } from "@backend/src/utils/now";
 import type { VoiceProfileType } from "@shared/sharedTypes";
 import { eq } from "drizzle-orm";
-import fs from "node:fs";
 
 const DEBUG = true;
 

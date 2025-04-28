@@ -1,3 +1,4 @@
+import { createServer } from "node:http";
 import { auth } from "@backend/src/auth";
 import { routes } from "@backend/src/routes";
 import { socketService } from "@backend/src/services/socketService/socketService";
@@ -7,7 +8,6 @@ import * as trpcExpress from "@trpc/server/adapters/express";
 import { toNodeHandler } from "better-auth/node";
 import cors from "cors";
 import express from "express";
-import { createServer } from "node:http";
 
 export const createAppServer = () => {
 	const app = express();
