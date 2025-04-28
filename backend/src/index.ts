@@ -117,6 +117,23 @@ const appRouter = router({
 				language: input.language,
 			});
 		}),
+	deleteVoiceProfile: publicProcedure
+		.input(z.enum(VoiceProfileType))
+		.mutation(async ({ ctx, input }) => {
+			if (!ctx.session?.user?.id)
+				throw new TRPCError({
+					code: "UNAUTHORIZED",
+					message: "Not authenticated",
+				});
+			return await db
+				.delete(voiceProfilesTable)
+				.where(
+					and(
+						eq(voiceProfilesTable.userId, ctx.session.user.id),
+						eq(voiceProfilesTable.type, input),
+					),
+				);
+		}),
 });
 
 export type AppRouter = typeof appRouter;

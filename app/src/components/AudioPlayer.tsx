@@ -1,7 +1,9 @@
 import { BouncyPressable } from "@app/src/components/ui/Buttons/BouncyPressable";
+import { trpcClient } from "@app/src/services/trpc";
 import { formatTime } from "@app/src/utils/formatTime";
 import { rgbaToHex } from "@app/src/utils/rgbaToHex";
 import { Button, ContextMenu } from "@expo/ui/swift-ui";
+import type { VoiceProfileType } from "@shared/sharedTypes";
 import { format } from "date-fns";
 import { useAudioPlayer, useAudioPlayerStatus } from "expo-audio";
 import { SymbolView } from "expo-symbols";
@@ -14,6 +16,7 @@ interface AudioPlayerProps {
 	title: string;
 	date: Date;
 	duration: number;
+	type: VoiceProfileType;
 }
 
 export function AudioPlayer({
@@ -21,6 +24,7 @@ export function AudioPlayer({
 	title,
 	duration,
 	date,
+	type,
 }: AudioPlayerProps) {
 	const player = useAudioPlayer({ uri: fileUrl });
 	const status = useAudioPlayerStatus(player);
@@ -79,7 +83,9 @@ export function AudioPlayer({
 							<Button
 								role="destructive"
 								systemImage="trash"
-								onPress={() => console.log("Pressed2")}
+								onPress={() => {
+									trpcClient.deleteVoiceProfile.mutate(type);
+								}}
 							>
 								Delete recording
 							</Button>

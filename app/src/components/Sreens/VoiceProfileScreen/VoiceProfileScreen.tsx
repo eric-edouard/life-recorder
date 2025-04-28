@@ -35,6 +35,7 @@ export const VoiceProfileScreen = () => {
 					fileUrl={fileUrl}
 					date={date}
 					duration={durationSeconds ?? 0}
+					type={type}
 				/>
 			)}
 		</View>
