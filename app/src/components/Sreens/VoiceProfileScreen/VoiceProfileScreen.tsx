@@ -8,11 +8,17 @@ import { extractDataFromFileName } from "@app/src/utils/extractDataFromFileName"
 import { use$ } from "@legendapp/state/react";
 import type { VoiceProfileType } from "@shared/sharedTypes";
 import { useQuery } from "@tanstack/react-query";
-import { useLocalSearchParams } from "expo-router";
 import { ActivityIndicator, View } from "react-native";
 
-export const VoiceProfileScreen = () => {
-	const { type } = useLocalSearchParams<{ type: VoiceProfileType }>();
+type VoiceProfileScreenProps = {
+	type: VoiceProfileType;
+	closeModal: () => void;
+};
+
+export const VoiceProfileScreen = ({
+	type,
+	closeModal,
+}: VoiceProfileScreenProps) => {
 	const voiceProfile = use$(userService.voiceProfiles$)?.[type];
 	console.log("🚀 ~ VoiceProfileScreen ~ voiceProfile:", voiceProfile);
 
@@ -36,6 +42,7 @@ export const VoiceProfileScreen = () => {
 					date={date}
 					duration={durationSeconds ?? 0}
 					type={type}
+					closeModal={closeModal}
 				/>
 			)}
 		</View>

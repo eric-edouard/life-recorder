@@ -16,14 +16,19 @@ import { userService } from "@app/src/services/userService";
 import { use$ } from "@legendapp/state/react";
 import type { VoiceProfileType } from "@shared/sharedTypes";
 import { toast } from "burnt";
-import { useLocalSearchParams } from "expo-router";
 import { SymbolView } from "expo-symbols";
 import { ActivityIndicator, View } from "react-native";
 import { State } from "react-native-ble-plx";
 
-export const RecordVoiceProfileScreen = () => {
+type RecordVoiceProfileScreenProps = {
+	type: VoiceProfileType;
+	closeModal: () => void;
+};
+export const RecordVoiceProfileScreen = ({
+	type,
+	closeModal,
+}: RecordVoiceProfileScreenProps) => {
 	const [isLoading, setIsLoading] = useState(false);
-	const { type } = useLocalSearchParams<{ type: VoiceProfileType }>();
 	const bluetoothState = use$(scanDevicesService.bluetoothState$);
 	const permissionStatus = use$(scanDevicesService.permissionStatus$);
 	const connectedDeviceId = use$(deviceService.connectedDeviceId$);
@@ -102,6 +107,7 @@ export const RecordVoiceProfileScreen = () => {
 								try {
 									const result =
 										await userService.createVoiceProfileFromRecording(type);
+									closeModal();
 									if (!result) {
 										toast({
 											preset: "error",

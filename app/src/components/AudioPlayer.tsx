@@ -1,11 +1,13 @@
 import { BouncyPressable } from "@app/src/components/ui/Buttons/BouncyPressable";
 import { trpcClient } from "@app/src/services/trpc";
+import { userService } from "@app/src/services/userService";
 import { formatTime } from "@app/src/utils/formatTime";
 import { rgbaToHex } from "@app/src/utils/rgbaToHex";
 import { Button, ContextMenu } from "@expo/ui/swift-ui";
 import type { VoiceProfileType } from "@shared/sharedTypes";
 import { format } from "date-fns";
 import { useAudioPlayer, useAudioPlayerStatus } from "expo-audio";
+import { router } from "expo-router";
 import { SymbolView } from "expo-symbols";
 import React from "react";
 import { Text, View } from "react-native";
@@ -17,6 +19,7 @@ interface AudioPlayerProps {
 	date: Date;
 	duration: number;
 	type: VoiceProfileType;
+	closeModal: () => void;
 }
 
 export function AudioPlayer({
@@ -25,6 +28,7 @@ export function AudioPlayer({
 	duration,
 	date,
 	type,
+	closeModal,
 }: AudioPlayerProps) {
 	const player = useAudioPlayer({ uri: fileUrl });
 	const status = useAudioPlayerStatus(player);
@@ -83,15 +87,19 @@ export function AudioPlayer({
 							<Button
 								role="destructive"
 								systemImage="trash"
-								onPress={() => {
-									trpcClient.deleteVoiceProfile.mutate(type);
+								onPress={async () => {
+									await trpcClient.deleteVoiceProfile.mutate(type);
+									await userService.fetchCurrentUserVoiceProfiles();
+									closeModal();
 								}}
 							>
 								Delete recording
 							</Button>
 							<Button
 								systemImage="arrow.left.arrow.right"
-								onPress={() => console.log("Pressed1")}
+								onPress={async () => {
+									router.push(`/modals/record-voice-profile?type=${type}`);
+								}}
 							>
 								Replace recording
 							</Button>
