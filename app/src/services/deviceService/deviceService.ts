@@ -49,9 +49,9 @@ export const deviceService = (() => {
 			if (!pairedDeviceId) {
 				return;
 			}
-			// If the user unpaired the device,
-			// we immediately start to scan for a new device
-			scanDevicesService.scanDevices();
+			scanDevicesService.scanDevices({
+				onPairedDeviceFound: (foundDevice) => connectToDevice(foundDevice.id),
+			});
 			batteryLevelSubscription?.remove();
 			buttonStateSubscription?.remove();
 			rssiInterval && clearInterval(rssiInterval);

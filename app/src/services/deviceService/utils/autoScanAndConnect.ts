@@ -21,7 +21,10 @@ export const autoScanAndConnect = () => {
 					await scanDevicesService.checkKindOfConnectedDevices();
 
 				if (!kindOfConnectedDevice) {
-					scanDevicesService.scanDevices();
+					scanDevicesService.scanDevices({
+						onPairedDeviceFound: (device) =>
+							deviceService.connectToDevice(device.id),
+					});
 					return;
 				}
 				if (pairedDeviceId && kindOfConnectedDevice?.id === pairedDeviceId) {
