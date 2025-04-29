@@ -1,6 +1,6 @@
 import { backendUrl } from "@app/src/constants/backendUrl";
 import { trpcClient } from "@app/src/services/trpc";
-import type { InferQueryOutput } from "@app/src/types/trpcs";
+import type { InferQueryOutput } from "@app/src/types/trpc";
 import { observable } from "@legendapp/state";
 import { SupportedLanguage, type VoiceProfileType } from "@shared/sharedTypes";
 import { btoa } from "react-native-quick-base64";

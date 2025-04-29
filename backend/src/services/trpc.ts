@@ -36,3 +36,13 @@ export const protectedProcedure = t.procedure.use(
 		});
 	},
 );
+
+export const timingMiddleware = t.middleware(async ({ path, type, next }) => {
+	const start = Date.now();
+	const result = await next();
+	const durationMs = Date.now() - start;
+
+	console.log(`[tRPC] ${type} ${path} - ${durationMs}ms`);
+
+	return result;
+});
