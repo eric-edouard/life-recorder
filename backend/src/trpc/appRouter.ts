@@ -49,7 +49,6 @@ export const appRouter = router({
 				),
 			)
 			.then((rows) => rows[0]);
-		console.log("🪲 SPEAKER", speaker);
 		if (!speaker) throw new Error("User speaker not found");
 		// Fetch the 3 special voice profiles for this speaker
 		const profiles = await db

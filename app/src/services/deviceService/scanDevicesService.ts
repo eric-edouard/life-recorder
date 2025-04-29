@@ -1,5 +1,7 @@
 import { bleManager } from "@app/src/services/bleManager";
 import { OMI_SERVICE_UUID } from "@app/src/services/deviceService/constants";
+import { deviceService } from "@app/src/services/deviceService/deviceService";
+import { storage$ } from "@app/src/services/storage";
 import { alert } from "@app/src/utils/alert";
 import { observable } from "@legendapp/state";
 import { Linking } from "react-native";
@@ -68,8 +70,12 @@ export const scanDevicesService = (() => {
 	const scanDevices = ({
 		onCompatibleDeviceFound,
 	}: {
-		onCompatibleDeviceFound: (device: Device) => void;
-	}) => {
+		/**
+		 * Will only be called if there is no paired device.
+		 * @param device - The compatible device that was found
+		 */
+		onCompatibleDeviceFound?: (device: Device) => void;
+	} = {}) => {
 		if (bluetoothState$.peek() !== State.PoweredOn) {
 			throw new Error("Bluetooth is Off");
 		}
@@ -93,7 +99,15 @@ export const scanDevicesService = (() => {
 				}
 
 				if (foundDevice.serviceUUIDs?.includes(OMI_SERVICE_UUID)) {
-					onCompatibleDeviceFound?.(foundDevice);
+					const currentPairedDeviceId = storage$.pairedDevice.id.peek();
+					if (
+						currentPairedDeviceId &&
+						currentPairedDeviceId === foundDevice.id
+					) {
+						deviceService.connectToDevice(foundDevice.id);
+					} else {
+						onCompatibleDeviceFound?.(foundDevice);
+					}
 					stopScan();
 				}
 			},

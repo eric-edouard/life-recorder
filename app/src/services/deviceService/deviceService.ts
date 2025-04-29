@@ -28,8 +28,6 @@ import {
 } from "./constants";
 import type { BleAudioCodec } from "./types";
 
-// const MY_DEVICE = "D65CD59F-3E9A-4BF0-016E-141BB478E1B8";
-
 export const deviceService = (() => {
 	let _connectedDevice: Device | null = null;
 
@@ -47,6 +45,13 @@ export const deviceService = (() => {
 		_connectedDevice = device;
 		connectedDeviceId$.set(device?.id || null);
 		if (device === null) {
+			const pairedDeviceId = storage$.pairedDevice.id.peek();
+			if (!pairedDeviceId) {
+				return;
+			}
+			// If the user unpaired the device,
+			// we immediately start to scan for a new device
+			scanDevicesService.scanDevices();
 			batteryLevelSubscription?.remove();
 			buttonStateSubscription?.remove();
 			rssiInterval && clearInterval(rssiInterval);

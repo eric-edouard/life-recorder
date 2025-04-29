@@ -1,9 +1,8 @@
-import fs from "node:fs";
 import { db } from "@backend/src/db/db";
-import { speakersTable, utterancesTable } from "@backend/src/db/schema";
-import { createAndSaveTranscript } from "@backend/src/services/processSpeechService/createAndSaveTranscript";
+import { utterancesTable } from "@backend/src/db/schema";
+import { createAndSaveUtterance } from "@backend/src/services/processSpeechService/createAndSaveUtterance";
 import { saveAudioToGCS } from "@backend/src/services/processSpeechService/saveAudioToGcs";
-import { findMatchingVoiceProfile } from "@backend/src/services/processSpeechService/utils/findMatchingVoiceProfile";
+import { findMatchingVoiceProfileAndSpeaker } from "@backend/src/services/processSpeechService/utils/findMatchingVoiceProfileAndSpeaker";
 import { getSpeakerEmbeddingFromBuffer } from "@backend/src/services/processSpeechService/utils/getSpeakerEmbeddingFromBuffer";
 import { insertNewVoiceProfile } from "@backend/src/services/processSpeechService/utils/insertNewVoiceProfile";
 import type { Utterance } from "@backend/src/types/deepgram";
@@ -11,7 +10,8 @@ import type { TypedSocket } from "@backend/src/types/socket-events";
 import { convertFloat32ArrayToWavBuffer } from "@backend/src/utils/audio/audioUtils";
 import { getWavBufferDuration } from "@backend/src/utils/audio/getWavBufferDuration";
 import { generateReadableUUID } from "@backend/src/utils/generateReadableUUID";
-import { eq, inArray } from "drizzle-orm";
+import { inArray } from "drizzle-orm";
+import fs from "node:fs";
 
 const DEBUG = true;
 export const processFinalizedSpeechChunk = async (
@@ -29,7 +29,7 @@ export const processFinalizedSpeechChunk = async (
 	const fileId = generateReadableUUID(speechStartTime, durationMs);
 
 	// 2. Transcribe and store utterances
-	const utterances = await createAndSaveTranscript(
+	const utterances = await createAndSaveUtterance(
 		socket,
 		fileId,
 		wavBuffer,
@@ -69,56 +69,64 @@ export const processFinalizedSpeechChunk = async (
 		const embedding = await getSpeakerEmbeddingFromBuffer(wavBuffer);
 
 		// 5. Try to match to existing voiceProfile
-		const matched = await findMatchingVoiceProfile(embedding);
-		let voiceProfileId: string;
+		const match = await findMatchingVoiceProfileAndSpeaker(embedding);
 
-		if (matched) {
-			if (DEBUG) console.log("🪲 4 matchedVoiceProfile:", matched);
-			voiceProfileId = matched.id;
+		if (match && (!match.speaker || !match.voiceProfile)) {
+			throw new Error(
+				"[processFinalizedSpeechChunk] No speaker or voiceProfile found in the match",
+			);
+		}
 
-			if (matched.speakerId) {
-				const speakers = await db
-					.select()
-					.from(speakersTable)
-					.where(eq(speakersTable.id, matched.speakerId));
-				const speaker = speakers[0];
-				socket.emit("liveTranscriptSpeakerIdentified", {
-					utteranceId: fileId,
-					speakerId: voiceProfileId,
-					speakerName: speaker?.name,
-					matched: true,
-				});
-			}
+		if (DEBUG) {
+			console.log(`🪲 ---  MATCHED ? ${match?.speaker?.name ?? "NO"}`);
+		}
+
+		if (match?.speaker) {
+			socket.emit("liveTranscriptSpeakerIdentified", {
+				utteranceId: fileId,
+				speakerId: match.voiceProfile.id,
+				speakerName: match.speaker.name,
+				matched: true,
+			});
+
+			/**
+			 * Update utterances with the speakerId
+			 */
+			await db
+				.update(utterancesTable)
+				.set({ status: "2_done", speakerId: match.speaker.id })
+				.where(
+					inArray(
+						utterancesTable.id,
+						utterances.map((u) => u.id),
+					),
+				);
 		} else {
 			socket.emit("liveTranscriptSpeakerIdentified", {
 				utteranceId: fileId,
 				matched: false,
 			});
-			// 6. No match → create a new voiceProfile
-			voiceProfileId = await insertNewVoiceProfile({
+
+			const voiceProfileId = await insertNewVoiceProfile({
 				duration: durationMs / 1000,
 				language: firstUtterance.languages[0],
 				fileId,
 				embedding,
 			});
-			if (DEBUG) console.log("🪲 3 new voiceProfileId:", voiceProfileId);
+
+			/**
+			 * Update utterances with the new voiceProfileId
+			 */
+			await db
+				.update(utterancesTable)
+				.set({ status: "2_done", voiceProfileId })
+				.where(
+					inArray(
+						utterancesTable.id,
+						utterances.map((u) => u.id),
+					),
+				);
 		}
-
-		// 7. Update utterances with this voiceProfileId
-		await db
-			.update(utterancesTable)
-			.set({ voiceProfileId })
-			.where(
-				inArray(
-					utterancesTable.id,
-					utterances.map((u) => u.id),
-				),
-			);
-
-		if (DEBUG)
-			console.log(
-				`🪲 5 Linked ${utterances.length} utterances to ${voiceProfileId}`,
-			);
 	}
 
 	await saveAudioToGCS(fileId, wavBuffer, speechStartTime, durationMs);

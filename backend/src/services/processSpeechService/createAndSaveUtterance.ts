@@ -38,7 +38,7 @@ const transcribeWithDeepgram = async (
 	return transcription.result;
 };
 
-export const createAndSaveTranscript = async (
+export const createAndSaveUtterance = async (
 	socket: TypedSocket,
 	fileId: string,
 	audioBuffer: Buffer,
@@ -70,6 +70,7 @@ export const createAndSaveTranscript = async (
 	await Promise.all(
 		utterances.map((u) =>
 			db.insert(utterancesTable).values({
+				status: "1_pending_voice_profile",
 				id: generateUtteranceId(startTime, u.start, u.end),
 				fileId,
 				start: u.start,

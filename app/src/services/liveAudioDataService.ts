@@ -56,10 +56,15 @@ export const liveAudioDataService = (() => {
 				// 	isSending = false;
 				// },
 			);
+			savedAudioCount += packetsToSend.length;
+			console.log(
+				`[liveAudioDataService] ${packetsToSend.length} audio packets sent`,
+			);
 		} catch (error) {
 			console.error("Error sending audio data:", error);
 			// Re-add the packets to the buffer for retry
 			audioPacketsBuffer = [...packetsToSend, ...audioPacketsBuffer];
+		} finally {
 			isSending = false;
 		}
 	};

@@ -5,6 +5,7 @@ import {
 	index,
 	integer,
 	jsonb,
+	pgEnum,
 	pgTable,
 	real,
 	text,
@@ -100,6 +101,11 @@ export const voiceProfilesTable = pgTable(
 		),
 	],
 );
+
+export const utteranceStatusEnum = pgEnum("utterance_status", [
+	"1_pending_voice_profile",
+	"2_done",
+]);
 export const utterancesTable = pgTable(
 	"utterances",
 	{
@@ -122,11 +128,15 @@ export const utterancesTable = pgTable(
 		userId: text("user_id")
 			.notNull()
 			.references(() => usersTable.id),
+		status: utteranceStatusEnum("status").default("1_pending_voice_profile"),
 	},
-	(_table) => [
+	(table) => [
 		check(
-			"speakerOrVoiceProfileCheck",
-			sql`("speaker_id" IS NOT NULL OR "voice_profile_id" IS NOT NULL)`,
+			"speakerOrVoiceProfileConditionalCheck",
+			sql`
+		  ("status" = '1_pending_voice_profile')
+		  OR ("speaker_id" IS NOT NULL OR "voice_profile_id" IS NOT NULL)
+		`,
 		),
 	],
 );
