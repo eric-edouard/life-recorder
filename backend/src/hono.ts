@@ -7,6 +7,7 @@ import { trpcServer } from "@hono/trpc-server";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { logger } from "hono/logger";
+import { timing } from "hono/timing";
 
 export const createHonoApp = () => {
 	const app = new Hono<HonoEnv>();
@@ -14,6 +15,11 @@ export const createHonoApp = () => {
 	// 1. CORS and Logger Middleware
 	app.use("*", cors());
 	app.use("*", logger());
+	app.use(
+		timing({
+			crossOrigin: true,
+		}),
+	);
 
 	// 2. BetterAuth Session Middleware (must run before routes that need session)
 	app.use("*", async (c, next) => {
@@ -36,7 +42,7 @@ export const createHonoApp = () => {
 	// 4. Application Routes (from routes.ts)
 	app.route("/", routesApp);
 
-	// 5. tRPC Middleware
+	// 5. tRPC Routes
 	app.use(
 		"/trpc/*",
 		trpcServer({
