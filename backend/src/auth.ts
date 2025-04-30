@@ -12,6 +12,12 @@ import {
 } from "./db/schema";
 
 export const auth = betterAuth({
+	session: {
+		cookieCache: {
+			enabled: true,
+			maxAge: 5 * 60, // 5 minutes
+		},
+	},
 	database: drizzleAdapter(db, {
 		provider: "pg",
 		schema: {
@@ -26,6 +32,7 @@ export const auth = betterAuth({
 	},
 	plugins: [expo()],
 	trustedOrigins: ["life-recorder://"],
+
 	hooks: {
 		after: createAuthMiddleware(async (ctx) => {
 			if (ctx.path.startsWith("/sign-up")) {
