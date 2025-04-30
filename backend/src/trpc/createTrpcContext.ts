@@ -9,5 +9,5 @@ export const createTrpcContext = async (
 	const session = c.get("session");
 	const user = c.get("user");
 
-	return { session: session || null, user: user || null };
+	return { c, session: session || null, user: user || null };
 };

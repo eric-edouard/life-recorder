@@ -1,5 +1,6 @@
 import type { HonoEnv } from "@backend/src/types/honoEnv";
 import { TRPCError, initTRPC } from "@trpc/server";
+import type { Context as HonoContext } from "hono";
 import type SuperJSON from "superjson";
 const superjson: SuperJSON = require("fix-esm").require("superjson");
 
@@ -7,6 +8,7 @@ const superjson: SuperJSON = require("fix-esm").require("superjson");
 export interface TRPCContext {
 	session: HonoEnv["Variables"]["session"] | null;
 	user: HonoEnv["Variables"]["user"] | null;
+	c: HonoContext<HonoEnv>;
 	[key: string]: any;
 }
 

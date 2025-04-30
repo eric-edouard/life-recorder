@@ -16,12 +16,14 @@ import { getSignedUrl } from "@backend/src/utils/gcs/getSignedUrl";
 import { OpusEncoder } from "@discordjs/opus";
 import { SupportedLanguage, VoiceProfileType } from "@shared/sharedTypes";
 import { and, eq } from "drizzle-orm";
+import { endTime, startTime } from "hono/timing";
 import z from "zod";
 
 export const appRouter = router({
 	utterances: protectedProcedure
 		.use(timingMiddleware)
 		.query(async ({ ctx }) => {
+			startTime(ctx.c, "DB utterances");
 			const userId = ctx.user.id;
 			const utterances = await db
 				.select({
@@ -38,6 +40,7 @@ export const appRouter = router({
 					eq(voiceProfilesTable.speakerId, speakersTable.id),
 				)
 				.where(eq(utterancesTable.userId, userId));
+			endTime(ctx.c, "DB utterances");
 			return utterances;
 		}),
 	fileUrl: protectedProcedure.input(z.string()).query(async ({ input }) => {
@@ -46,6 +49,7 @@ export const appRouter = router({
 	userVoiceProfiles: protectedProcedure
 		.use(timingMiddleware)
 		.query(async ({ ctx }) => {
+			startTime(ctx.c, "DB speaker");
 			// Find the speaker record for the current user
 			const speaker = await db
 				.select()
@@ -57,8 +61,11 @@ export const appRouter = router({
 					),
 				)
 				.then((rows) => rows[0]);
+			endTime(ctx.c, "DB speaker");
+
 			if (!speaker) throw new Error("User speaker not found");
 			// Fetch the 3 special voice profiles for this speaker
+			startTime(ctx.c, "DB profiles");
 			const profiles = await db
 				.select({
 					id: voiceProfilesTable.id,
@@ -69,6 +76,7 @@ export const appRouter = router({
 				})
 				.from(voiceProfilesTable)
 				.where(and(eq(voiceProfilesTable.speakerId, speaker.id)));
+			endTime(ctx.c, "DB profiles");
 			return profiles;
 		}),
 	createVoiceProfile: protectedProcedure
