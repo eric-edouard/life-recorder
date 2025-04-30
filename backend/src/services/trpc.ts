@@ -1,18 +1,20 @@
-import type { auth } from "@backend/src/auth";
+import type { HonoEnv } from "@backend/src/types/honoEnv";
 import { TRPCError, initTRPC } from "@trpc/server";
 import type SuperJSON from "superjson";
 const superjson: SuperJSON = require("fix-esm").require("superjson");
 
 // Define context type
-export interface Context {
-	session: Awaited<ReturnType<typeof auth.api.getSession>>;
+export interface TRPCContext {
+	session: HonoEnv["Variables"]["session"] | null;
+	user: HonoEnv["Variables"]["user"] | null;
+	[key: string]: any;
 }
 
 /**
  * Initialization of tRPC backend
  * Should be done only once per backend!
  */
-const t = initTRPC.context<Context>().create({
+const t = initTRPC.context<TRPCContext>().create({
 	transformer: superjson,
 });
 
@@ -26,12 +28,13 @@ export const publicProcedure = t.procedure;
 export const protectedProcedure = t.procedure.use(
 	async function isAuthed(opts) {
 		const { ctx } = opts;
-		if (!ctx.session?.user) {
+		if (!ctx.session || !ctx.user) {
 			throw new TRPCError({ code: "UNAUTHORIZED" });
 		}
 		return opts.next({
 			ctx: {
 				session: ctx.session,
+				user: ctx.user,
 			},
 		});
 	},

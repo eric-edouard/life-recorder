@@ -1,4 +1,3 @@
-import type { Server as HttpServer } from "node:http";
 import { createProcessAudioService } from "@backend/src/services/processAudioService/processAudioService";
 import { authenticateSocket } from "@backend/src/services/socketService/authenticateSocket";
 import { socketHandleAudioData } from "@backend/src/services/socketService/socketHandleAudioData";
@@ -12,6 +11,7 @@ import type {
 	ClientToServerEvents,
 	ServerToClientEvents,
 } from "@shared/socketEvents";
+import type { Server as HttpServer } from "node:http";
 import { Server as SocketIOServer } from "socket.io";
 
 export const socketService = (() => {
@@ -39,6 +39,10 @@ export const socketService = (() => {
 			);
 			await socket.data.processAudioService?.handleClientDisconnect();
 			sockets.delete(socket.id);
+		});
+
+		socket.on("error", (err) => {
+			console.error("[socketService] Socket connection error:", err);
 		});
 	};
 

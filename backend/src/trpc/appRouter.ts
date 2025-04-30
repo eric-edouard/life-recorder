@@ -22,7 +22,7 @@ export const appRouter = router({
 	utterances: protectedProcedure
 		.use(timingMiddleware)
 		.query(async ({ ctx }) => {
-			const userId = ctx.session.user.id;
+			const userId = ctx.user.id;
 			const utterances = await db
 				.select({
 					utterance: utterancesTable,
@@ -52,7 +52,7 @@ export const appRouter = router({
 				.from(speakersTable)
 				.where(
 					and(
-						eq(speakersTable.userId, ctx.session.user.id),
+						eq(speakersTable.userId, ctx.user.id),
 						eq(speakersTable.isUser, true),
 					),
 				)
@@ -105,7 +105,7 @@ export const appRouter = router({
 			return await processFinalizedSpeechChunkForVoiceProfile({
 				audio: concatenatedAudio,
 				type: input.type,
-				userId: ctx.session.user.id,
+				userId: ctx.user.id,
 				language: input.language,
 			});
 		}),
@@ -116,7 +116,7 @@ export const appRouter = router({
 				.delete(voiceProfilesTable)
 				.where(
 					and(
-						eq(voiceProfilesTable.userId, ctx.session.user.id),
+						eq(voiceProfilesTable.userId, ctx.user.id),
 						eq(voiceProfilesTable.type, input),
 					),
 				);
