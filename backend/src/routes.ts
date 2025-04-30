@@ -9,11 +9,17 @@ routesApp.get("/health", (c) => {
 	return c.json({ status: "ok" }, 200);
 });
 
+routesApp.get("/health-private", (c) => {
+	const session = c.get("session");
+	if (!session) {
+		return c.json(null, 401);
+	}
+	return c.json({ status: "ok" }, 200);
+});
+
 // Get current user
-// Assumes BetterAuth middleware has run and set 'session' in context
 routesApp.get("/api/me", async (c) => {
 	const session = c.get("session");
-	// We need to handle the case where session might be null if the user is not logged in
 	if (!session) {
 		return c.json(null, 401);
 	}

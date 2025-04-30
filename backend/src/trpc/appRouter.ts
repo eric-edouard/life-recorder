@@ -8,6 +8,7 @@ import {
 import { processFinalizedSpeechChunkForVoiceProfile } from "@backend/src/services/processSpeechService/processFinalizedSpeechChunkForVoiceProfile";
 import {
 	protectedProcedure,
+	publicProcedure,
 	router,
 	timingMiddleware,
 } from "@backend/src/services/trpc";
@@ -20,6 +21,12 @@ import { endTime, startTime } from "hono/timing";
 import z from "zod";
 
 export const appRouter = router({
+	health: publicProcedure.query(async () => {
+		return "ok";
+	}),
+	healthPrivate: protectedProcedure.query(async () => {
+		return "ok";
+	}),
 	utterances: protectedProcedure
 		.use(timingMiddleware)
 		.query(async ({ ctx }) => {
