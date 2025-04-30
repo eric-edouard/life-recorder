@@ -24,5 +24,12 @@ config.resolver.resolverMainFields = [
 // Needed for better-auth
 config.resolver.unstable_enablePackageExports = true;
 
+config.transformer.minifierConfig = {
+	compress: {
+		// The option below removes all console logs statements in production.
+		drop_console: true,
+	},
+};
+
 // Nativewind setup
 module.exports = withNativeWind(config, { input: "./global.css" });
