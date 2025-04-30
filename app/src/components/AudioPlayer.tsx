@@ -59,7 +59,7 @@ export function AudioPlayer({
 	};
 
 	return (
-		<View className="w-full flex-1 flex rounded-3xl shadow-sm">
+		<View className="w-full flex-1 flex rounded-3xl ">
 			<View className="px-5 flex-1 h-full flex justify-center my-20 flex-row items-center">
 				<View className="w-7" />
 				<View className="flex-1">

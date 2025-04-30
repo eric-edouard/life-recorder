@@ -29,19 +29,17 @@ export const InsetListRow = ({
 	...rest
 }: InsetListRowProps) => {
 	const chevronColor = useColor("secondaryLabel");
+
 	return (
 		<PressableLayer
 			backgroundColor={backgroundColor}
 			rounded={false}
 			onPress={onPress}
-			className={twMerge(
-				"flex justify-center border-b-[0.5px] border-b-opaque-separator h-row px-md ",
-				hideBorder && "border-b-0",
-			)}
+			className={"flex justify-center h-row"}
 			{...rest}
 		>
-			<View className="flex-row justify-between items-center w-full">
-				<Text className="text-lg text-label">{title}</Text>
+			<View className="flex-row justify-between items-center w-full px-md">
+				<Text className="text-lg text-label font-normal">{title}</Text>
 
 				{accessory ? (
 					accessory
@@ -52,6 +50,12 @@ export const InsetListRow = ({
 					</View>
 				)}
 			</View>
+			<View
+				className={twMerge(
+					"left-5 absolute bottom-0 h-[0.5px] bg-opaque-separator w-full",
+					hideBorder && "hidden",
+				)}
+			/>
 		</PressableLayer>
 	);
 };
