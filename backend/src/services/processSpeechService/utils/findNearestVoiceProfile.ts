@@ -1,8 +1,8 @@
 import { db } from "@backend/src/db/db";
 import { voiceProfilesTable } from "@backend/src/db/schema";
-import { sql } from "drizzle-orm";
+import { cosineDistance, lt, sql } from "drizzle-orm";
 
-const MATCH_THRESHOLD = 0.15;
+const SIMILARITY_THRESHOLD = 0.75; // matches Python script threshold
 
 type VoiceProfileMatch = {
 	id: string;
@@ -12,15 +12,30 @@ type VoiceProfileMatch = {
 export const findNearestVoiceProfile = async (
 	embedding: number[],
 ): Promise<VoiceProfileMatch | null> => {
-	const result = await db.execute(
-		sql`
-        SELECT id, speaker_id
-        FROM ${voiceProfilesTable}
-        WHERE embedding <-> ${embedding} < ${MATCH_THRESHOLD}
-        ORDER BY embedding <-> ${embedding}
-        LIMIT 1
-      `,
+	// Build distance and similarity expressions once.
+	const distanceExpr = cosineDistance(voiceProfilesTable.embedding, embedding);
+	const similarityExpr = sql<number>`1 - (${distanceExpr})`;
+
+	// k‑NN search: order by raw distance so the HNSW index is used.
+	const rows = await db
+		.select({
+			id: voiceProfilesTable.id,
+			speaker_id: voiceProfilesTable.speakerId,
+			distance: distanceExpr,
+			similarity: similarityExpr,
+		})
+		.from(voiceProfilesTable)
+		.where(lt(distanceExpr, 1 - SIMILARITY_THRESHOLD)) // distance < 0.25
+		.orderBy(distanceExpr) // nearest first, index friendly
+		.limit(1)
+		.execute();
+
+	if (rows.length === 0) return null;
+
+	const { id, speaker_id, distance, similarity } = rows[0];
+	console.log(
+		`Nearest voice profile similarity: ${similarity} (distance: ${distance})`,
 	);
 
-	return result.rows[0] as VoiceProfileMatch | null;
+	return { id, speaker_id };
 };

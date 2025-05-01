@@ -69,7 +69,7 @@ export const processFinalizedSpeechChunk = async (
 		);
 	}
 
-	if (segmentsBySpeakerIndex.size > 0) {
+	if (segmentsBySpeakerIndex.size > 1) {
 		// TODO: Not handled yet
 		return;
 	}
@@ -84,6 +84,9 @@ export const processFinalizedSpeechChunk = async (
 	if (DEBUG) {
 		console.log(
 			`🪲 ---  MATCHED USER ? ${matchedVoiceProfile?.speaker_id ?? "NO"}`,
+		);
+		console.log(
+			`🪲 ---  MATCHED VOICE PROFILE ? ${matchedVoiceProfile?.id ?? "NO"}`,
 		);
 	}
 
