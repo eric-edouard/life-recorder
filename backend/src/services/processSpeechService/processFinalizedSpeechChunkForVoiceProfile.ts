@@ -1,4 +1,3 @@
-import fs from "node:fs";
 import { db } from "@backend/src/db/db";
 import { speakersTable, voiceProfilesTable } from "@backend/src/db/schema";
 import { saveAudioToGCS } from "@backend/src/services/processSpeechService/saveAudioToGcs";
@@ -7,23 +6,19 @@ import { convertFloat32ArrayToWavBuffer } from "@backend/src/utils/audio/audioUt
 import { getWavBufferDuration } from "@backend/src/utils/audio/getWavBufferDuration";
 import { generateReadableUUID } from "@backend/src/utils/generateReadableUUID";
 import { now } from "@backend/src/utils/now";
-import type { VoiceProfileType } from "@shared/sharedTypes";
 import { eq } from "drizzle-orm";
+import fs from "node:fs";
 
 const DEBUG = true;
 
 type Params = {
 	audio: Float32Array;
-	type: VoiceProfileType;
 	userId: string;
-	language: string;
 };
 
 export const processFinalizedSpeechChunkForVoiceProfile = async ({
 	audio,
-	type,
 	userId,
-	language,
 }: Params) => {
 	const speechStartTime = now();
 	const wavBuffer = convertFloat32ArrayToWavBuffer(audio);
@@ -44,11 +39,7 @@ export const processFinalizedSpeechChunkForVoiceProfile = async ({
 		id,
 		embedding,
 		duration: durationMs / 1000,
-		createdAt: new Date(),
-		updatedAt: new Date(),
-		language,
 		fileId: id,
-		type,
 		userId,
 		speakerId: speaker.id,
 	});

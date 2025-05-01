@@ -1,41 +1,42 @@
 import { db } from "@backend/src/db/db";
-import { utterancesTable } from "@backend/src/db/schema";
-import { createAndSaveUtterance } from "@backend/src/services/processSpeechService/createAndSaveUtterance";
+import { utterancesTable, voiceProfilesTable } from "@backend/src/db/schema";
+import { getTranscriptFromAudioBuffer } from "@backend/src/services/processSpeechService/getTranscriptFromAudioBuffer";
 import { saveAudioToGCS } from "@backend/src/services/processSpeechService/saveAudioToGcs";
-import { findMatchingVoiceProfileAndSpeaker } from "@backend/src/services/processSpeechService/utils/findMatchingVoiceProfileAndSpeaker";
+import { findNearestVoiceProfile } from "@backend/src/services/processSpeechService/utils/findNearestVoiceProfile";
 import { getSpeakerEmbeddingFromBuffer } from "@backend/src/services/processSpeechService/utils/getSpeakerEmbeddingFromBuffer";
-import { insertNewVoiceProfile } from "@backend/src/services/processSpeechService/utils/insertNewVoiceProfile";
-import type { Utterance } from "@backend/src/types/deepgram";
 import type { TypedSocket } from "@backend/src/types/socket-events";
 import { convertFloat32ArrayToWavBuffer } from "@backend/src/utils/audio/audioUtils";
 import { getWavBufferDuration } from "@backend/src/utils/audio/getWavBufferDuration";
 import { generateReadableUUID } from "@backend/src/utils/generateReadableUUID";
-import { inArray } from "drizzle-orm";
+import { generateUtteranceId } from "@backend/src/utils/generateUtteranceId";
 import fs from "node:fs";
 
 const DEBUG = true;
+
 export const processFinalizedSpeechChunk = async (
-	socket: TypedSocket,
+	userId: string,
+	_socket: TypedSocket,
 	audio: Float32Array,
 	speechStartTime: number,
 ) => {
 	// 1. Convert raw audio to WAV
 	const wavBuffer = convertFloat32ArrayToWavBuffer(audio);
-	if (DEBUG) fs.writeFileSync(`1-BUFFER.wav`, wavBuffer);
-
 	const durationMs = getWavBufferDuration(wavBuffer);
-	if (DEBUG) console.log("🪲 1 DURATION", durationMs);
-
 	const fileId = generateReadableUUID(speechStartTime, durationMs);
 
-	// 2. Transcribe and store utterances
-	const utterances = await createAndSaveUtterance(
-		socket,
-		fileId,
-		wavBuffer,
-		speechStartTime,
-	);
-	if (!utterances) return;
+	if (DEBUG) {
+		console.log("🪲 1 DURATION", durationMs);
+		fs.writeFileSync(`${fileId}.wav`, wavBuffer);
+	}
+
+	// 2. Transcribe
+	const { utterances, transcript } =
+		await getTranscriptFromAudioBuffer(wavBuffer);
+
+	if (utterances.length === 0 || transcript.length === 0) {
+		console.warn("No utterances or transcript found");
+		return;
+	}
 
 	// 3. Extract segments per Deepgram speaker index
 	// Example input (utterances):
@@ -59,75 +60,73 @@ export const processFinalizedSpeechChunk = async (
 		list.push({ start: u.start, end: u.end });
 		segmentsBySpeakerIndex.set(u.speaker, list);
 	}
+
 	if (DEBUG) console.log("🪲 2 segmentsBySpeakerIndex", segmentsBySpeakerIndex);
 
-	// 4. Handle single-speaker audio
-	if (segmentsBySpeakerIndex.size === 1) {
-		if (DEBUG) console.log("🪲 ONE speaker detected");
-
-		const firstUtterance = utterances[0] as Utterance;
-		const embedding = await getSpeakerEmbeddingFromBuffer(wavBuffer);
-
-		// 5. Try to match to existing voiceProfile
-		const match = await findMatchingVoiceProfileAndSpeaker(embedding);
-
-		if (match && (!match.speaker || !match.voiceProfile)) {
-			throw new Error(
-				"[processFinalizedSpeechChunk] No speaker or voiceProfile found in the match",
-			);
-		}
-
-		if (DEBUG) {
-			console.log(`🪲 ---  MATCHED ? ${match?.speaker?.name ?? "NO"}`);
-		}
-
-		if (match?.speaker) {
-			socket.emit("liveTranscriptSpeakerIdentified", {
-				utteranceId: fileId,
-				speakerId: match.voiceProfile.id,
-				speakerName: match.speaker.name,
-				matched: true,
-			});
-
-			/**
-			 * Update utterances with the speakerId
-			 */
-			await db
-				.update(utterancesTable)
-				.set({ status: "2_done", speakerId: match.speaker.id })
-				.where(
-					inArray(
-						utterancesTable.id,
-						utterances.map((u) => u.id),
-					),
-				);
-		} else {
-			socket.emit("liveTranscriptSpeakerIdentified", {
-				utteranceId: fileId,
-				matched: false,
-			});
-
-			const voiceProfileId = await insertNewVoiceProfile({
-				duration: durationMs / 1000,
-				language: firstUtterance.languages[0],
-				fileId,
-				embedding,
-			});
-
-			/**
-			 * Update utterances with the new voiceProfileId
-			 */
-			await db
-				.update(utterancesTable)
-				.set({ status: "2_done", voiceProfileId })
-				.where(
-					inArray(
-						utterancesTable.id,
-						utterances.map((u) => u.id),
-					),
-				);
-		}
+	if (segmentsBySpeakerIndex.size === 0) {
+		throw new Error(
+			"[processFinalizedSpeechChunk] No segments by speaker index found",
+		);
 	}
+
+	if (segmentsBySpeakerIndex.size > 0) {
+		// TODO: Not handled yet
+		return;
+	}
+
+	// 4. Handle single-speaker audio
+	if (DEBUG) console.log("🪲 ONE speaker detected");
+
+	const embedding = await getSpeakerEmbeddingFromBuffer(wavBuffer);
+
+	// 5. Try to match to existing voiceProfile
+	const matchedVoiceProfile = await findNearestVoiceProfile(embedding);
+	if (DEBUG) {
+		console.log(
+			`🪲 ---  MATCHED USER ? ${matchedVoiceProfile?.speaker_id ?? "NO"}`,
+		);
+	}
+
+	let voiceProfileId = matchedVoiceProfile?.id;
+
+	// 6. If no match, insert a new voiceProfile
+	if (!voiceProfileId) {
+		const [{ id }] = await db
+			.insert(voiceProfilesTable)
+			.values({
+				id: fileId,
+				fileId,
+				speakerId: null,
+				embedding,
+				duration: durationMs / 1000,
+				createdAt: new Date(speechStartTime),
+				userId,
+			})
+			.returning({ id: voiceProfilesTable.id });
+
+		voiceProfileId = id;
+
+		console.log(`🪲 ---  Created new voice profile ${voiceProfileId}`);
+	}
+
+	await Promise.all(
+		utterances.map((u) =>
+			db.insert(utterancesTable).values({
+				id: generateUtteranceId(speechStartTime, u.start, u.end),
+				fileId,
+				fileStart: u.start,
+				fileEnd: u.end,
+				transcript: u.transcript,
+				confidence: u.confidence,
+				words: u.words,
+				languages: u.languages,
+				userId,
+				voiceProfileId,
+			}),
+		),
+	);
+
+	console.log(`🪲 ---  Created ${utterances.length} new Utterances`);
 
 	await saveAudioToGCS(fileId, wavBuffer, speechStartTime, durationMs);
 };

@@ -55,7 +55,12 @@ export const createProcessAudioService = (socket: TypedSocket) => {
 				}
 
 				socket.emit("processingAudioUpdate", "1-converting-to-wav");
-				processFinalizedSpeechChunk(socket, audio, speechStartTime);
+				processFinalizedSpeechChunk(
+					socket.data.auth.user.id,
+					socket,
+					audio,
+					speechStartTime,
+				);
 			},
 			preSpeechPadFrames: 4,
 			minSpeechFrames: 3,

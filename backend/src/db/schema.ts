@@ -1,11 +1,7 @@
-import { sql } from "drizzle-orm";
 import {
 	boolean,
-	check,
 	index,
-	integer,
 	jsonb,
-	pgEnum,
 	pgTable,
 	real,
 	text,
@@ -90,28 +86,31 @@ export const speakersTable = pgTable("speakers", {
 	id: text("id").primaryKey(),
 	name: text("name").notNull(),
 	contactId: text("contact_id").unique(),
-	notes: text("notes"),
 	createdAt: timestamp("created_at").defaultNow().notNull(),
 	updatedAt: timestamp("updated_at").defaultNow().notNull(),
 	isUser: boolean("is_user").default(false),
 	userId: text("user_id")
 		.notNull()
 		.references(() => usersTable.id),
+	// Optional key:
+	notes: text("notes"),
 });
 
 export const voiceProfilesTable = pgTable(
 	"voice_profiles",
 	{
 		id: text("id").primaryKey(),
-		speakerId: text("speaker_id").references(() => speakersTable.id),
 		embedding: vector("embedding", { dimensions: 256 }).notNull(),
 		duration: real("duration").notNull(),
-		language: text("language"),
 		fileId: text("file_id").notNull().unique(),
 		createdAt: timestamp("created_at").defaultNow().notNull(),
 		updatedAt: timestamp("updated_at").defaultNow().notNull(),
-		userId: text("user_id").references(() => usersTable.id),
-		type: text("type", { enum: ["normal", "low", "high"] }),
+		userId: text("user_id")
+			.notNull()
+			.references(() => usersTable.id),
+		// Optional keys:
+		speakerId: text("speaker_id").references(() => speakersTable.id),
+		languages: text("languages").array(),
 	},
 	(table) => [
 		index("embeddingIndex").using(
@@ -121,41 +120,21 @@ export const voiceProfilesTable = pgTable(
 	],
 );
 
-export const utteranceStatusEnum = pgEnum("utterance_status", [
-	"1_pending_voice_profile",
-	"2_done",
-]);
-export const utterancesTable = pgTable(
-	"utterances",
-	{
-		id: text("id").primaryKey(),
-		fileId: text("file_id").notNull(),
-		start: real("start").notNull(),
-		end: real("end").notNull(),
-		transcript: text("transcript").notNull(),
-		confidence: real("confidence").notNull(),
-		voiceProfileId: text("voice_profile_id").references(
-			() => voiceProfilesTable.id,
-		),
-		speakerId: text("speaker_id").references(() => speakersTable.id),
-		nonIdentifiedDeepgramSpeaker: integer(
-			"non_identified_deepgram_speaker",
-		).notNull(),
-		words: jsonb("words").notNull(),
-		languages: text("languages").array(),
-		createdAt: timestamp("created_at").defaultNow().notNull(),
-		userId: text("user_id")
-			.notNull()
-			.references(() => usersTable.id),
-		status: utteranceStatusEnum("status").default("1_pending_voice_profile"),
-	},
-	(table) => [
-		check(
-			"speakerOrVoiceProfileConditionalCheck",
-			sql`
-		  ("status" = '1_pending_voice_profile')
-		  OR ("speaker_id" IS NOT NULL OR "voice_profile_id" IS NOT NULL)
-		`,
-		),
-	],
-);
+export const utterancesTable = pgTable("utterances", {
+	id: text("id").primaryKey(),
+	fileId: text("file_id").notNull(),
+	fileStart: real("file_start").notNull(),
+	fileEnd: real("file_end").notNull(),
+	transcript: text("transcript").notNull(),
+	confidence: real("confidence").notNull(),
+	voiceProfileId: text("voice_profile_id")
+		.notNull()
+		.references(() => voiceProfilesTable.id),
+	words: jsonb("words").notNull(),
+	languages: text("languages").notNull().array(),
+	createdAt: timestamp("created_at").defaultNow().notNull(),
+	updatedAt: timestamp("updated_at").defaultNow().notNull(),
+	userId: text("user_id")
+		.notNull()
+		.references(() => usersTable.id),
+});

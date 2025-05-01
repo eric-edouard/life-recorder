@@ -15,7 +15,6 @@ import {
 import { convertPcmToFloat32Array } from "@backend/src/utils/audio/audioUtils";
 import { getSignedUrl } from "@backend/src/utils/gcs/getSignedUrl";
 import { OpusEncoder } from "@discordjs/opus";
-import { SupportedLanguage, VoiceProfileType } from "@shared/sharedTypes";
 import { and, eq } from "drizzle-orm";
 import { endTime, startTime } from "hono/timing";
 import z from "zod";
@@ -76,10 +75,9 @@ export const appRouter = router({
 			const profiles = await db
 				.select({
 					id: voiceProfilesTable.id,
-					type: voiceProfilesTable.type,
 					fileId: voiceProfilesTable.fileId,
 					speakerId: voiceProfilesTable.speakerId,
-					language: voiceProfilesTable.language,
+					languages: voiceProfilesTable.languages,
 				})
 				.from(voiceProfilesTable)
 				.where(and(eq(voiceProfilesTable.speakerId, speaker.id)));
@@ -90,8 +88,6 @@ export const appRouter = router({
 		.input(
 			z.object({
 				opusFramesB64: z.array(z.string()),
-				type: z.nativeEnum(VoiceProfileType),
-				language: z.nativeEnum(SupportedLanguage),
 			}),
 		)
 		.mutation(async ({ ctx, input }) => {
@@ -119,20 +115,18 @@ export const appRouter = router({
 
 			return await processFinalizedSpeechChunkForVoiceProfile({
 				audio: concatenatedAudio,
-				type: input.type,
 				userId: ctx.user.id,
-				language: input.language,
 			});
 		}),
 	deleteVoiceProfile: protectedProcedure
-		.input(z.nativeEnum(VoiceProfileType))
+		.input(z.string())
 		.mutation(async ({ ctx, input }) => {
 			return await db
 				.delete(voiceProfilesTable)
 				.where(
 					and(
 						eq(voiceProfilesTable.userId, ctx.user.id),
-						eq(voiceProfilesTable.type, input),
+						eq(voiceProfilesTable.id, input),
 					),
 				);
 		}),
