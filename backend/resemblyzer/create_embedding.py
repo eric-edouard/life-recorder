@@ -28,7 +28,7 @@ while True:
         if sr != 16000:
             raise ValueError(f"Expected 16 kHz sampling rate, got {sr}")
 
-        emb = encoder.embed_utterance(wav).tolist()
+        emb = encoder.embed_utterance(wav).tolist() # type: ignore
         sys.stdout.write(json.dumps({"id": req_id, "embedding": emb}) + "\n")
         sys.stdout.flush()
 
