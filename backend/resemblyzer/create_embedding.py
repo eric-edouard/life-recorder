@@ -1,17 +1,13 @@
-import sys
-import struct
-import io
-import json
-from resemblyzer import VoiceEncoder
+# create_embedding.py
+import sys, struct, io, json, contextlib
 import soundfile as sf
-import contextlib
+from resemblyzer import VoiceEncoder
 
-# Redirect stdout during model init to avoid polluting stdout
 with contextlib.redirect_stdout(sys.stderr):
     encoder = VoiceEncoder()
 print("VoiceEncoder loaded", file=sys.stderr, flush=True)
 
-def read_exactly(n):
+def read_exactly(n: int) -> bytes:
     buf = b''
     while len(buf) < n:
         chunk = sys.stdin.buffer.read(n - len(buf))
@@ -22,17 +18,22 @@ def read_exactly(n):
 
 while True:
     try:
+        id_bytes   = read_exactly(4)      # 4-byte unsigned int
         size_bytes = read_exactly(4)
-        size = struct.unpack('>I', size_bytes)[0]
-        wav_data = read_exactly(size)
+        req_id     = struct.unpack('>I', id_bytes)[0]
+        size       = struct.unpack('>I', size_bytes)[0]
 
-        wav_io = io.BytesIO(wav_data)
-        wav, sr = sf.read(wav_io)
+        wav_data   = read_exactly(size)
+        wav, sr    = sf.read(io.BytesIO(wav_data))
         if sr != 16000:
-            raise ValueError(f"Expected 16kHz sampling rate, got {sr}")
+            raise ValueError(f"Expected 16 kHz sampling rate, got {sr}")
 
-        embedding = encoder.embed_utterance(wav)
-        print(json.dumps(embedding.tolist()), flush=True)
+        emb = encoder.embed_utterance(wav).tolist()
+        sys.stdout.write(json.dumps({"id": req_id, "embedding": emb}) + "\n")
+        sys.stdout.flush()
+
     except Exception as e:
-        print(f"Error: {e}", file=sys.stderr, flush=True)
-        sys.exit(1)
+        # always tag the error with the same ID so JS can reject the right promise
+        err_id = locals().get("req_id", -1)
+        sys.stdout.write(json.dumps({"id": err_id, "error": str(e)}) + "\n")
+        sys.stdout.flush()
