@@ -5,7 +5,7 @@ from resemblyzer import VoiceEncoder
 
 with contextlib.redirect_stdout(sys.stderr):
     encoder = VoiceEncoder()
-print("VoiceEncoder loaded", file=sys.stderr, flush=True)
+print("[create_embedding.py] VoiceEncoder loaded", file=sys.stderr, flush=True)
 
 def read_exactly(n: int) -> bytes:
     buf = b''

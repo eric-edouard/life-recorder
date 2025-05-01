@@ -33,7 +33,10 @@ rl.on("line", (line) => {
 		else handlers.resolve(msg.embedding!);
 	} catch (e) {
 		// malformed JSON – log and swallow
-		console.error("Invalid JSON from Python:", e);
+		console.error(
+			"[getVoiceProfileEmbeddingFromBuffer] Invalid JSON from Python:",
+			e,
+		);
 	}
 });
 
