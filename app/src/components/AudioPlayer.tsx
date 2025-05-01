@@ -1,13 +1,8 @@
 import { BouncyPressable } from "@app/src/components/ui/Buttons/BouncyPressable";
-import { trpcClient } from "@app/src/services/trpc";
-import { userService } from "@app/src/services/userService";
 import { formatTime } from "@app/src/utils/formatTime";
 import { rgbaToHex } from "@app/src/utils/rgbaToHex";
-import { Button, ContextMenu } from "@expo/ui/swift-ui";
-import type { VoiceProfileType } from "@shared/sharedTypes";
 import { format } from "date-fns";
 import { useAudioPlayer, useAudioPlayerStatus } from "expo-audio";
-import { router } from "expo-router";
 import { SymbolView } from "expo-symbols";
 import React from "react";
 import { Text, View } from "react-native";
@@ -18,7 +13,6 @@ interface AudioPlayerProps {
 	title: string;
 	date: Date;
 	duration: number;
-	type: VoiceProfileType;
 	closeModal: () => void;
 }
 
@@ -27,7 +21,6 @@ export function AudioPlayer({
 	title,
 	duration,
 	date,
-	type,
 	closeModal,
 }: AudioPlayerProps) {
 	const player = useAudioPlayer({ uri: fileUrl });
@@ -76,7 +69,7 @@ export function AudioPlayer({
 					</View>
 				</View>
 				<View className="w-7">
-					<ContextMenu
+					{/* <ContextMenu
 						style={{
 							width: 30,
 							height: 30,
@@ -97,7 +90,7 @@ export function AudioPlayer({
 							<Button
 								systemImage="arrow.left.arrow.right"
 								onPress={async () => {
-									router.push(`/modals/record-voice-profile?type=${type}`);
+									router.push(`/modals/record-voice-profile?fileId=${fileId}`);
 								}}
 							>
 								Replace recording
@@ -112,7 +105,7 @@ export function AudioPlayer({
 								/>
 							</View>
 						</ContextMenu.Trigger>
-					</ContextMenu>
+					</ContextMenu> */}
 				</View>
 			</View>
 

@@ -4,28 +4,21 @@ import { BluetoothStatusInfo } from "@app/src/components/Sreens/DeviceBottomShee
 import { Button } from "@app/src/components/ui/Buttons/Button";
 import { IconAndText } from "@app/src/components/ui/IconAndText";
 import { Text } from "@app/src/components/ui/Text";
-import {
-	voiceProfilesLabel,
-	voiceProfilesText,
-} from "@app/src/constants/voiceProfilesText";
 import { useCustomColor } from "@app/src/contexts/ThemeContext";
 import { deviceService } from "@app/src/services/deviceService/deviceService";
 import { scanDevicesService } from "@app/src/services/deviceService/scanDevicesService";
 import { recordAudioDataService } from "@app/src/services/recordAudioDataService";
 import { userService } from "@app/src/services/userService";
 import { use$ } from "@legendapp/state/react";
-import type { VoiceProfileType } from "@shared/sharedTypes";
 import { toast } from "burnt";
 import { SymbolView } from "expo-symbols";
 import { ActivityIndicator, View } from "react-native";
 import { State } from "react-native-ble-plx";
 
 type RecordVoiceProfileScreenProps = {
-	type: VoiceProfileType;
 	closeModal: () => void;
 };
 export const RecordVoiceProfileScreen = ({
-	type,
 	closeModal,
 }: RecordVoiceProfileScreenProps) => {
 	const [isLoading, setIsLoading] = useState(false);
@@ -69,10 +62,7 @@ export const RecordVoiceProfileScreen = ({
 			{!disabled && (
 				<View className="flex-1 items-start w-full gap-8 pt-12 p-5 mb-10">
 					<Text className="text-label  text-3xl font-bold mx-2 ">
-						{voiceProfilesLabel[type]} pitch
-					</Text>
-					<Text className="text-label text-2xl leading-relaxed font-light mx-2 ">
-						{voiceProfilesText[type]}
+						Record your voice
 					</Text>
 					{isLoading && <ActivityIndicator size={"large"} color={"black"} />}
 				</View>
@@ -106,8 +96,7 @@ export const RecordVoiceProfileScreen = ({
 								setIsLoading(true);
 								try {
 									const result =
-										await userService.createVoiceProfileFromRecording(type);
-									await userService.fetchCurrentUserVoiceProfiles();
+										await userService.createVoiceProfileFromRecording();
 									closeModal();
 									if (!result) {
 										toast({
