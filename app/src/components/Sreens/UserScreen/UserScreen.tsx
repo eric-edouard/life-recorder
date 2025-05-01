@@ -95,7 +95,7 @@ export const UserScreen = () => {
 				<VoiceProfileRow type="low" hasProfile={!!voiceProfiles.low} />
 				<VoiceProfileRow type="high" hasProfile={!!voiceProfiles.high} />
 			</InsetList> */}
-			<View className="flex-1 gap-5">
+			<View className="flex-1 gap-5 mb-5">
 				{/* TESTING BUTTONS */}
 				<RowButton
 					title="Get User"

@@ -52,6 +52,18 @@ export const appRouter = router({
 	fileUrl: protectedProcedure.input(z.string()).query(async ({ input }) => {
 		return await getSignedUrl(input);
 	}),
+	voiceProfiles: protectedProcedure.query(async ({ ctx }) => {
+		const profiles = await db
+			.select({
+				id: voiceProfilesTable.id,
+				fileId: voiceProfilesTable.fileId,
+				speakerId: voiceProfilesTable.speakerId,
+				languages: voiceProfilesTable.languages,
+				createdAt: voiceProfilesTable.createdAt,
+			})
+			.from(voiceProfilesTable);
+		return profiles;
+	}),
 	userVoiceProfiles: protectedProcedure
 		.use(timingMiddleware)
 		.query(async ({ ctx }) => {

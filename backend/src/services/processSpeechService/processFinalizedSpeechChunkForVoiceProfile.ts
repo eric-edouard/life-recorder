@@ -1,7 +1,7 @@
 import { db } from "@backend/src/db/db";
 import { speakersTable, voiceProfilesTable } from "@backend/src/db/schema";
 import { saveAudioToGCS } from "@backend/src/services/processSpeechService/saveAudioToGcs";
-import { getSpeakerEmbeddingFromBuffer } from "@backend/src/services/processSpeechService/utils/getSpeakerEmbeddingFromBuffer";
+import { getVoiceProfileEmbeddingFromBuffer } from "@backend/src/services/processSpeechService/utils/getVoiceProfileEmbeddingFromBuffer";
 import { convertFloat32ArrayToWavBuffer } from "@backend/src/utils/audio/audioUtils";
 import { getWavBufferDuration } from "@backend/src/utils/audio/getWavBufferDuration";
 import { generateReadableUUID } from "@backend/src/utils/generateReadableUUID";
@@ -29,7 +29,7 @@ export const processFinalizedSpeechChunkForVoiceProfile = async ({
 
 	const id = generateReadableUUID(speechStartTime, durationMs);
 	console.log("🪲 1 ID", id);
-	const embedding = await getSpeakerEmbeddingFromBuffer(wavBuffer);
+	const embedding = await getVoiceProfileEmbeddingFromBuffer(wavBuffer);
 	console.log("🪲 2 EMBEDDING", embedding.length);
 	const speaker = await db.query.speakersTable.findFirst({
 		where: eq(speakersTable.userId, userId),

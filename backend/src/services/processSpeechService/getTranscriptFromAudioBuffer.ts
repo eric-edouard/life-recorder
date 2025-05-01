@@ -46,7 +46,6 @@ export const getTranscriptFromAudioBuffer = async (
 		result?.results.channels[0].alternatives[0].transcript ?? "";
 
 	console.log("Transcription content: ", transcript);
-	console.log("Transcription result: ", JSON.stringify(result, null, 2));
 
 	return {
 		utterances,

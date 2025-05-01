@@ -3,7 +3,7 @@ import { utterancesTable, voiceProfilesTable } from "@backend/src/db/schema";
 import { getTranscriptFromAudioBuffer } from "@backend/src/services/processSpeechService/getTranscriptFromAudioBuffer";
 import { saveAudioToGCS } from "@backend/src/services/processSpeechService/saveAudioToGcs";
 import { findNearestVoiceProfile } from "@backend/src/services/processSpeechService/utils/findNearestVoiceProfile";
-import { getSpeakerEmbeddingFromBuffer } from "@backend/src/services/processSpeechService/utils/getSpeakerEmbeddingFromBuffer";
+import { getVoiceProfileEmbeddingFromBuffer } from "@backend/src/services/processSpeechService/utils/getVoiceProfileEmbeddingFromBuffer";
 import type { TypedSocket } from "@backend/src/types/socket-events";
 import { convertFloat32ArrayToWavBuffer } from "@backend/src/utils/audio/audioUtils";
 import { getWavBufferDuration } from "@backend/src/utils/audio/getWavBufferDuration";
@@ -77,7 +77,7 @@ export const processFinalizedSpeechChunk = async (
 	// 4. Handle single-speaker audio
 	if (DEBUG) console.log("🪲 ONE speaker detected");
 
-	const embedding = await getSpeakerEmbeddingFromBuffer(wavBuffer);
+	const embedding = await getVoiceProfileEmbeddingFromBuffer(wavBuffer);
 
 	// 5. Try to match to existing voiceProfile
 	const matchedVoiceProfile = await findNearestVoiceProfile(embedding);
