@@ -28,11 +28,6 @@ export const LiveUtteranceItem = ({
 				isUser && "self-end",
 			)}
 		>
-			{/* <Text
-				className={twMerge("text-xs text-secondary-label mb-1 font-medium")}
-			>
-				{formattedTime}
-			</Text> */}
 			<Text className={twMerge("text-[15px] text-label")}>
 				{item.transcript}
 			</Text>
