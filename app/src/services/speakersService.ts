@@ -9,7 +9,6 @@ export const speakersService = (() => {
 	return {
 		async fetchSpeakers() {
 			const res = await trpcClient.speakers.query();
-			console.log("speakersService >>>>>>", res);
 			speakers$.set(res);
 		},
 		speakers$,

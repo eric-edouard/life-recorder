@@ -86,6 +86,12 @@ export default function RootLayout() {
 						}}
 					/>
 					<Stack.Screen
+						name="live"
+						options={{
+							headerTitle: "Live Transcription",
+						}}
+					/>
+					<Stack.Screen
 						name="speakers"
 						options={{
 							headerTitle: "Speakers",
