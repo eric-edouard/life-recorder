@@ -17,7 +17,6 @@ export const trpcClient = createTRPCClient<AppRouter>({
 			headers: () => {
 				const headers = new Map<string, string>();
 				const cookies = authClient.getCookie();
-				console.log("cookies:", cookies);
 				if (cookies) {
 					headers.set("Cookie", cookies);
 				}

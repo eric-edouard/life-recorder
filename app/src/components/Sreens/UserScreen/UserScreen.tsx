@@ -7,7 +7,7 @@ import { trpcQuery } from "@app/src/services/trpc";
 import { userService } from "@app/src/services/userService";
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
-import { useRouter } from "expo-router";
+import { router, useRouter } from "expo-router";
 import { Alert, ScrollView, View } from "react-native";
 
 // const VoiceProfileRow = ({
@@ -34,14 +34,6 @@ import { Alert, ScrollView, View } from "react-native";
 // 	);
 // };
 
-const speakers: {
-	id: string;
-	name: string;
-}[] = [
-	{ id: "1", name: "John Doe" },
-	{ id: "2", name: "Jane Doe" },
-];
-
 // Add TypeScript type annotations for the VoiceProfileCard component
 interface VoiceProfile {
 	id: string;
@@ -54,20 +46,22 @@ interface VoiceProfile {
 const VoiceProfileCard: FC<{ voiceProfile: VoiceProfile }> = ({
 	voiceProfile,
 }) => {
-	const speaker = speakers.find((s) => s.id === voiceProfile.speakerId);
+	const speaker = voiceProfile.speakerId;
 	return (
 		<View className="bg-secondary-system-background p-4 rounded-lg mb-4 relative">
 			<Text className="text-quaternary-label">
 				Created At: {format(voiceProfile.createdAt, " HH:mm:ss dd/MM/yyyy")}
 			</Text>
 			<Text className="text-secondary-label">
-				Speaker: {speaker ? speaker.name : "Unknown Speaker"}
+				Speaker: {speaker ? speaker : "Unknown Speaker"}
 			</Text>
 			{!speaker && (
 				<RowButton
 					title="Assign Speaker"
 					onPress={() => {
-						// Logic to assign speaker
+						router.push(
+							`/modals/assign-voice-profile-speaker?voiceProfileId=${voiceProfile.id}`,
+						);
 					}}
 				/>
 			)}
@@ -122,11 +116,20 @@ export const UserScreen = () => {
 					}}
 				/>
 			</View>
-			{voiceProfiles?.map((voiceProfile) => {
-				return (
-					<VoiceProfileCard key={voiceProfile.id} voiceProfile={voiceProfile} />
-				);
-			})}
+			{voiceProfiles
+				?.sort((a, b) => {
+					return (
+						new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+					);
+				})
+				.map((voiceProfile) => {
+					return (
+						<VoiceProfileCard
+							key={voiceProfile.id}
+							voiceProfile={voiceProfile}
+						/>
+					);
+				})}
 		</ScrollView>
 	);
 };

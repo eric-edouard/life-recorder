@@ -9,6 +9,7 @@ export default function SpeakersScreen() {
 	const { data: speakers, isLoading } = useQuery(
 		trpcQuery.speakers.queryOptions(),
 	);
+
 	return (
 		<FlatList
 			data={speakers}

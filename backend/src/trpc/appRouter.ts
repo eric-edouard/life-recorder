@@ -64,6 +64,19 @@ export const appRouter = router({
 			.from(voiceProfilesTable);
 		return profiles;
 	}),
+	assignVoiceProfileSpeaker: protectedProcedure
+		.input(z.object({ voiceProfileId: z.string(), speakerId: z.string() }))
+		.mutation(async ({ ctx, input }) => {
+			return await db
+				.update(voiceProfilesTable)
+				.set({ speakerId: input.speakerId })
+				.where(
+					and(
+						eq(voiceProfilesTable.id, input.voiceProfileId),
+						eq(voiceProfilesTable.userId, ctx.user.id),
+					),
+				);
+		}),
 	speakers: protectedProcedure.query(async ({ ctx }) => {
 		const speakers = await db
 			.select()
