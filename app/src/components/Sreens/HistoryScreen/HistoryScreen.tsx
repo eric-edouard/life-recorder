@@ -1,6 +1,6 @@
 import { Text } from "@app/src/components/ui/Text";
 import { trpcQuery } from "@app/src/services/trpc";
-import { useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { ActivityIndicator, FlatList, View } from "react-native";
 
@@ -79,7 +79,17 @@ const EmptyState = () => (
 );
 
 export const HistoryScreen = () => {
-	const { data, isLoading } = useQuery(trpcQuery.utterances.queryOptions());
+	const { data, isLoading } = useInfiniteQuery(
+		trpcQuery.utterances.infiniteQueryOptions(
+			{
+				limit: 20,
+				cursor: 0,
+			},
+			{
+				getNextPageParam: (lastPage) => lastPage.nextCursor,
+			},
+		),
+	);
 
 	if (isLoading) {
 		return (
@@ -92,17 +102,21 @@ export const HistoryScreen = () => {
 		);
 	}
 
+	if (!data) {
+		return <EmptyState />;
+	}
+
 	return (
 		<View className="mt-safe-offset-5 p-5 flex-1 w-full bg-system-background">
 			<Text className="text-2xl font-bold mb-6 text-label">
 				Conversation History
 			</Text>
 
-			{!data || data.length === 0 ? (
+			{!data || data.pages.length === 0 ? (
 				<EmptyState />
 			) : (
 				<FlatList
-					data={data}
+					data={data.pages.flatMap((page) => page.items).toReversed()}
 					keyExtractor={(item) => item.utterance.id}
 					renderItem={({ item }) => (
 						<UtteranceItem

@@ -15,7 +15,7 @@ import {
 import { convertPcmToFloat32Array } from "@backend/src/utils/audio/audioUtils";
 import { getSignedUrl } from "@backend/src/utils/gcs/getSignedUrl";
 import { OpusEncoder } from "@discordjs/opus";
-import { and, eq } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 import { endTime, startTime } from "hono/timing";
 import z from "zod";
 
@@ -28,7 +28,13 @@ export const appRouter = router({
 	}),
 	utterances: protectedProcedure
 		.use(timingMiddleware)
-		.query(async ({ ctx }) => {
+		.input(
+			z.object({
+				limit: z.number().min(1).max(100).nullish(),
+				cursor: z.number().nullish(),
+			}),
+		)
+		.query(async ({ ctx, input }) => {
 			startTime(ctx.c, "DB utterances");
 			const userId = ctx.user.id;
 			const utterances = await db
@@ -45,9 +51,18 @@ export const appRouter = router({
 					speakersTable,
 					eq(voiceProfilesTable.speakerId, speakersTable.id),
 				)
-				.where(eq(utterancesTable.userId, userId));
+				.where(eq(utterancesTable.userId, userId))
+				.orderBy(desc(utterancesTable.createdAt))
+				.limit(input.limit ?? 20)
+				.offset(input.cursor ?? 0);
 			endTime(ctx.c, "DB utterances");
-			return utterances;
+			return {
+				items: utterances,
+				nextCursor:
+					utterances.length === (input.limit ?? 20)
+						? utterances[utterances.length - 1].utterance.createdAt.getTime()
+						: null,
+			};
 		}),
 	fileUrl: protectedProcedure.input(z.string()).query(async ({ input }) => {
 		return await getSignedUrl(input);
