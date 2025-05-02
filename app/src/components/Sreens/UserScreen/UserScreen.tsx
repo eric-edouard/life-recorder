@@ -3,8 +3,13 @@ import React, { type FC } from "react";
 import { RowButton } from "@app/src/components/ui/Buttons/RowButton";
 import { Text } from "@app/src/components/ui/Text";
 import { authClient } from "@app/src/services/authClient";
+import {
+	type Speaker,
+	speakersService,
+} from "@app/src/services/speakersService";
 import { trpcQuery } from "@app/src/services/trpc";
 import { userService } from "@app/src/services/userService";
+import { use$ } from "@legendapp/state/react";
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { router, useRouter } from "expo-router";
@@ -41,19 +46,25 @@ interface VoiceProfile {
 	speakerId: string | null;
 	languages: string[] | null;
 	createdAt: Date;
+	duration: number;
 }
 
-const VoiceProfileCard: FC<{ voiceProfile: VoiceProfile }> = ({
-	voiceProfile,
-}) => {
-	const speaker = voiceProfile.speakerId;
+const VoiceProfileCard: FC<{
+	voiceProfile: VoiceProfile;
+	speakers: Speaker[];
+}> = ({ voiceProfile, speakers }) => {
+	const speaker = speakers.find((s) => s.id === voiceProfile.speakerId);
+
 	return (
 		<View className="bg-secondary-system-background p-4 rounded-lg mb-4 relative">
 			<Text className="text-quaternary-label">
 				Created At: {format(voiceProfile.createdAt, " HH:mm:ss dd/MM/yyyy")}
 			</Text>
 			<Text className="text-secondary-label">
-				Speaker: {speaker ? speaker : "Unknown Speaker"}
+				Speaker: {speaker ? speaker.name : "Unknown Speaker"}
+			</Text>
+			<Text className="text-secondary-label">
+				Duration: {voiceProfile.duration}s
 			</Text>
 			{!speaker && (
 				<RowButton
@@ -82,6 +93,7 @@ export const UserScreen = () => {
 		trpcQuery.voiceProfiles.queryOptions(),
 	);
 	const router = useRouter();
+	const speakers = use$(() => speakersService.speakers$?.get()) ?? [];
 	return (
 		<ScrollView className="flex-1 px-5 pt-10">
 			{/* <InsetList headerText="Voice Profiles" className="mb-5">
@@ -127,6 +139,7 @@ export const UserScreen = () => {
 						<VoiceProfileCard
 							key={voiceProfile.id}
 							voiceProfile={voiceProfile}
+							speakers={speakers}
 						/>
 					);
 				})}

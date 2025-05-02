@@ -60,6 +60,7 @@ export const appRouter = router({
 				speakerId: voiceProfilesTable.speakerId,
 				languages: voiceProfilesTable.languages,
 				createdAt: voiceProfilesTable.createdAt,
+				duration: voiceProfilesTable.duration,
 			})
 			.from(voiceProfilesTable);
 		return profiles;
@@ -84,6 +85,20 @@ export const appRouter = router({
 			.where(eq(speakersTable.userId, ctx.user.id));
 		return speakers;
 	}),
+	speakerById: protectedProcedure
+		.input(z.string())
+		.query(async ({ ctx, input }) => {
+			const speaker = await db
+				.select()
+				.from(speakersTable)
+				.where(
+					and(
+						eq(speakersTable.id, input),
+						eq(speakersTable.userId, ctx.user.id),
+					),
+				);
+			return speaker;
+		}),
 	userVoiceProfiles: protectedProcedure
 		.use(timingMiddleware)
 		.query(async ({ ctx }) => {

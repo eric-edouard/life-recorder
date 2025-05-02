@@ -1,4 +1,5 @@
 import { backendUrl } from "@app/src/constants/backendUrl";
+import { speakersService } from "@app/src/services/speakersService";
 import { trpcClient } from "@app/src/services/trpc";
 import type { InferQueryOutput } from "@app/src/types/trpc";
 import { btoa } from "react-native-quick-base64";
@@ -6,6 +7,7 @@ import { authClient } from "./authClient";
 import { recordAudioDataService } from "./recordAudioDataService";
 export type VoiceProfile = InferQueryOutput<"userVoiceProfiles">[number];
 
+speakersService;
 export const userService = (() => {
 	return {
 		async startRecordingVoiceProfile() {
