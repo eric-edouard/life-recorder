@@ -1,105 +1,88 @@
 import { socketService } from "@app/src/services/socketService";
-import { filterUniqueById } from "@app/src/utils/filterUniqueId";
 import { observable } from "@legendapp/state";
-import type {
-	LiveTranscript,
-	ProcessingAudioPhase,
-} from "@shared/socketEvents";
+import type { ProcessingSpeechUpdate } from "@shared/socketEvents";
 
-export type SpeakerLoading = {
-	speakerId?: null;
-	speakerName?: null;
-	identified: false;
-	isLoading: true;
+export type LiveUtterance = {
+	utteranceId: string;
+	startTime: number;
+	transcript: string;
+	speakerStatus: "processing" | "recognized" | "unknown";
+	speakerId: string | null;
 };
 
-export type SpeakerIdentified = {
-	speakerId: string;
-	speakerName: string;
-	identified: true;
-	isLoading: false;
-};
-
-export type SpeakerNotIdentified = {
-	speakerId?: null;
-	speakerName?: null;
-	identified: false;
-	isLoading: false;
-};
-
-export type Speaker = SpeakerLoading | SpeakerIdentified | SpeakerNotIdentified;
-
-export type LiveTranscriptWithSpeaker = LiveTranscript & {
-	speaker: Speaker;
-};
-
-const speakerLoading: SpeakerLoading = {
-	isLoading: true,
-	speakerId: null,
-	speakerName: null,
-	identified: false,
-};
+export type SpeechProcessingStatus =
+	| "none"
+	| "processing-audio"
+	| "transcribing"
+	| "matching"
+	| "done";
 
 export const liveTranscriptionService = (() => {
 	const isSpeechDetected$ = observable(false);
-	const processingAudioPhase$ = observable<ProcessingAudioPhase>("3-done");
-	const transcripts$ = observable<LiveTranscriptWithSpeaker[]>([]);
+	const speechProcessingStatus$ = observable<SpeechProcessingStatus>("none");
+	const liveUtterances$ = observable<LiveUtterance[]>([]);
 
-	socketService.socket?.on("speechStarted", () => isSpeechDetected$.set(true));
-	socketService.socket?.on("speechStopped", () => isSpeechDetected$.set(false));
+	socketService.socket?.on(
+		"processingSpeechUpdate",
+		(update: ProcessingSpeechUpdate) => {
+			switch (update.phase) {
+				case "0-speech-detected":
+					isSpeechDetected$.set(true);
+					speechProcessingStatus$.set("none");
+					break;
+				case "0.5-speech-misfire":
+					isSpeechDetected$.set(false);
+					speechProcessingStatus$.set("none");
+					break;
+				case "1-speech-stopped":
+					isSpeechDetected$.set(false);
+					speechProcessingStatus$.set("processing-audio");
+					break;
+				case "3-transcribing":
+					speechProcessingStatus$.set("transcribing");
+					break;
+				case "3.5-no-speech-detected":
+					isSpeechDetected$.set(false);
+					speechProcessingStatus$.set("none");
+					break;
+				case "4-matching-speakers":
+					speechProcessingStatus$.set("matching");
 
-	socketService.socket?.on("processingAudioUpdate", (phase) =>
-		processingAudioPhase$.set(phase),
-	);
-
-	socketService.socket?.on("liveTranscript", (transcript) => {
-		return transcripts$.set((prev) =>
-			filterUniqueById(
-				[
-					...prev,
-					{
-						...transcript,
-						speaker: speakerLoading,
-					},
-				],
-				"utteranceId",
-			),
-		);
-	});
-
-	socketService.socket?.on("liveTranscriptSpeakerIdentified", (speaker) => {
-		const foundIndex = transcripts$
-			.peek()
-			.findIndex((t) => t.utteranceId === speaker.utteranceId);
-		if (foundIndex === -1) {
-			return;
-		}
-
-		console.log(
-			"[liveTranscriptionService] liveTranscriptSpeakerIdentified",
-			speaker,
-		);
-
-		transcripts$[foundIndex].speaker.set(
-			speaker.matched
-				? {
-						speakerId: speaker.speakerId as string,
-						speakerName: speaker.speakerName as string,
-						identified: speaker.matched,
-						isLoading: false,
-					}
-				: {
+					// biome-ignore lint/correctness/noSwitchDeclarations: <explanation>
+					const newUtterances: LiveUtterance[] = update.utterances.map((u) => ({
+						utteranceId: u.utteranceId,
+						startTime: u.startTime,
+						transcript: u.transcript,
+						speakerStatus: "processing",
 						speakerId: null,
-						speakerName: null,
-						identified: false,
-						isLoading: false,
-					},
-		);
-	});
+					}));
+
+					liveUtterances$.set((prev) => [...prev, ...newUtterances]);
+					break;
+				case "5-done":
+					speechProcessingStatus$.set("done");
+					liveUtterances$.set((prev) =>
+						prev.map((utterance) => {
+							const matchingUtterance = update.utterances.find(
+								(u) => u.utteranceId === utterance.utteranceId,
+							);
+							return matchingUtterance
+								? {
+										...utterance,
+										speakerStatus: "recognized",
+										speakerId: matchingUtterance.speakerId,
+									}
+								: { ...utterance, speakerStatus: "unknown" };
+						}),
+					);
+					break;
+			}
+		},
+	);
 
 	return {
 		isSpeechDetected$,
-		processingAudioPhase$,
-		transcripts$,
+		speechProcessingStatus$,
+		liveUtterances$,
 	};
 })();

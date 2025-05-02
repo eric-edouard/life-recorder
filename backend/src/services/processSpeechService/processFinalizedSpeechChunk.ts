@@ -13,12 +13,21 @@ import fs from "node:fs";
 
 const DEBUG = true;
 
-export const processFinalizedSpeechChunk = async (
-	userId: string,
-	_socket: TypedSocket,
-	audio: Float32Array,
-	speechStartTime: number,
-) => {
+type ProcessFinalizedSpeechChunkParams = {
+	id: string;
+	userId: string;
+	socket: TypedSocket;
+	audio: Float32Array;
+	speechStartTime: number;
+};
+
+export const processFinalizedSpeechChunk = async ({
+	id,
+	userId,
+	audio,
+	speechStartTime,
+	socket,
+}: ProcessFinalizedSpeechChunkParams) => {
 	// 1. Convert raw audio to WAV
 	const wavBuffer = convertFloat32ArrayToWavBuffer(audio);
 	const durationMs = getWavBufferDuration(wavBuffer);
@@ -29,14 +38,33 @@ export const processFinalizedSpeechChunk = async (
 		fs.writeFileSync(`${fileId}.wav`, wavBuffer);
 	}
 
+	socket.emit("processingSpeechUpdate", {
+		phase: "3-transcribing",
+		id,
+	});
+
 	// 2. Transcribe
 	const { utterances, transcript } =
 		await getTranscriptFromAudioBuffer(wavBuffer);
 
 	if (utterances.length === 0 || transcript.length === 0) {
 		console.warn("No utterances or transcript found");
+		socket.emit("processingSpeechUpdate", {
+			phase: "3.5-no-speech-detected",
+			id,
+		});
 		return;
 	}
+
+	socket.emit("processingSpeechUpdate", {
+		phase: "4-matching-speakers",
+		id,
+		utterances: utterances.map((u) => ({
+			utteranceId: u.id,
+			startTime: u.start,
+			transcript: u.transcript,
+		})),
+	});
 
 	// 3. Extract segments per Deepgram speaker index
 	// Example input (utterances):
@@ -89,6 +117,15 @@ export const processFinalizedSpeechChunk = async (
 			`🪲 ---  MATCHED VOICE PROFILE ? ${matchedVoiceProfile?.id ?? "NO"}`,
 		);
 	}
+
+	socket.emit("processingSpeechUpdate", {
+		phase: "5-done",
+		id,
+		utterances: utterances.map((u) => ({
+			utteranceId: u.id,
+			speakerId: matchedVoiceProfile?.speaker_id ?? null,
+		})),
+	});
 
 	let voiceProfileId = matchedVoiceProfile?.id;
 

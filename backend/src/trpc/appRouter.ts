@@ -37,7 +37,8 @@ export const appRouter = router({
 		.query(async ({ ctx, input }) => {
 			startTime(ctx.c, "DB utterances");
 			const userId = ctx.user.id;
-			const utterances = await db
+			const page = input.cursor ? input.cursor * (input.limit ?? 20) : 0;
+			const results = await db
 				.select({
 					utterance: utterancesTable,
 					speaker: speakersTable,
@@ -54,14 +55,11 @@ export const appRouter = router({
 				.where(eq(utterancesTable.userId, userId))
 				.orderBy(desc(utterancesTable.createdAt))
 				.limit(input.limit ?? 20)
-				.offset(input.cursor ?? 0);
+				.offset(page);
 			endTime(ctx.c, "DB utterances");
 			return {
-				items: utterances,
-				nextCursor:
-					utterances.length === (input.limit ?? 20)
-						? utterances[utterances.length - 1].utterance.createdAt.getTime()
-						: null,
+				items: results,
+				nextPage: results.length === (input.limit ?? 20) ? page + 1 : null,
 			};
 		}),
 	fileUrl: protectedProcedure.input(z.string()).query(async ({ input }) => {

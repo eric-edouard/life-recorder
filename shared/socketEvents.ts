@@ -4,32 +4,60 @@ export type ServerLog = {
 	timestamp: number;
 };
 
-export type ProcessingAudioPhase =
-	| "1-converting-to-wav"
-	| "2-transcribing"
-	| "3-done";
+export type SpeechDetectedUpdate = {
+	phase: "0-speech-detected";
+};
 
-export type LiveTranscript = {
-	utteranceId: string;
-	transcript: string;
+export type SpeechMisfireUpdate = {
+	phase: "0.5-speech-misfire";
+};
+
+export type SpeechStoppedUpdate = {
+	phase: "1-speech-stopped";
+	id: string;
 	startTime: number;
 };
 
-export type LiveTranscriptSpeaker = {
-	utteranceId: string;
-	speakerId?: string;
-	speakerName?: string;
-	matched: boolean;
+export type TranscribingUpdate = {
+	phase: "3-transcribing";
+	id: string;
 };
 
+export type NoSpeechDetectedUpdate = {
+	phase: "3.5-no-speech-detected";
+	id: string;
+};
+
+export type MatchingSpeakersUpdate = {
+	phase: "4-matching-speakers";
+	id: string;
+	utterances: {
+		utteranceId: string;
+		startTime: number;
+		transcript: string;
+	}[];
+};
+
+export type DoneUpdate = {
+	phase: "5-done";
+	id: string;
+	utterances: {
+		utteranceId: string;
+		speakerId: string | null;
+	}[];
+};
+
+export type ProcessingSpeechUpdate =
+	| SpeechDetectedUpdate
+	| SpeechMisfireUpdate
+	| SpeechStoppedUpdate
+	| TranscribingUpdate
+	| NoSpeechDetectedUpdate
+	| MatchingSpeakersUpdate
+	| DoneUpdate;
+
 export interface ServerToClientEvents {
-	speechStarted: () => void;
-	speechStopped: () => void;
-	processingAudioUpdate: (phase: ProcessingAudioPhase) => void;
-	liveTranscript: (transcript: LiveTranscript) => void;
-	liveTranscriptSpeakerIdentified: (
-		transcriptSpeaker: LiveTranscriptSpeaker,
-	) => void;
+	processingSpeechUpdate: (update: ProcessingSpeechUpdate) => void;
 }
 
 export type ClientToServerEvents = {

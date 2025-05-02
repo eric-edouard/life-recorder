@@ -86,7 +86,7 @@ export const HistoryScreen = () => {
 				cursor: 0,
 			},
 			{
-				getNextPageParam: (lastPage) => lastPage.nextCursor,
+				getNextPageParam: (lastPage) => lastPage.nextPage,
 			},
 		),
 	);

@@ -21,8 +21,8 @@ export const HomeScreen = () => {
 	}, [connectedDeviceId]);
 
 	return (
-		<ScreenScrollView.Container title="Life Recorder" className="pt-5">
-			<View className="px-lg flex items-start gap-3">
+		<ScreenScrollView.Container title="Life Recorder" className="pt-5 ">
+			<View className="px-lg flex items-start gap-3 ">
 				<View className=" w-full flex-row flex-1 justify-between items-end mb-4">
 					<View className="flex items-start gap-3">
 						<DeviceStatusButton />
@@ -47,8 +47,8 @@ export const HomeScreen = () => {
 						/>
 					</TouchableOpacity>
 				</View>
-				<LiveTranscriptsWidget />
 			</View>
+			<LiveTranscriptsWidget />
 		</ScreenScrollView.Container>
 	);
 };
