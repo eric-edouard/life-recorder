@@ -79,6 +79,12 @@ export default function RootLayout() {
 							headerTitle: "User",
 						}}
 					/>
+					<Stack.Screen
+						name="speakers"
+						options={{
+							headerTitle: "Speakers",
+						}}
+					/>
 				</Stack>
 			</ThemeProvider>
 		</QueryClientProvider>

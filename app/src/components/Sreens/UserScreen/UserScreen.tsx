@@ -98,12 +98,20 @@ export const UserScreen = () => {
 			<View className="flex-1 gap-5 mb-5">
 				{/* TESTING BUTTONS */}
 				<RowButton
+					colorStyle="default"
 					title="Get User"
 					onPress={() => {
 						userService.fetchMe().then((user) => {
 							Alert.alert("User", JSON.stringify(user, null, 2));
 						});
 					}}
+				/>
+				<RowButton
+					title="Speakers"
+					onPress={() => {
+						router.push("/speakers");
+					}}
+					withChevron
 				/>
 				<RowButton
 					title="Logout"

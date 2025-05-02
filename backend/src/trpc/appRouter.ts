@@ -64,6 +64,13 @@ export const appRouter = router({
 			.from(voiceProfilesTable);
 		return profiles;
 	}),
+	speakers: protectedProcedure.query(async ({ ctx }) => {
+		const speakers = await db
+			.select()
+			.from(speakersTable)
+			.where(eq(speakersTable.userId, ctx.user.id));
+		return speakers;
+	}),
 	userVoiceProfiles: protectedProcedure
 		.use(timingMiddleware)
 		.query(async ({ ctx }) => {
