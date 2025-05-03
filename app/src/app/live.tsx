@@ -21,10 +21,12 @@ export default function LiveScreen() {
 	const historicalUtterances: LiveUtterance[] = historicalData
 		? historicalData.items.map((item) => ({
 				utteranceId: item.utterance.id,
-				startTime: item.utterance.createdAt.getTime(),
+				speechStart: item.utterance.createdAt.getTime(),
+				speechEnd: item.utterance.createdAt.getTime(),
 				transcript: item.utterance.transcript,
 				speakerStatus: "recognized",
 				speakerId: item.speaker?.id || null,
+				voiceProfileId: item.utterance.voiceProfileId || null,
 			}))
 		: [];
 

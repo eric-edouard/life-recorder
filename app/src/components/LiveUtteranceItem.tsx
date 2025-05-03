@@ -1,8 +1,9 @@
+import { PressableLayer } from "@app/src/components/PressableLayer";
 import type { LiveUtterance } from "@app/src/services/liveTranscriptionService";
 import type { Speaker } from "@app/src/services/speakersService";
 import { format } from "date-fns";
+import { router } from "expo-router";
 import React from "react";
-import { View } from "react-native";
 import { twMerge } from "tailwind-merge";
 import { Text } from "./ui/Text";
 
@@ -13,7 +14,7 @@ export const LiveUtteranceItem = ({
 	item: LiveUtterance;
 	speakers: Speaker[];
 }) => {
-	const formattedTime = format(new Date(item.startTime), "hh:mm:ss a");
+	const formattedTime = format(new Date(item.speechStart), "hh:mm:ss a");
 	const foundSpeaker = speakers.find((s) => s.id === item.speakerId);
 	const isUser = foundSpeaker?.isUser ?? false;
 	const speakerTitle =
@@ -22,7 +23,12 @@ export const LiveUtteranceItem = ({
 			: foundSpeaker?.name || "Unknown";
 
 	return (
-		<View
+		<PressableLayer
+			onPress={() => {
+				router.push(
+					`/modals/assign-voice-profile-speaker?voiceProfileId=${item.voiceProfileId}`,
+				);
+			}}
 			className={twMerge(
 				"mb-3 p-3.5 bg-secondary-system-background rounded-2xl mx-3 w-fit max-w-[80%] self-start",
 				isUser && "self-end",
@@ -36,6 +42,6 @@ export const LiveUtteranceItem = ({
 					{speakerTitle}
 				</Text>
 			)}
-		</View>
+		</PressableLayer>
 	);
 };

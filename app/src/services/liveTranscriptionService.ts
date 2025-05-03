@@ -4,10 +4,12 @@ import type { ProcessingSpeechUpdate } from "@shared/socketEvents";
 
 export type LiveUtterance = {
 	utteranceId: string;
-	startTime: number;
+	speechStart: number;
+	speechEnd: number;
 	transcript: string;
 	speakerStatus: "processing" | "recognized" | "unknown";
 	speakerId: string | null;
+	voiceProfileId: string | null;
 };
 
 export type SpeechProcessingStatus =
@@ -51,10 +53,12 @@ export const liveTranscriptionService = (() => {
 					// biome-ignore lint/correctness/noSwitchDeclarations: <explanation>
 					const newUtterances: LiveUtterance[] = update.utterances.map((u) => ({
 						utteranceId: u.utteranceId,
-						startTime: u.startTime,
+						speechStart: u.speechStart,
+						speechEnd: u.speechEnd,
 						transcript: u.transcript,
 						speakerStatus: "processing",
 						speakerId: null,
+						voiceProfileId: null,
 					}));
 
 					liveUtterances$.set((prev) => [...prev, ...newUtterances]);
@@ -71,6 +75,7 @@ export const liveTranscriptionService = (() => {
 										...utterance,
 										speakerStatus: "recognized",
 										speakerId: matchingUtterance.speakerId,
+										voiceProfileId: matchingUtterance.voiceProfileId,
 									}
 								: { ...utterance, speakerStatus: "unknown" };
 						}),

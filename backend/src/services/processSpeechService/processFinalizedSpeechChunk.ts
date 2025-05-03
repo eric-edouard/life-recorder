@@ -9,7 +9,6 @@ import { convertFloat32ArrayToWavBuffer } from "@backend/src/utils/audio/audioUt
 import { getWavBufferDuration } from "@backend/src/utils/audio/getWavBufferDuration";
 import { generateReadableUUID } from "@backend/src/utils/generateReadableUUID";
 import { generateUtteranceId } from "@backend/src/utils/generateUtteranceId";
-import fs from "node:fs";
 
 const DEBUG = true;
 
@@ -35,7 +34,7 @@ export const processFinalizedSpeechChunk = async ({
 
 	if (DEBUG) {
 		console.log("🪲 1 DURATION", durationMs);
-		fs.writeFileSync(`${fileId}.wav`, wavBuffer);
+		// fs.writeFileSync(`${fileId}.wav`, wavBuffer);
 	}
 
 	socket.emit("processingSpeechUpdate", {
@@ -61,7 +60,9 @@ export const processFinalizedSpeechChunk = async ({
 		id,
 		utterances: utterances.map((u) => ({
 			utteranceId: u.id,
-			startTime: u.start,
+			fileId,
+			speechStart: u.start,
+			speechEnd: u.end,
 			transcript: u.transcript,
 		})),
 	});
@@ -124,6 +125,7 @@ export const processFinalizedSpeechChunk = async ({
 		utterances: utterances.map((u) => ({
 			utteranceId: u.id,
 			speakerId: matchedVoiceProfile?.speaker_id ?? null,
+			voiceProfileId: matchedVoiceProfile?.id ?? null,
 		})),
 	});
 

@@ -33,7 +33,9 @@ export type MatchingSpeakersUpdate = {
 	id: string;
 	utterances: {
 		utteranceId: string;
-		startTime: number;
+		fileId: string;
+		speechStart: number;
+		speechEnd: number;
 		transcript: string;
 	}[];
 };
@@ -44,6 +46,7 @@ export type DoneUpdate = {
 	utterances: {
 		utteranceId: string;
 		speakerId: string | null;
+		voiceProfileId: string | null;
 	}[];
 };
 
