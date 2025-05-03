@@ -35,7 +35,7 @@ export default function LiveScreen() {
 	);
 
 	const combinedUtterances = [
-		...liveUtterancesFromService,
+		...liveUtterancesFromService.toReversed(),
 		...historicalUtterances,
 	].filter(
 		(value, index, self) =>

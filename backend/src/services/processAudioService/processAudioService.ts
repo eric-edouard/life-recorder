@@ -1,6 +1,7 @@
 import { CHANNELS, SAMPLE_RATE } from "@backend/src/constants/audioConstants";
 import { DEEPGRAM_LIVE_TRANSCRIPTION_ENABLED } from "@backend/src/constants/features";
 import { deepgramLiveTranscriptionService } from "@backend/src/services/processAudioService/utils/deepgramLiveTranscriptionService";
+import { processFinalizedSpeechChunk } from "@backend/src/services/processSpeechService/processFinalizedSpeechChunk";
 import type { TypedSocket } from "@backend/src/types/socket-events";
 import { convertPcmToFloat32Array } from "@backend/src/utils/audio/audioUtils";
 import { generateReadableUUID } from "@backend/src/utils/generateReadableUUID";
@@ -30,7 +31,7 @@ export const createProcessAudioService = (socket: TypedSocket) => {
 			// frameSamples: 1024,
 			preSpeechPadFrames: 4,
 			minSpeechFrames: 3,
-			// redemptionFrames: 1,
+			// redemptionFrames: 2,
 			onSpeechStart: () => {
 				console.log("[processAudioService] Speech started");
 				speechStartTime = lastTimestamp;
@@ -68,13 +69,13 @@ export const createProcessAudioService = (socket: TypedSocket) => {
 					deepgramLiveTranscriptionService.stopTranscription();
 				}
 
-				// processFinalizedSpeechChunk({
-				// 	id,
-				// 	userId: socket.data.auth.user.id,
-				// 	socket,
-				// 	audio,
-				// 	speechStartTime,
-				// });
+				processFinalizedSpeechChunk({
+					id,
+					userId: socket.data.auth.user.id,
+					socket,
+					audio,
+					speechStartTime,
+				});
 			},
 		});
 
