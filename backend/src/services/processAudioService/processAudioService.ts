@@ -28,9 +28,10 @@ export const createProcessAudioService = (socket: TypedSocket) => {
 		console.log("[processAudioService] initializing VAD");
 		streamVAD = await RealTimeVAD.new({
 			model: "v5",
+			frameSamples: 1024,
 			preSpeechPadFrames: 4,
 			minSpeechFrames: 3,
-			redemptionFrames: 8,
+			redemptionFrames: 1,
 			onSpeechStart: () => {
 				console.log("[processAudioService] Speech started");
 				speechStartTime = lastTimestamp;
