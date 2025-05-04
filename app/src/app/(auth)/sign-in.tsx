@@ -9,7 +9,7 @@ import { TextInput, View } from "react-native";
 
 export default function Page() {
 	const router = useRouter();
-	const emailAddress$ = useObservable("eamilhat@gmail.com");
+	const emailAddress$ = useObservable("test@gmail.com");
 	const password$ = useObservable("b7ysdbnqk.456LK");
 
 	// Handle the submission of the sign-in form

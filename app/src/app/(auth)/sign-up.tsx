@@ -10,8 +10,8 @@ import { TextInput, View } from "react-native";
 export default function Page() {
 	const router = useRouter();
 
-	const emailAddress$ = useObservable("eamilhat@gmail.com");
-	const name$ = useObservable("eamilhat");
+	const emailAddress$ = useObservable("test@gmail.com");
+	const name$ = useObservable("Eric Edouard");
 	const password$ = useObservable("b7ysdbnqk.456LK");
 	const code$ = useObservable("");
 	const pendingVerification$ = useObservable(false);
