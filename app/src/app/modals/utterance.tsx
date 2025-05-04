@@ -1,5 +1,6 @@
-import { AudioPlayer } from "@app/src/components/AudioPlayer";
+import { AudioPlayerWithWords } from "@app/src/components/AudioPlayerWithWords";
 import { trpcQuery } from "@app/src/services/trpc";
+import type { Words } from "@app/src/types/words";
 import { extractDataFromFileName } from "@app/src/utils/extractDataFromFileName";
 import { useQuery } from "@tanstack/react-query";
 import { router, useLocalSearchParams } from "expo-router";
@@ -21,10 +22,12 @@ export default function UtteranceModal() {
 		? extractDataFromFileName(utterance?.fileId)
 		: { date: new Date(), durationSeconds: undefined };
 
+	const words = utterance?.words as Words;
+
 	return (
 		<ScrollView className="flex-1">
 			{/* <Text>{JSON.stringify(utterance, null, 2)}</Text> */}
-			<AudioPlayer
+			<AudioPlayerWithWords
 				fileUrl={fileUrl ?? ""}
 				title={utterance?.transcript ?? ""}
 				date={date}
@@ -32,6 +35,7 @@ export default function UtteranceModal() {
 				closeModal={() => {
 					router.back();
 				}}
+				words={words}
 			/>
 		</ScrollView>
 	);
