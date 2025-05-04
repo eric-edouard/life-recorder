@@ -7,27 +7,42 @@ import {
 import { speakersService } from "@app/src/services/speakersService";
 import { trpcQuery } from "@app/src/services/trpc";
 import { use$ } from "@legendapp/state/react";
-import { useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import { FlatList, View } from "react-native";
 
 export default function LiveScreen() {
-	const { data: historicalData } = useQuery(
-		trpcQuery.utterances.queryOptions({
-			limit: 30,
-			cursor: 0,
-		}),
+	const {
+		data: historicalData,
+		isLoading,
+		fetchNextPage,
+		hasNextPage,
+	} = useInfiniteQuery(
+		trpcQuery.utterances.infiniteQueryOptions(
+			{
+				limit: 20,
+				cursor: 0,
+			},
+			{
+				getNextPageParam: (lastPage) => {
+					console.log("lastPage", lastPage.nextPage);
+					return lastPage.nextPage;
+				},
+			},
+		),
 	);
 
 	const historicalUtterances: LiveUtterance[] = historicalData
-		? historicalData.items.map((item) => ({
-				utteranceId: item.utterance.id,
-				speechStart: item.utterance.createdAt.getTime(),
-				speechEnd: item.utterance.createdAt.getTime(),
-				transcript: item.utterance.transcript,
-				speakerStatus: "recognized",
-				speakerId: item.speaker?.id || null,
-				voiceProfileId: item.utterance.voiceProfileId || null,
-			}))
+		? historicalData.pages.flatMap((page) =>
+				page.items.map((item) => ({
+					utteranceId: item.utterance.id,
+					speechStart: item.utterance.createdAt.getTime(),
+					speechEnd: item.utterance.createdAt.getTime(),
+					transcript: item.utterance.transcript,
+					speakerStatus: "recognized",
+					speakerId: item.speaker?.id || null,
+					voiceProfileId: item.utterance.voiceProfileId || null,
+				})),
+			)
 		: [];
 
 	const liveUtterancesFromService = use$(
@@ -55,15 +70,13 @@ export default function LiveScreen() {
 				data={combinedUtterances}
 				keyExtractor={(item) => item.utteranceId}
 				renderItem={({ item, index }) => (
-					<LiveUtteranceItem
-						index={index}
-						item={item}
-						speakers={speakers ?? []}
-					/>
+					<LiveUtteranceItem item={item} speakers={speakers ?? []} />
 				)}
 				onEndReached={() => {
-					// liveTranscriptionService.fetchMoreUtterances();
-					console.log("onEndReached");
+					console.log("onEndReached, hasNextPage", hasNextPage);
+					if (hasNextPage) {
+						fetchNextPage();
+					}
 				}}
 				onStartReached={() => {
 					console.log("onStartReached");

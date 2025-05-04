@@ -8,15 +8,16 @@ import { twMerge } from "tailwind-merge";
 import { Text } from "./ui/Text";
 
 export const LiveUtteranceItem = ({
-	index,
 	item,
 	speakers,
 }: {
 	item: LiveUtterance;
 	speakers: Speaker[];
-	index: number;
 }) => {
-	const formattedTime = format(new Date(item.speechStart), "hh:mm:ss a");
+	const formattedTime = format(
+		new Date(item.speechStart),
+		"EEEE d MMM - HH:mm:ss",
+	);
 	const foundSpeaker = speakers.find((s) => s.id === item.speakerId);
 	const isUser = foundSpeaker?.isUser ?? false;
 	const speakerTitle =
@@ -36,7 +37,10 @@ export const LiveUtteranceItem = ({
 			)}
 		>
 			<Text className={twMerge("text-[15px] text-label")}>
-				{index} -{item.transcript}
+				{item.transcript}
+			</Text>
+			<Text className="text-sm text-tertiary-label italic">
+				{formattedTime}
 			</Text>
 			{!isUser && (
 				<Text className="text-sm text-tertiary-label italic">

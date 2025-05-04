@@ -37,7 +37,8 @@ export const appRouter = router({
 		.query(async ({ ctx, input }) => {
 			startTime(ctx.c, "DB utterances");
 			const userId = ctx.user.id;
-			const page = input.cursor ? input.cursor * (input.limit ?? 20) : 0;
+			const limit = input.limit ?? 20;
+			const offset = input.cursor ?? 0;
 			const results = await db
 				.select({
 					utterance: utterancesTable,
@@ -54,12 +55,18 @@ export const appRouter = router({
 				)
 				.where(eq(utterancesTable.userId, userId))
 				.orderBy(desc(utterancesTable.createdAt))
-				.limit(input.limit ?? 20)
-				.offset(page);
+				.limit(limit)
+				.offset(offset);
 			endTime(ctx.c, "DB utterances");
+
+			console.log("offset", offset);
+			console.log(
+				"next page",
+				results.length === limit ? offset + limit : null,
+			);
 			return {
 				items: results,
-				nextPage: results.length === (input.limit ?? 20) ? page + 1 : null,
+				nextPage: results.length === limit ? offset + limit : null,
 			};
 		}),
 	utterance: protectedProcedure
