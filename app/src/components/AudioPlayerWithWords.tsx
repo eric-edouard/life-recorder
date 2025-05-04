@@ -28,12 +28,9 @@ export function AudioPlayerWithWords({
 	const player = useAudioPlayer({ uri: fileUrl }, 100);
 	const status = useAudioPlayerStatus(player);
 
-	console.log(status.currentTime);
-
 	const formattedCurrentTime = formatTime(status.currentTime);
 	const formattedDuration = formatTime(status.duration);
 	const fillColor = useColor("label");
-	const redColor = useColor("red");
 
 	const handlePlayPause = () => {
 		if (status.playing) {
