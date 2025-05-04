@@ -5,13 +5,12 @@ import { rgbaToHex } from "@app/src/utils/rgbaToHex";
 import { format } from "date-fns";
 import { useAudioPlayer, useAudioPlayerStatus } from "expo-audio";
 import { SymbolView } from "expo-symbols";
-import React from "react";
-import { Text, View } from "react-native";
+import React, { useMemo } from "react";
+import { ScrollView, Text, View } from "react-native";
 import { useColor } from "react-native-uikit-colors";
 
 interface AudioPlayerWithWordsProps {
 	fileUrl: string;
-	title: string;
 	date: Date;
 	duration: number;
 	closeModal: () => void;
@@ -20,7 +19,6 @@ interface AudioPlayerWithWordsProps {
 
 export function AudioPlayerWithWords({
 	fileUrl,
-	title,
 	duration,
 	date,
 	closeModal,
@@ -34,6 +32,7 @@ export function AudioPlayerWithWords({
 	const formattedCurrentTime = formatTime(status.currentTime);
 	const formattedDuration = formatTime(status.duration);
 	const fillColor = useColor("label");
+	const redColor = useColor("red");
 
 	const handlePlayPause = () => {
 		if (status.playing) {
@@ -56,14 +55,47 @@ export function AudioPlayerWithWords({
 		return (status.currentTime / status.duration) * 100;
 	};
 
+	const getCurrentWordIndex = useMemo(() => {
+		if (!words || words.length === 0) return -1;
+
+		for (let i = 0; i < words.length; i++) {
+			if (
+				status.currentTime >= words[i].start &&
+				status.currentTime <= words[i].end
+			) {
+				return i;
+			}
+		}
+
+		// If no word is currently being spoken, find the next word
+		for (let i = 0; i < words.length; i++) {
+			if (status.currentTime < words[i].start) {
+				return -1;
+			}
+		}
+
+		return -1;
+	}, [words, status.currentTime]);
+
 	return (
 		<View className="w-full flex-1 flex rounded-3xl ">
 			<View className="px-5 flex-1 h-full flex justify-center my-20 flex-row items-center">
 				<View className="w-7" />
 				<View className="flex-1">
-					<Text className="text-3xl font-semibold text-label text-center mb-1">
-						{title}
-					</Text>
+					<ScrollView
+						contentContainerStyle={{ flexGrow: 1, justifyContent: "center" }}
+					>
+						<View className="flex-row flex-wrap justify-center">
+							{words?.map((word, index) => (
+								<Text
+									key={`${word.word}-${index}`}
+									className={`text-3xl font-semibold ${index === getCurrentWordIndex ? "text-red" : "text-label"} mr-1`}
+								>
+									{word.punctuated_word}
+								</Text>
+							))}
+						</View>
+					</ScrollView>
 					<View className="flex-row justify-center gap-2 items-center">
 						<Text className="text-md font-bold text-secondary-label text-center">
 							{format(date, "dd MMM yyyy")}

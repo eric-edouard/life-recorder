@@ -29,7 +29,6 @@ export default function UtteranceModal() {
 			{/* <Text>{JSON.stringify(utterance, null, 2)}</Text> */}
 			<AudioPlayerWithWords
 				fileUrl={fileUrl ?? ""}
-				title={utterance?.transcript ?? ""}
 				date={date}
 				duration={durationSeconds ?? 0}
 				closeModal={() => {
