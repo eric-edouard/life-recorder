@@ -8,11 +8,13 @@ import { twMerge } from "tailwind-merge";
 import { Text } from "./ui/Text";
 
 export const LiveUtteranceItem = ({
+	index,
 	item,
 	speakers,
 }: {
 	item: LiveUtterance;
 	speakers: Speaker[];
+	index: number;
 }) => {
 	const formattedTime = format(new Date(item.speechStart), "hh:mm:ss a");
 	const foundSpeaker = speakers.find((s) => s.id === item.speakerId);
@@ -25,9 +27,8 @@ export const LiveUtteranceItem = ({
 	return (
 		<PressableLayer
 			onPress={() => {
-				router.push(
-					`/modals/assign-voice-profile-speaker?voiceProfileId=${item.voiceProfileId}`,
-				);
+				router.push(`/modals/utterance?utteranceId=${item.utteranceId}`);
+				// `/modals/assign-voice-profile-speaker?voiceProfileId=${item.voiceProfileId}`,
 			}}
 			className={twMerge(
 				"mb-3 p-3.5 bg-secondary-system-background rounded-2xl mx-3 w-fit max-w-[80%] self-start",
@@ -35,7 +36,7 @@ export const LiveUtteranceItem = ({
 			)}
 		>
 			<Text className={twMerge("text-[15px] text-label")}>
-				{item.transcript}
+				{index} -{item.transcript}
 			</Text>
 			{!isUser && (
 				<Text className="text-sm text-tertiary-label italic">

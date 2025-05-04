@@ -62,6 +62,20 @@ export const appRouter = router({
 				nextPage: results.length === (input.limit ?? 20) ? page + 1 : null,
 			};
 		}),
+	utterance: protectedProcedure
+		.input(z.string())
+		.query(async ({ ctx, input }) => {
+			const result = await db
+				.select()
+				.from(utterancesTable)
+				.where(
+					and(
+						eq(utterancesTable.id, input),
+						eq(utterancesTable.userId, ctx.user.id),
+					),
+				);
+			return result[0];
+		}),
 	fileUrl: protectedProcedure.input(z.string()).query(async ({ input }) => {
 		return await getSignedUrl(input);
 	}),

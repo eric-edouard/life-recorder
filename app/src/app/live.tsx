@@ -13,7 +13,7 @@ import { FlatList, View } from "react-native";
 export default function LiveScreen() {
 	const { data: historicalData } = useQuery(
 		trpcQuery.utterances.queryOptions({
-			limit: 10,
+			limit: 30,
 			cursor: 0,
 		}),
 	);
@@ -54,9 +54,20 @@ export default function LiveScreen() {
 				inverted
 				data={combinedUtterances}
 				keyExtractor={(item) => item.utteranceId}
-				renderItem={({ item }) => (
-					<LiveUtteranceItem item={item} speakers={speakers ?? []} />
+				renderItem={({ item, index }) => (
+					<LiveUtteranceItem
+						index={index}
+						item={item}
+						speakers={speakers ?? []}
+					/>
 				)}
+				onEndReached={() => {
+					// liveTranscriptionService.fetchMoreUtterances();
+					console.log("onEndReached");
+				}}
+				onStartReached={() => {
+					console.log("onStartReached");
+				}}
 				ListHeaderComponent={
 					speechProcessingStatus !== "none" &&
 					speechProcessingStatus !== "done" ? (

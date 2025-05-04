@@ -75,6 +75,14 @@ export default function RootLayout() {
 					<Stack.Screen
 						name="modals/assign-voice-profile-speaker"
 						options={{
+							headerTitle: "Assign Voice Profile Speaker",
+							presentation: "modal",
+						}}
+					/>
+					<Stack.Screen
+						name="modals/utterance"
+						options={{
+							headerTitle: "Utterance",
 							presentation: "modal",
 						}}
 					/>
