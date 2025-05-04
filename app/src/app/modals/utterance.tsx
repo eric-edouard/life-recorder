@@ -1,4 +1,5 @@
 import { AudioPlayerWithWords } from "@app/src/components/AudioPlayerWithWords";
+import { Button } from "@app/src/components/ui/Buttons/Button";
 import { trpcQuery } from "@app/src/services/trpc";
 import type { Words } from "@app/src/types/words";
 import { extractDataFromFileName } from "@app/src/utils/extractDataFromFileName";
@@ -35,6 +36,15 @@ export default function UtteranceModal() {
 					router.back();
 				}}
 				words={words}
+			/>
+			<Button
+				className="mx-5"
+				onPress={() => {
+					router.push(
+						`/modals/assign-voice-profile-speaker?utteranceId=${utteranceId}`,
+					);
+				}}
+				title="Assign Speaker"
 			/>
 		</ScrollView>
 	);

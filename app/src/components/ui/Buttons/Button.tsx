@@ -12,6 +12,7 @@ export type ButtonProps = {
 	style?: StyleProp<ViewStyle>;
 	disabled?: boolean;
 	textColor?: SystemColor;
+	className?: string;
 };
 
 export const Button = ({
@@ -22,6 +23,7 @@ export const Button = ({
 	style,
 	disabled = false,
 	textColor,
+	className,
 }: ButtonProps) => {
 	const colors = useSystemColors();
 	const _backgroundColor = colors[color];
@@ -30,7 +32,10 @@ export const Button = ({
 	return (
 		<TouchableOpacity
 			onPress={onPress}
-			className=" w-fit rounded-2xl min-w-28 px-6 flex-row items-center justify-center h-[44px]"
+			className={twMerge(
+				" w-fit rounded-2xl min-w-28 px-6 flex-row items-center justify-center h-[44px]",
+				className,
+			)}
 			style={[
 				{
 					borderCurve: "continuous",
