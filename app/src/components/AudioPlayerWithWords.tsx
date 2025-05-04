@@ -17,6 +17,7 @@ interface AudioPlayerWithWordsProps {
 	words: Words;
 }
 
+const OFFSET = -0.74;
 export function AudioPlayerWithWords({
 	fileUrl,
 	duration,
@@ -24,7 +25,7 @@ export function AudioPlayerWithWords({
 	closeModal,
 	words,
 }: AudioPlayerWithWordsProps) {
-	const player = useAudioPlayer({ uri: fileUrl });
+	const player = useAudioPlayer({ uri: fileUrl }, 100);
 	const status = useAudioPlayerStatus(player);
 
 	console.log(status.currentTime);
@@ -60,8 +61,8 @@ export function AudioPlayerWithWords({
 
 		for (let i = 0; i < words.length; i++) {
 			if (
-				status.currentTime >= words[i].start &&
-				status.currentTime <= words[i].end
+				status.currentTime >= words[i].start + OFFSET &&
+				status.currentTime <= words[i].end + OFFSET
 			) {
 				return i;
 			}
