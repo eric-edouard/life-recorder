@@ -8,9 +8,21 @@ import { generateReadableUUID } from "@backend/src/utils/generateReadableUUID";
 import { OpusEncoder } from "@discordjs/opus";
 import { RealTimeVAD } from "@ericedouard/vad-node-realtime";
 
-/**
- * Audio processor for real-time voice activity detection
- */
+// For reference
+
+// export const defaultV5FrameProcessorOptions: FrameProcessorOptions = {
+// 	positiveSpeechThreshold: 0.5,
+// 	negativeSpeechThreshold: 0.5 - 0.15,
+// 	preSpeechPadFrames: 3,
+// 	redemptionFrames: 24,
+// 	frameSamples: 512,
+// 	minSpeechFrames: 9,
+// 	submitUserSpeechOnPause: false,
+// };
+
+const PRE_SPEECH_PAD_FRAMES = 4;
+const FRAME_SAMPLES = 512;
+
 export const createProcessAudioService = (socket: TypedSocket) => {
 	let streamVAD: RealTimeVAD | null = null;
 	let speechStartTime = 0;
@@ -18,18 +30,14 @@ export const createProcessAudioService = (socket: TypedSocket) => {
 	let isSpeechActive = false;
 	const opusEncoder = new OpusEncoder(SAMPLE_RATE, CHANNELS);
 
-	// Initialize VAD
 	initVAD();
 
-	/**
-	 * Initialize VAD
-	 */
 	async function initVAD(): Promise<void> {
 		console.log("[processAudioService] initializing VAD");
 		streamVAD = await RealTimeVAD.new({
 			model: "v5",
-			// frameSamples: 1024,
-			preSpeechPadFrames: 4,
+			frameSamples: FRAME_SAMPLES,
+			preSpeechPadFrames: PRE_SPEECH_PAD_FRAMES,
 			minSpeechFrames: 3,
 			// redemptionFrames: 2,
 			onSpeechStart: () => {
@@ -69,6 +77,14 @@ export const createProcessAudioService = (socket: TypedSocket) => {
 					deepgramLiveTranscriptionService.stopTranscription();
 				}
 
+				const realSpeechStartOffsetSeconds =
+					(PRE_SPEECH_PAD_FRAMES * FRAME_SAMPLES) / SAMPLE_RATE;
+
+				console.log(
+					"[processAudioService] Real speech start offset seconds",
+					realSpeechStartOffsetSeconds,
+				);
+
 				processFinalizedSpeechChunk({
 					id,
 					userId: socket.data.auth.user.id,
@@ -83,9 +99,6 @@ export const createProcessAudioService = (socket: TypedSocket) => {
 		console.log("[processAudioService] VAD initialized");
 	}
 
-	/**
-	 * Process an audio packet
-	 */
 	const processAudioPacket = async (
 		audioBuffer: ArrayBuffer,
 		timestamp: number,
@@ -124,9 +137,6 @@ export const createProcessAudioService = (socket: TypedSocket) => {
 		}
 	};
 
-	/**
-	 * Clean up resources
-	 */
 	const handleClientDisconnect = async (): Promise<void> => {
 		if (streamVAD) {
 			await streamVAD.flush(); // Process any remaining audio
