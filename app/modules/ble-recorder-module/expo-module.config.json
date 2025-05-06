@@ -1,0 +1,9 @@
+{
+  "platforms": ["apple", "android", "web"],
+  "apple": {
+    "modules": ["BleRecorderModule"]
+  },
+  "android": {
+    "modules": ["expo.modules.blerecordermodule.BleRecorderModule"]
+  }
+}
