@@ -13,7 +13,7 @@ export const liveAudioDataService = (() => {
 		| ((packetsReceived: number, savedCount: number) => void)
 		| null = null;
 	let isSending = false;
-	const sendInterval = 50;
+	let sendInterval = 50;
 
 	/**
 	 * Send collected audio packets via socket.io
@@ -154,8 +154,33 @@ export const liveAudioDataService = (() => {
 		}
 	};
 
+	const setChangeInterval = (newInterval: number): number => {
+		let intervalToSet = newInterval;
+
+		if (intervalToSet < 10) {
+			console.warn(
+				"[liveAudioDataService] Interval too low, setting to minimum of 10ms",
+			);
+			intervalToSet = 10;
+		}
+
+		sendInterval = intervalToSet;
+
+		// If we have an active sending interval, reset it with the new value
+		if (audioSendInterval) {
+			clearInterval(audioSendInterval);
+			audioSendInterval = setInterval(sendAudioPackets, sendInterval);
+		}
+
+		console.log(
+			`[liveAudioDataService] Send interval changed to ${sendInterval}ms`,
+		);
+		return sendInterval;
+	};
+
 	return {
 		startAudioCollection,
 		stopAudioCollection,
+		setChangeInterval,
 	};
 })();
