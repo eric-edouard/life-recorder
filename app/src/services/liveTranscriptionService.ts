@@ -1,5 +1,6 @@
+import { liveAudioDataService } from "@app/src/services/liveAudioDataService";
 import { socketService } from "@app/src/services/socketService";
-import { observable } from "@legendapp/state";
+import { observable, observe } from "@legendapp/state";
 import type { ProcessingSpeechUpdate } from "@shared/socketEvents";
 
 export type LiveUtterance = {
@@ -23,6 +24,10 @@ export const liveTranscriptionService = (() => {
 	const isSpeechDetected$ = observable(false);
 	const speechProcessingStatus$ = observable<SpeechProcessingStatus>("none");
 	const liveUtterances$ = observable<LiveUtterance[]>([]);
+
+	observe(isSpeechDetected$, (isSpeechDetected) => {
+		liveAudioDataService.setAudioSendInterval(isSpeechDetected ? 20 : 500);
+	});
 
 	socketService.socket?.on(
 		"processingSpeechUpdate",
