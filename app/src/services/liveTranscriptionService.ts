@@ -25,8 +25,8 @@ export const liveTranscriptionService = (() => {
 	const speechProcessingStatus$ = observable<SpeechProcessingStatus>("none");
 	const liveUtterances$ = observable<LiveUtterance[]>([]);
 
-	observe(isSpeechDetected$, (isSpeechDetected) => {
-		liveAudioDataService.setAudioSendInterval(isSpeechDetected ? 20 : 500);
+	observe(isSpeechDetected$, ({ value }) => {
+		liveAudioDataService.setAudioSendInterval(value ? 60 : 500);
 	});
 
 	socketService.socket?.on(
