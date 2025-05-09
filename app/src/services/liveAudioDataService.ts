@@ -154,7 +154,7 @@ export const liveAudioDataService = (() => {
 		}
 	};
 
-	const setChangeInterval = (newInterval: number): number => {
+	const setAudioSendInterval = (newInterval: number): number => {
 		let intervalToSet = newInterval;
 
 		if (intervalToSet < 10) {
@@ -181,6 +181,6 @@ export const liveAudioDataService = (() => {
 	return {
 		startAudioCollection,
 		stopAudioCollection,
-		setChangeInterval,
+		setAudioSendInterval,
 	};
 })();
