@@ -136,7 +136,6 @@ export default ({ config }: ConfigContext) => ({
 						"Allow $(PRODUCT_NAME) to connect to bluetooth devices",
 				},
 			],
-			"react-native-vad",
 		],
 		experiments: {
 			typedRoutes: true,
