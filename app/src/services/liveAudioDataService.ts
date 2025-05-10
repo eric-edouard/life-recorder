@@ -26,8 +26,7 @@ export const liveAudioDataService = (() => {
 			const packets = packetsToSend.map((packet) => Array.from(packet));
 
 			// Get socket from service and send via socket.io
-			const socket = socketService.getSocket();
-			socket.emit(
+			socketService.getSocket().emit(
 				"audioData",
 				{
 					packets: packets, // Send array of packets instead of concatenated buffer
@@ -118,16 +117,15 @@ export const liveAudioDataService = (() => {
 	const setAudioSendInterval = (newInterval: number): number => {
 		let intervalToSet = newInterval;
 
-		if (intervalToSet < 10) {
+		if (intervalToSet < 20) {
 			console.warn(
-				"[liveAudioDataService] Interval too low, setting to minimum of 10ms",
+				"[liveAudioDataService] Interval too low, setting to minimum of 20ms",
 			);
-			intervalToSet = 10;
+			intervalToSet = 20;
 		}
 
 		sendInterval = intervalToSet;
 
-		// If we have an active sending interval, reset it with the new value
 		if (audioSendInterval) {
 			clearInterval(audioSendInterval);
 			audioSendInterval = setInterval(sendAudioPackets, sendInterval);
