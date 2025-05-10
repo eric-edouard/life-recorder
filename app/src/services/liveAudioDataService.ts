@@ -1,5 +1,6 @@
 import type { Subscription } from "react-native-ble-plx";
 import { deviceService } from "./deviceService/deviceService";
+import { offlineAudioPersistenceService } from "./offlineAudioPersistenceService";
 import { socketService } from "./socketService";
 
 export const liveAudioDataService = (() => {
@@ -96,10 +97,17 @@ export const liveAudioDataService = (() => {
 			// Start listening for audio packets - we now receive processed bytes directly
 			const subscription = await deviceService.startAudioBytesListener(
 				(processedBytes: number[]) => {
+					audioPacketsReceived++; // Count all received packets
+
 					// Store the processed bytes directly
 					if (processedBytes.length > 0) {
-						audioPacketsBuffer.push(processedBytes);
-						audioPacketsReceived++;
+						if (socketService.isConnected()) {
+							audioPacketsBuffer.push(processedBytes);
+						} else {
+							void offlineAudioPersistenceService.saveAudioPacket(
+								processedBytes,
+							);
+						}
 					}
 				},
 			);
