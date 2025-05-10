@@ -1,24 +1,14 @@
 import type { Subscription } from "react-native-ble-plx";
 import { deviceService } from "./deviceService/deviceService";
-import { offlineAudioPersistenceService } from "./offlineAudioPersistenceService";
 import { socketService } from "./socketService";
 
 export const liveAudioDataService = (() => {
-	let audioPacketsReceived = 0;
-	let savedAudioCount = 0;
 	let audioSubscription: Subscription | null = null;
 	let audioSendInterval: NodeJS.Timeout | null = null;
-	let updateStatsInterval: NodeJS.Timeout | null = null;
-	let audioPacketsBuffer: number[][] = []; // Store processed bytes directly
-	let onStatsUpdate:
-		| ((packetsReceived: number, savedCount: number) => void)
-		| null = null;
+	let audioPacketsBuffer: number[][] = [];
 	let isSending = false;
 	let sendInterval = 500;
 
-	/**
-	 * Send collected audio packets via socket.io
-	 */
 	const sendAudioPackets = async (): Promise<void> => {
 		if (audioPacketsBuffer.length === 0 || isSending) {
 			return;
@@ -57,7 +47,6 @@ export const liveAudioDataService = (() => {
 				// 	isSending = false;
 				// },
 			);
-			savedAudioCount += packetsToSend.length;
 			console.log(
 				`[liveAudioDataService] ${packetsToSend.length} audio packets sent`,
 			);
@@ -70,23 +59,14 @@ export const liveAudioDataService = (() => {
 		}
 	};
 
-	/**
-	 * Start collecting audio data from the connected device
-	 * @param onStatsUpdate Optional callback to receive statistics updates
-	 */
-	const startAudioCollection = async (
-		statsUpdateCallback?: (packetsReceived: number, savedCount: number) => void,
-	): Promise<boolean> => {
+	const startAudioCollection = async (): Promise<boolean> => {
 		if (!deviceService.connectedDeviceId$.peek()) {
 			console.error("Cannot start audio collection: Device not connected");
 			return false;
 		}
 
 		// Reset state
-		audioPacketsReceived = 0;
-		savedAudioCount = 0;
 		audioPacketsBuffer = [];
-		onStatsUpdate = statsUpdateCallback || null;
 
 		// Ensure socket is connected - use socket service for this
 		if (!socketService.isConnected()) {
@@ -97,34 +77,16 @@ export const liveAudioDataService = (() => {
 			// Start listening for audio packets - we now receive processed bytes directly
 			const subscription = await deviceService.startAudioBytesListener(
 				(processedBytes: number[]) => {
-					audioPacketsReceived++; // Count all received packets
-
 					// Store the processed bytes directly
 					if (processedBytes.length > 0) {
-						if (socketService.isConnected()) {
-							audioPacketsBuffer.push(processedBytes);
-						} else {
-							void offlineAudioPersistenceService.saveAudioPacket(
-								processedBytes,
-							);
-						}
+						audioPacketsBuffer.push(processedBytes);
 					}
 				},
 			);
 
 			if (subscription) {
 				audioSubscription = subscription;
-
-				// Set up stats update interval
-				updateStatsInterval = setInterval(() => {
-					if (onStatsUpdate) {
-						onStatsUpdate(audioPacketsReceived, savedAudioCount);
-					}
-				}, 500);
-
-				// Set up socket sending interval
 				audioSendInterval = setInterval(sendAudioPackets, sendInterval);
-
 				return true;
 			}
 
@@ -135,16 +97,7 @@ export const liveAudioDataService = (() => {
 		}
 	};
 
-	/**
-	 * Stop collecting audio data and clean up resources
-	 */
 	const stopAudioCollection = async (): Promise<void> => {
-		// Clear intervals
-		if (updateStatsInterval) {
-			clearInterval(updateStatsInterval);
-			updateStatsInterval = null;
-		}
-
 		if (audioSendInterval) {
 			clearInterval(audioSendInterval);
 			audioSendInterval = null;
