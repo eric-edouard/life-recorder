@@ -1,0 +1,14 @@
+{
+	"recommendations": [
+		"biomejs.biome",
+		"bradlc.vscode-tailwindcss",
+		"chakrounanas.turbo-console-log",
+		"charliermarsh.ruff",
+		"expo.vscode-expo-tools",
+		"kamikillerto.vscode-colorize",
+		"naumovs.color-highlight",
+		"pkief.material-icon-theme",
+		"redhat.vscode-yaml",
+		"yoavbls.pretty-ts-errors"
+	]
+}
