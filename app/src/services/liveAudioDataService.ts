@@ -1,6 +1,7 @@
 import type { Subscription } from "react-native-ble-plx";
 import { deviceService } from "./deviceService/deviceService";
-import { socketService } from "./socketService";
+import { offlineAudioService } from "./offlineAudioService";
+import { SocketConnectionState, socketService } from "./socketService";
 
 export const liveAudioDataService = (() => {
 	let audioSubscription: Subscription | null = null;
@@ -48,6 +49,25 @@ export const liveAudioDataService = (() => {
 		}
 	};
 
+	// Handle socket connection state changes
+	const setupSocketConnectionMonitoring = (): void => {
+		socketService.connectionState$.onChange((newState) => {
+			const state = newState.value;
+			if (state === SocketConnectionState.DISCONNECTED) {
+				console.log(
+					"[liveAudioDataService] Socket disconnected, activating offline mode",
+				);
+				offlineAudioService.start();
+			} else if (state === SocketConnectionState.CONNECTED) {
+				console.log(
+					"[liveAudioDataService] Socket reconnected, deactivating offline mode",
+				);
+				offlineAudioService.stop();
+				// Future implementation: send saved files when connection is restored
+			}
+		});
+	};
+
 	const startAudioCollection = async (): Promise<boolean> => {
 		if (!deviceService.connectedDeviceId$.peek()) {
 			console.error("Cannot start audio collection: Device not connected");
@@ -56,7 +76,13 @@ export const liveAudioDataService = (() => {
 
 		audioPacketsBuffer = [];
 
+		// Setup socket connection monitoring
+		setupSocketConnectionMonitoring();
+
+		// Check initial connection state
 		if (!socketService.isConnected()) {
+			// Start in offline mode if we're disconnected
+			await offlineAudioService.start();
 			await socketService.reconnectToServer();
 		}
 
@@ -65,10 +91,17 @@ export const liveAudioDataService = (() => {
 				(processedBytes: number[]) => {
 					if (processedBytes.length === 0) return;
 
-					if (bufferedMode) {
-						audioPacketsBuffer.push(processedBytes);
+					// Route audio data based on connection state
+					if (socketService.isConnected()) {
+						// Online mode: use normal buffer or immediate send
+						if (bufferedMode) {
+							audioPacketsBuffer.push(processedBytes);
+						} else {
+							emitSinglePacket(processedBytes);
+						}
 					} else {
-						emitSinglePacket(processedBytes);
+						// Offline mode: send to offline service
+						offlineAudioService.addAudioData(processedBytes);
 					}
 				},
 			);
@@ -76,7 +109,7 @@ export const liveAudioDataService = (() => {
 			if (subscription) {
 				audioSubscription = subscription;
 
-				if (bufferedMode) {
+				if (bufferedMode && socketService.isConnected()) {
 					audioSendInterval = setInterval(sendAudioPackets, sendInterval);
 				}
 
@@ -91,6 +124,9 @@ export const liveAudioDataService = (() => {
 	};
 
 	const stopAudioCollection = async (): Promise<void> => {
+		// Stop offline service
+		await offlineAudioService.stop();
+
 		if (audioSendInterval) {
 			clearInterval(audioSendInterval);
 			audioSendInterval = null;
@@ -109,7 +145,7 @@ export const liveAudioDataService = (() => {
 		bufferedMode = enabled;
 
 		if (enabled) {
-			if (!audioSendInterval) {
+			if (!audioSendInterval && socketService.isConnected()) {
 				audioSendInterval = setInterval(sendAudioPackets, sendInterval);
 				console.log("[liveAudioDataService] Buffered emitting enabled");
 			}
