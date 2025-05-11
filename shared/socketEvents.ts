@@ -12,49 +12,42 @@ export type SpeechMisfireUpdate = {
 	phase: "0.5-speech-misfire";
 };
 
-export type SpeechStoppedUpdate = {
-	phase: "1-speech-stopped";
-	id: string;
+export type SpeechEndUpdate = {
+	phase: "1-speech-end";
+	fileId: string;
 	startTime: number;
 };
 
-export type TranscribingUpdate = {
-	phase: "3-transcribing";
-	id: string;
-};
-
 export type NoSpeechDetectedUpdate = {
-	phase: "3.5-no-speech-detected";
-	id: string;
+	phase: "1.5-no-speech-detected";
+	fileId: string;
 };
 
 export type MatchingSpeakersUpdate = {
-	phase: "4-matching-speakers";
-	id: string;
+	phase: "2-matching-speakers";
+	fileId: string;
 	utterances: {
 		utteranceId: string;
 		fileId: string;
-		speechStart: number;
-		speechEnd: number;
+		startTime: number;
 		transcript: string;
 	}[];
 };
 
 export type DoneUpdate = {
-	phase: "5-done";
-	id: string;
+	phase: "3-done";
+	fileId: string;
 	utterances: {
 		utteranceId: string;
 		speakerId: string | null;
-		voiceProfileId: string | null;
+		voiceProfileId: string;
 	}[];
 };
 
 export type ProcessingSpeechUpdate =
 	| SpeechDetectedUpdate
 	| SpeechMisfireUpdate
-	| SpeechStoppedUpdate
-	| TranscribingUpdate
+	| SpeechEndUpdate
 	| NoSpeechDetectedUpdate
 	| MatchingSpeakersUpdate
 	| DoneUpdate;

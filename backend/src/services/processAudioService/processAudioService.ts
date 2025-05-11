@@ -4,7 +4,6 @@ import { deepgramLiveTranscriptionService } from "@backend/src/services/processA
 import { processFinalizedSpeechChunk } from "@backend/src/services/processSpeechService/processFinalizedSpeechChunk";
 import type { TypedSocket } from "@backend/src/types/socket-events";
 import { convertPcmToFloat32Array } from "@backend/src/utils/audio/audioUtils";
-import { generateReadableUUID } from "@backend/src/utils/generateReadableUUID";
 import { OpusEncoder } from "@discordjs/opus";
 import { RealTimeVAD } from "@ericedouard/vad-node-realtime";
 
@@ -64,12 +63,6 @@ export const createProcessAudioService = (socket: TypedSocket) => {
 				console.log(
 					`Speech ended, audio duration: ${audio.length / SAMPLE_RATE} seconds`,
 				);
-				const id = generateReadableUUID(speechStartTime);
-				socket.emit("processingSpeechUpdate", {
-					phase: "1-speech-stopped",
-					id,
-					startTime: speechStartTime,
-				});
 
 				isSpeechActive = false;
 
@@ -86,7 +79,6 @@ export const createProcessAudioService = (socket: TypedSocket) => {
 				);
 
 				processFinalizedSpeechChunk({
-					id,
 					userId: socket.data.auth.user.id,
 					socket,
 					audio,

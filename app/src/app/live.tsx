@@ -33,15 +33,37 @@ export default function LiveScreen() {
 
 	const historicalUtterances: LiveUtterance[] = historicalData
 		? historicalData.pages.flatMap((page) =>
-				page.items.map((item) => ({
-					utteranceId: item.utterance.id,
-					speechStart: item.utterance.createdAt.getTime(),
-					speechEnd: item.utterance.createdAt.getTime(),
-					transcript: item.utterance.transcript,
-					speakerStatus: "recognized",
-					speakerId: item.speaker?.id || null,
-					voiceProfileId: item.utterance.voiceProfileId || null,
-				})),
+				page.items
+					.filter(
+						(item) =>
+							item.utterance.voiceProfileId !== null &&
+							item.utterance.voiceProfileId !== undefined,
+					)
+					.map((item): LiveUtterance => {
+						const voiceProfileId = item.utterance.voiceProfileId as string;
+						const speakerId = item.speaker?.id;
+
+						const commonProps = {
+							utteranceId: item.utterance.id,
+							speechStart: item.utterance.createdAt.getTime(),
+							speechEnd: item.utterance.createdAt.getTime(),
+							transcript: item.utterance.transcript,
+							voiceProfileId: voiceProfileId,
+						};
+
+						if (speakerId) {
+							return {
+								...commonProps,
+								speakerStatus: "recognized",
+								speakerId: speakerId,
+							};
+						}
+						return {
+							...commonProps,
+							speakerStatus: "unknown",
+							speakerId: null,
+						};
+					}),
 			)
 		: [];
 
@@ -52,10 +74,7 @@ export default function LiveScreen() {
 	const combinedUtterances = [
 		...liveUtterancesFromService.toReversed(),
 		...historicalUtterances,
-	].filter(
-		(value, index, self) =>
-			index === self.findIndex((t) => t.utteranceId === value.utteranceId),
-	);
+	];
 
 	const speakers = use$(speakersService.speakers$);
 	const isSpeechDetected = use$(liveTranscriptionService.isSpeechDetected$);

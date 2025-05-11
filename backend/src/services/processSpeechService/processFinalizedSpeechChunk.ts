@@ -13,7 +13,6 @@ import { generateUtteranceId } from "@backend/src/utils/generateUtteranceId";
 const DEBUG = true;
 
 type ProcessFinalizedSpeechChunkParams = {
-	id: string;
 	userId: string;
 	socket: TypedSocket;
 	audio: Float32Array;
@@ -21,7 +20,6 @@ type ProcessFinalizedSpeechChunkParams = {
 };
 
 export const processFinalizedSpeechChunk = async ({
-	id,
 	userId,
 	audio,
 	speechStartTime,
@@ -38,8 +36,9 @@ export const processFinalizedSpeechChunk = async ({
 	}
 
 	socket.emit("processingSpeechUpdate", {
-		phase: "3-transcribing",
-		id,
+		phase: "1-speech-end",
+		fileId,
+		startTime: speechStartTime,
 	});
 
 	// 2. Transcribe
@@ -49,20 +48,23 @@ export const processFinalizedSpeechChunk = async ({
 	if (utterances.length === 0 || transcript.length === 0) {
 		console.warn("No utterances or transcript found");
 		socket.emit("processingSpeechUpdate", {
-			phase: "3.5-no-speech-detected",
-			id,
+			phase: "1.5-no-speech-detected",
+			fileId,
 		});
 		return;
 	}
 
+	for (const u of utterances) {
+		u.id = generateUtteranceId(speechStartTime, u.start, u.end);
+	}
+
 	socket.emit("processingSpeechUpdate", {
-		phase: "4-matching-speakers",
-		id,
+		phase: "2-matching-speakers",
+		fileId,
 		utterances: utterances.map((u) => ({
 			utteranceId: u.id,
 			fileId,
-			speechStart: u.start,
-			speechEnd: u.end,
+			startTime: speechStartTime + u.start,
 			transcript: u.transcript,
 		})),
 	});
@@ -119,16 +121,6 @@ export const processFinalizedSpeechChunk = async ({
 		);
 	}
 
-	socket.emit("processingSpeechUpdate", {
-		phase: "5-done",
-		id,
-		utterances: utterances.map((u) => ({
-			utteranceId: u.id,
-			speakerId: matchedVoiceProfile?.speaker_id ?? null,
-			voiceProfileId: matchedVoiceProfile?.id ?? null,
-		})),
-	});
-
 	let voiceProfileId = matchedVoiceProfile?.id;
 
 	// 6. If no match, insert a new voiceProfile
@@ -151,10 +143,21 @@ export const processFinalizedSpeechChunk = async ({
 		console.log(`🪲 ---  Created new voice profile ${voiceProfileId}`);
 	}
 
+	socket.emit("processingSpeechUpdate", {
+		phase: "3-done",
+		fileId,
+		utterances: utterances.map((u) => ({
+			utteranceId: u.id,
+			speakerId: matchedVoiceProfile?.speaker_id ?? null,
+			voiceProfileId: voiceProfileId,
+		})),
+	});
+
 	await Promise.all(
 		utterances.map((u) =>
 			db.insert(utterancesTable).values({
-				id: generateUtteranceId(speechStartTime, u.start, u.end),
+				// TODO: add speechStart as attribute too !!
+				id: u.id,
 				fileId,
 				fileStart: u.start,
 				fileEnd: u.end,

@@ -3,19 +3,37 @@ import { socketService } from "@app/src/services/socketService";
 import { observable, observe } from "@legendapp/state";
 import type { ProcessingSpeechUpdate } from "@shared/socketEvents";
 
-export type LiveUtterance = {
+type LiveBaseUtterance = {
 	utteranceId: string;
 	speechStart: number;
-	speechEnd: number;
 	transcript: string;
-	speakerStatus: "processing" | "recognized" | "unknown";
-	speakerId: string | null;
-	voiceProfileId: string | null;
 };
+
+type LiveProcessingUtterance = LiveBaseUtterance & {
+	speakerStatus: "processing";
+	speakerId: null;
+	voiceProfileId: null;
+};
+
+type LiveRecognizedUtterance = LiveBaseUtterance & {
+	speakerStatus: "recognized";
+	speakerId: string;
+	voiceProfileId: string;
+};
+
+type LiveUnrecognizedUtterance = LiveBaseUtterance & {
+	speakerStatus: "unknown";
+	speakerId: null;
+	voiceProfileId: string;
+};
+
+export type LiveUtterance =
+	| LiveProcessingUtterance
+	| LiveRecognizedUtterance
+	| LiveUnrecognizedUtterance;
 
 export type SpeechProcessingStatus =
 	| "none"
-	| "processing-audio"
 	| "transcribing"
 	| "matching"
 	| "done";
@@ -41,25 +59,21 @@ export const liveTranscriptionService = (() => {
 					isSpeechDetected$.set(false);
 					speechProcessingStatus$.set("none");
 					break;
-				case "1-speech-stopped":
+				case "1-speech-end":
 					isSpeechDetected$.set(false);
-					speechProcessingStatus$.set("processing-audio");
-					break;
-				case "3-transcribing":
 					speechProcessingStatus$.set("transcribing");
 					break;
-				case "3.5-no-speech-detected":
+				case "1.5-no-speech-detected":
 					isSpeechDetected$.set(false);
 					speechProcessingStatus$.set("none");
 					break;
-				case "4-matching-speakers":
+				case "2-matching-speakers":
 					speechProcessingStatus$.set("matching");
 
 					// biome-ignore lint/correctness/noSwitchDeclarations: <explanation>
 					const newUtterances: LiveUtterance[] = update.utterances.map((u) => ({
 						utteranceId: u.utteranceId,
-						speechStart: u.speechStart,
-						speechEnd: u.speechEnd,
+						speechStart: u.startTime,
 						transcript: u.transcript,
 						speakerStatus: "processing",
 						speakerId: null,
@@ -68,21 +82,43 @@ export const liveTranscriptionService = (() => {
 
 					liveUtterances$.set((prev) => [...prev, ...newUtterances]);
 					break;
-				case "5-done":
+				case "3-done":
 					speechProcessingStatus$.set("done");
-					liveUtterances$.set((prev) =>
-						prev.map((utterance) => {
-							const matchingUtterance = update.utterances.find(
-								(u) => u.utteranceId === utterance.utteranceId,
+					console.log("3-done", update.utterances);
+					liveUtterances$.set((prev: LiveUtterance[]) =>
+						prev.map((liveUtterance: LiveUtterance) => {
+							const matchingFinalUtterance = update.utterances.find(
+								(u) => u.utteranceId === liveUtterance.utteranceId,
 							);
-							return matchingUtterance
-								? {
-										...utterance,
-										speakerStatus: "recognized",
-										speakerId: matchingUtterance.speakerId,
-										voiceProfileId: matchingUtterance.voiceProfileId,
-									}
-								: { ...utterance, speakerStatus: "unknown" };
+
+							if (matchingFinalUtterance) {
+								// Base properties are taken from the existing liveUtterance,
+								// as the update likely only contains speaker identification results.
+								const baseProperties = {
+									utteranceId: liveUtterance.utteranceId,
+									speechStart: liveUtterance.speechStart,
+									transcript: liveUtterance.transcript,
+								};
+
+								if (matchingFinalUtterance.speakerId) {
+									// Speaker is recognized
+									return {
+										...baseProperties,
+										speakerStatus: "recognized" as const,
+										speakerId: matchingFinalUtterance.speakerId,
+										voiceProfileId: matchingFinalUtterance.voiceProfileId, // Assumed to be string
+									} as LiveRecognizedUtterance;
+								}
+								// Speaker is not recognized (speakerId is null)
+								return {
+									...baseProperties,
+									speakerStatus: "unknown" as const,
+									speakerId: null,
+									voiceProfileId: matchingFinalUtterance.voiceProfileId, // Assumed to be string
+								} as LiveUnrecognizedUtterance;
+							}
+							// If no matching utterance is found in the update, return the existing one.
+							return liveUtterance;
 						}),
 					);
 					break;
