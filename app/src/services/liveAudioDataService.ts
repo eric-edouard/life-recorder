@@ -7,54 +7,44 @@ export const liveAudioDataService = (() => {
 	let audioSendInterval: NodeJS.Timeout | null = null;
 	let audioPacketsBuffer: number[][] = [];
 	let isSending = false;
-	let sendInterval = 500;
+	let bufferedMode = true;
+	const sendInterval = 500;
 
 	const sendAudioPackets = async (): Promise<void> => {
 		if (audioPacketsBuffer.length === 0 || isSending) {
 			return;
 		}
 
-		// Set flag to prevent concurrent sends
 		isSending = true;
-
-		// Create a copy of the current audio data
 		const packetsToSend = [...audioPacketsBuffer];
-		audioPacketsBuffer = []; // Clear the buffer immediately to avoid duplicate sends
+		audioPacketsBuffer = [];
 
 		try {
-			// Instead of concatenating, send an array of individual packets
 			const packets = packetsToSend.map((packet) => Array.from(packet));
-
-			// Get socket from service and send via socket.io
-			socketService.getSocket().emit(
-				"audioData",
-				{
-					packets: packets, // Send array of packets instead of concatenated buffer
-					timestamp: Date.now(),
-				},
-				// (success: boolean) => {
-				// 	if (success) {
-				// 		savedAudioCount += packetsToSend.length;
-				// 		console.log(
-				// 			`Successfully sent ${packetsToSend.length} audio packets`,
-				// 		);
-				// 	} else {
-				// 		console.error("Failed to send audio data, will retry later");
-				// 		// Re-add the packets to the buffer for retry
-				// 		audioPacketsBuffer = [...packetsToSend, ...audioPacketsBuffer];
-				// 	}
-				// 	isSending = false;
-				// },
-			);
+			socketService.getSocket().emit("audioData", {
+				packets,
+				timestamp: Date.now(),
+			});
 			console.log(
 				`[liveAudioDataService] ${packetsToSend.length} audio packets sent`,
 			);
 		} catch (error) {
 			console.error("Error sending audio data:", error);
-			// Re-add the packets to the buffer for retry
 			audioPacketsBuffer = [...packetsToSend, ...audioPacketsBuffer];
 		} finally {
 			isSending = false;
+		}
+	};
+
+	const emitSinglePacket = (packet: number[]) => {
+		try {
+			socketService.getSocket().emit("audioData", {
+				packets: [Array.from(packet)],
+				timestamp: Date.now(),
+			});
+			console.log(`[liveAudioDataService] 1 audio packet sent immediately`);
+		} catch (error) {
+			console.error("Error sending audio data immediately:", error);
 		}
 	};
 
@@ -64,28 +54,32 @@ export const liveAudioDataService = (() => {
 			return false;
 		}
 
-		// Reset state
 		audioPacketsBuffer = [];
 
-		// Ensure socket is connected - use socket service for this
 		if (!socketService.isConnected()) {
 			await socketService.reconnectToServer();
 		}
 
 		try {
-			// Start listening for audio packets - we now receive processed bytes directly
 			const subscription = await deviceService.startAudioBytesListener(
 				(processedBytes: number[]) => {
-					// Store the processed bytes directly
-					if (processedBytes.length > 0) {
+					if (processedBytes.length === 0) return;
+
+					if (bufferedMode) {
 						audioPacketsBuffer.push(processedBytes);
+					} else {
+						emitSinglePacket(processedBytes);
 					}
 				},
 			);
 
 			if (subscription) {
 				audioSubscription = subscription;
-				audioSendInterval = setInterval(sendAudioPackets, sendInterval);
+
+				if (bufferedMode) {
+					audioSendInterval = setInterval(sendAudioPackets, sendInterval);
+				}
+
 				return true;
 			}
 
@@ -100,46 +94,39 @@ export const liveAudioDataService = (() => {
 		if (audioSendInterval) {
 			clearInterval(audioSendInterval);
 			audioSendInterval = null;
-
-			// Send any remaining audio data
 			if (audioPacketsBuffer.length > 0) {
 				await sendAudioPackets();
 			}
 		}
 
-		// Stop the audio listener
 		if (audioSubscription) {
 			audioSubscription.remove();
 			audioSubscription = null;
 		}
 	};
 
-	const setAudioSendInterval = (newInterval: number): number => {
-		let intervalToSet = newInterval;
+	const setBufferedEmitting = (enabled: boolean): void => {
+		bufferedMode = enabled;
 
-		if (intervalToSet < 20) {
-			console.warn(
-				"[liveAudioDataService] Interval too low, setting to minimum of 20ms",
+		if (enabled) {
+			if (!audioSendInterval) {
+				audioSendInterval = setInterval(sendAudioPackets, sendInterval);
+				console.log("[liveAudioDataService] Buffered emitting enabled");
+			}
+		} else {
+			if (audioSendInterval) {
+				clearInterval(audioSendInterval);
+				audioSendInterval = null;
+			}
+			console.log(
+				"[liveAudioDataService] Buffered emitting disabled, immediate mode active",
 			);
-			intervalToSet = 20;
 		}
-
-		sendInterval = intervalToSet;
-
-		if (audioSendInterval) {
-			clearInterval(audioSendInterval);
-			audioSendInterval = setInterval(sendAudioPackets, sendInterval);
-		}
-
-		console.log(
-			`[liveAudioDataService] Send interval changed to ${sendInterval}ms`,
-		);
-		return sendInterval;
 	};
 
 	return {
 		startAudioCollection,
 		stopAudioCollection,
-		setAudioSendInterval,
+		setBufferedEmitting,
 	};
 })();
