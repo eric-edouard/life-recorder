@@ -25,9 +25,9 @@ export const liveAudioDataService = (() => {
 				packets,
 				timestamp: Date.now(),
 			});
-			console.log(
-				`[liveAudioDataService] ${packetsToSend.length} audio packets sent`,
-			);
+			// console.log(
+			// 	`[liveAudioDataService] ${packetsToSend.length} audio packets sent`,
+			// );
 		} catch (error) {
 			console.error("Error sending audio data:", error);
 			audioPacketsBuffer = [...packetsToSend, ...audioPacketsBuffer];
@@ -42,7 +42,7 @@ export const liveAudioDataService = (() => {
 				packets: [Array.from(packet)],
 				timestamp: Date.now(),
 			});
-			console.log(`[liveAudioDataService] 1 audio packet sent immediately`);
+			// console.log(`[liveAudioDataService] 1 audio packet sent immediately`);
 		} catch (error) {
 			console.error("Error sending audio data immediately:", error);
 		}
