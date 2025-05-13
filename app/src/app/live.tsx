@@ -24,7 +24,6 @@ export default function LiveScreen() {
 			},
 			{
 				getNextPageParam: (lastPage) => {
-					console.log("lastPage", lastPage.nextPage);
 					return lastPage.nextPage;
 				},
 			},
