@@ -1,5 +1,5 @@
 import { audioRouterService } from "@app/src/services/liveAudioDataService/audioRouterService";
-import { offlineAudioService } from "@app/src/services/offlineAudioService";
+import { offlineAudioService } from "@app/src/services/liveAudioDataService/offlineAudioService";
 import {
 	SocketConnectionState,
 	socketService,

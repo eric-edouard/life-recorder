@@ -1,6 +1,6 @@
 import { deviceService } from "@app/src/services/deviceService/deviceService";
+import { offlineAudioService } from "@app/src/services/liveAudioDataService/offlineAudioService";
 import { packetBufferService } from "@app/src/services/liveAudioDataService/packetsBufferService";
-import { offlineAudioService } from "@app/src/services/offlineAudioService";
 import { socketService } from "@app/src/services/socketService";
 import { notifyError } from "@app/src/utils/notifyError";
 import type { AudioPacket } from "@shared/sharedTypes";
