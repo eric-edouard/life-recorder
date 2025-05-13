@@ -7,7 +7,7 @@ import { LiveTranscriptsWidget } from "@app/src/components/Sreens/HomeScreen/Liv
 import { Button } from "@app/src/components/ui/Buttons/Button";
 import { Text } from "@app/src/components/ui/Text";
 import { deviceService } from "@app/src/services/deviceService/deviceService";
-import { liveAudioDataService } from "@app/src/services/liveAudioDataService/lifeAudioDataService";
+import { liveAudioDataService } from "@app/src/services/liveAudioDataService/liveAudioDataService";
 import { use$ } from "@legendapp/state/react";
 import { router } from "expo-router";
 
