@@ -1,3 +1,4 @@
+import { notifyError } from "@app/src/utils/notifyError";
 import type { Subscription } from "react-native-ble-plx";
 import { deviceService } from "./deviceService/deviceService";
 import { offlineAudioService } from "./offlineAudioService";
@@ -30,7 +31,7 @@ export const liveAudioDataService = (() => {
 			// 	`[liveAudioDataService] ${packetsToSend.length} audio packets sent`,
 			// );
 		} catch (error) {
-			console.error("Error sending audio data:", error);
+			notifyError("liveAudioDataService", "Error sending audio data", error);
 			audioPacketsBuffer = [...packetsToSend, ...audioPacketsBuffer];
 		} finally {
 			isSending = false;
@@ -45,7 +46,11 @@ export const liveAudioDataService = (() => {
 			});
 			// console.log(`[liveAudioDataService] 1 audio packet sent immediately`);
 		} catch (error) {
-			console.error("Error sending audio data immediately:", error);
+			notifyError(
+				"liveAudioDataService",
+				"Error sending audio data immediately",
+				error,
+			);
 		}
 	};
 
@@ -70,7 +75,10 @@ export const liveAudioDataService = (() => {
 
 	const startAudioCollection = async (): Promise<boolean> => {
 		if (!deviceService.connectedDeviceId$.peek()) {
-			console.error("Cannot start audio collection: Device not connected");
+			notifyError(
+				"liveAudioDataService",
+				"Cannot start audio collection: Device not connected",
+			);
 			return false;
 		}
 
@@ -118,7 +126,11 @@ export const liveAudioDataService = (() => {
 
 			return false;
 		} catch (error) {
-			console.error("Error starting audio collection:", error);
+			notifyError(
+				"liveAudioDataService",
+				"Error starting audio collection",
+				error,
+			);
 			return false;
 		}
 	};
