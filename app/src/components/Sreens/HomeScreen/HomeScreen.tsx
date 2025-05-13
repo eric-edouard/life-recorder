@@ -4,6 +4,7 @@ import { Image, TouchableOpacity, View } from "react-native";
 import { DeviceStatusButton } from "@app/src/components/DeviceStatusButton";
 import { ScreenScrollView } from "@app/src/components/ScreenScrollView/ScreenScrollView";
 import { LiveTranscriptsWidget } from "@app/src/components/Sreens/HomeScreen/LiveTranscriptsWidget";
+import { Button } from "@app/src/components/ui/Buttons/Button";
 import { Text } from "@app/src/components/ui/Text";
 import { deviceService } from "@app/src/services/deviceService/deviceService";
 import { liveAudioDataService } from "@app/src/services/liveAudioDataService/lifeAudioDataService";
@@ -12,6 +13,7 @@ import { router } from "expo-router";
 
 export const HomeScreen = () => {
 	const connectedDeviceId = use$(deviceService.connectedDeviceId$);
+	const shouldListen = use$(liveAudioDataService.shouldListen$);
 
 	useEffect(() => {
 		if (!connectedDeviceId) {
@@ -19,6 +21,10 @@ export const HomeScreen = () => {
 		}
 		liveAudioDataService.startAudioCollection();
 	}, [connectedDeviceId]);
+
+	const handleToggleListening = () => {
+		liveAudioDataService.toggleListening();
+	};
 
 	return (
 		<ScreenScrollView.Container title="Life Recorder" className="pt-5 ">
@@ -33,6 +39,10 @@ export const HomeScreen = () => {
 								</Text>
 							</View>
 						</ScreenScrollView.Title>
+						<Button
+							title={shouldListen ? "Stop Listening" : "Start Listening"}
+							onPress={handleToggleListening}
+						/>
 					</View>
 					<TouchableOpacity
 						onPress={() => {
