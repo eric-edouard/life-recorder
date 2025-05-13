@@ -18,7 +18,7 @@ export const audioRouterService = (() => {
 				packetBufferService.add(packet);
 			} else {
 				socketService.getSocket().emit("audioData", {
-					packets: [Array.from(packet)],
+					packets: [packet],
 					timestamp: Date.now(),
 				});
 			}

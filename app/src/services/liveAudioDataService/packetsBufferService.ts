@@ -16,7 +16,7 @@ export const packetBufferService = (() => {
 
 		try {
 			socketService.getSocket().emit("audioData", {
-				packets: packetsToSend.map((p) => Array.from(p)),
+				packets: packetsToSend,
 				timestamp: Date.now(),
 			});
 		} catch (e) {
