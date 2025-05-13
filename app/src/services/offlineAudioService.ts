@@ -1,10 +1,10 @@
+import type { AudioPacket } from "@shared/sharedTypes";
 import * as FileSystem from "expo-file-system";
-
 export const offlineAudioService = (() => {
 	const audioBufferDir = `${FileSystem.documentDirectory}audio_buffer/`;
 	let saveInterval: NodeJS.Timeout | null = null;
 	const saveIntervalTime = 10000; // Save every 10 seconds
-	let offlineBuffer: number[][] = [];
+	let offlineBuffer: AudioPacket[] = [];
 	let isActive = false;
 
 	// Initialize audio buffer directory
@@ -89,7 +89,7 @@ export const offlineAudioService = (() => {
 	};
 
 	// Add audio data to offline buffer
-	const addAudioData = (audioData: number[]): void => {
+	const addAudioData = (audioData: AudioPacket): void => {
 		if (!isActive) return;
 
 		offlineBuffer.push(audioData);

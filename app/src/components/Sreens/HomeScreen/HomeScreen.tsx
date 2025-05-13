@@ -6,7 +6,7 @@ import { ScreenScrollView } from "@app/src/components/ScreenScrollView/ScreenScr
 import { LiveTranscriptsWidget } from "@app/src/components/Sreens/HomeScreen/LiveTranscriptsWidget";
 import { Text } from "@app/src/components/ui/Text";
 import { deviceService } from "@app/src/services/deviceService/deviceService";
-import { liveAudioDataService } from "@app/src/services/liveAudioDataService";
+import { liveAudioDataService } from "@app/src/services/liveAudioDataService/lifeAudioDataService";
 import { use$ } from "@legendapp/state/react";
 import { router } from "expo-router";
 

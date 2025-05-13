@@ -1,11 +1,12 @@
 import { observable } from "@legendapp/state";
+import type { AudioPacket } from "@shared/sharedTypes";
 import type { Subscription } from "react-native-ble-plx";
 import { deviceService } from "./deviceService/deviceService";
 
 export const recordAudioDataService = (() => {
 	let audioPacketsReceived = 0;
 	let audioSubscription: Subscription | null = null;
-	let audioPacketsBuffer: number[][] = []; // Store processed bytes directly
+	let audioPacketsBuffer: AudioPacket[] = []; // Store processed bytes directly
 	const isRecording$ = observable(false);
 
 	/**
@@ -31,7 +32,7 @@ export const recordAudioDataService = (() => {
 		try {
 			// Start listening for audio packets
 			const subscription = await deviceService.startAudioBytesListener(
-				(processedBytes: number[]) => {
+				(processedBytes: AudioPacket) => {
 					// Store the processed bytes directly
 					if (processedBytes.length > 0) {
 						audioPacketsBuffer.push(processedBytes);
@@ -58,7 +59,7 @@ export const recordAudioDataService = (() => {
 	 * Stop recording audio data and clean up resources
 	 * @returns The collected audio packets
 	 */
-	const stopRecording = async (): Promise<number[][]> => {
+	const stopRecording = async (): Promise<AudioPacket[]> => {
 		// Capture current buffer content
 		const recordedAudio = [...audioPacketsBuffer];
 

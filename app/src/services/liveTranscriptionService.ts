@@ -1,4 +1,4 @@
-import { liveAudioDataService } from "@app/src/services/liveAudioDataService";
+import { liveAudioDataService } from "@app/src/services/liveAudioDataService/lifeAudioDataService";
 import { socketService } from "@app/src/services/socketService";
 import { observable, observe } from "@legendapp/state";
 import type { ProcessingSpeechUpdate } from "@shared/socketEvents";

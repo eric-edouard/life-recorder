@@ -1,3 +1,5 @@
+import type { AudioPacket } from "./sharedTypes";
+
 export type ServerLog = {
 	type: "log" | "warn" | "error";
 	message: string;
@@ -57,5 +59,5 @@ export interface ServerToClientEvents {
 }
 
 export type ClientToServerEvents = {
-	audioData: (data: { packets: number[][]; timestamp: number }) => void;
+	audioData: (data: { packets: AudioPacket[]; timestamp: number }) => void;
 };

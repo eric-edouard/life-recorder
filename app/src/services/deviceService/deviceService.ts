@@ -11,6 +11,7 @@ import {
 	rssiToSignalStrength,
 } from "@app/src/utils/rssiToSignalStrength";
 import { observable, observe } from "@legendapp/state";
+import type { AudioPacket } from "@shared/sharedTypes";
 import { Platform } from "react-native";
 import type { Device, Subscription } from "react-native-ble-plx";
 import { base64ToBytes } from "../../utils/base64ToBytes";
@@ -168,7 +169,7 @@ export const deviceService = (() => {
 	 * @returns Promise that resolves with a subscription that can be used to stop listening
 	 */
 	const startAudioBytesListener = async (
-		onAudioBytesReceived: (processedBytes: number[]) => void,
+		onAudioBytesReceived: (processedBytes: AudioPacket) => void,
 	): Promise<Subscription | undefined> => {
 		if (!_connectedDevice) {
 			throw new Error("Device not connected");
