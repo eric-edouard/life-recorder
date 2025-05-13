@@ -38,7 +38,7 @@ export const offlineAudioService = (() => {
 			offlineBuffer = []; // Clear buffer after saving
 
 			const fileContent = JSON.stringify({
-				packets: packetsToSave.map((packet) => Array.from(packet)),
+				packets: packetsToSave,
 				timestamp,
 			});
 
