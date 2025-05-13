@@ -35,14 +35,15 @@ export const offlineAudioService = (() => {
 			const filePath = `${audioBufferDir}${fileName}`;
 
 			const packetsToSave = [...offlineBuffer];
-			offlineBuffer = []; // Clear buffer after saving
-
 			const fileContent = JSON.stringify({
 				packets: packetsToSave,
 				timestamp,
 			});
 
 			await FileSystem.writeAsStringAsync(filePath, fileContent);
+
+			// Only clear the buffer after successful write
+			offlineBuffer = [];
 
 			console.log(
 				`[offlineAudioService] Saved ${packetsToSave.length} audio packets to ${fileName}`,
