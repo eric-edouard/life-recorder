@@ -20,6 +20,8 @@ export const liveAudioDataService = (() => {
 			}
 			if (state.value === SocketConnectionState.CONNECTED) {
 				offlineAudioService.stop();
+				// When connection is back, process any saved offline files
+				offlineAudioService.processSavedAudioFiles();
 			} else {
 				offlineAudioService.start();
 			}
