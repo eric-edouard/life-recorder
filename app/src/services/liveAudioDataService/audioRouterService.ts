@@ -23,7 +23,7 @@ export const audioRouterService = (() => {
 				});
 			}
 		} else {
-			offlineAudioService.addAudioData(packet);
+			offlineAudioService.appendAudioData(packet);
 		}
 	};
 

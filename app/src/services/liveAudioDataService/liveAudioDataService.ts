@@ -19,16 +19,16 @@ export const liveAudioDataService = (() => {
 				return;
 			}
 			if (state.value === SocketConnectionState.CONNECTED) {
-				offlineAudioService.stop();
+				offlineAudioService.stopSessionFile();
 				// When connection is back, process any saved offline files
 				offlineAudioService.processSavedAudioFiles();
 			} else {
-				offlineAudioService.start();
+				offlineAudioService.startSessionFile();
 			}
 		});
 
 		if (!socketService.isConnected()) {
-			await offlineAudioService.start();
+			await offlineAudioService.startSessionFile();
 			await socketService.reconnectToServer();
 		}
 
@@ -39,7 +39,7 @@ export const liveAudioDataService = (() => {
 	};
 
 	const stopAudioCollection = async () => {
-		await offlineAudioService.stop();
+		await offlineAudioService.stopSessionFile();
 		await audioRouterService.stop();
 	};
 

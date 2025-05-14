@@ -28,11 +28,11 @@ routesApp.get("/api/me", async (c) => {
 
 routesApp.post("/api/offline-audio", async (c) => {
 	const session = c.get("session");
-	if (!session) {
-		return c.json(null, 401);
-	}
-	const body = await c.req.parseBody();
+	if (!session) return c.json(null, 401);
+
+	const body = await c.req.parseBody<{ file: File }>();
 	const file = body.file;
+
 	if (!file || !(file instanceof File)) {
 		return c.json({ message: "No valid file uploaded" }, 400);
 	}
@@ -40,5 +40,10 @@ routesApp.post("/api/offline-audio", async (c) => {
 	const buffer = await file.arrayBuffer();
 	console.log("Received file size:", buffer.byteLength);
 
-	return c.json({ message: "File uploaded successfully" });
+	// Optional: save to disk or process here
+
+	return c.json({
+		message: "File uploaded successfully",
+		size: buffer.byteLength,
+	});
 });

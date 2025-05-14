@@ -12,12 +12,10 @@ export const offlineAudioService = (() => {
 	const nbSavedFiles$ = observable(0);
 	const isSending$ = observable(false);
 
-	let saveInterval: NodeJS.Timeout | null = null;
-	const saveIntervalTime = 10000; // Save every 10 seconds
-	let offlineBuffer: AudioPacket[] = [];
 	let isActive = false;
+	let currentFile: File | null = null;
+	let currentFileName: string | null = null;
 
-	// Initialize audio buffer directory
 	const initAudioBufferDir = () => {
 		if (!documentAudioDir.exists) {
 			documentAudioDir.create({ intermediates: true });
@@ -26,111 +24,89 @@ export const offlineAudioService = (() => {
 				documentAudioDir.uri,
 			);
 		}
-		// Update nbSavedFiles with current count
 		updateSavedFilesCount();
 	};
 
-	// Update the saved files count
 	const updateSavedFilesCount = (): void => {
 		const files = listSavedAudioFiles();
 		nbSavedFiles$.set(files.length);
 	};
 
-	// Save current buffer to filesystem
-	const saveBufferToFileSystem = async (): Promise<void> => {
-		if (offlineBuffer.length === 0) return;
+	const listSavedAudioFiles = (): string[] => {
+		const items = documentAudioDir.list();
+		if (!items) return [];
 
-		const timestamp = Date.now();
-		const fileName = `${timestamp}.json`;
-
-		const file = new File(documentAudioDir, fileName);
-
-		const packetsToSave = [...offlineBuffer];
-		const fileContent = JSON.stringify({
-			packets: packetsToSave,
-			timestamp,
-		});
-
-		file.write(fileContent);
-
-		// Only clear the buffer after successful write
-		offlineBuffer = [];
-
-		console.log(
-			`[offlineAudioService] Saved ${packetsToSave.length} audio packets to ${file.uri}.
-				File size: ${new TextEncoder().encode(fileContent).length} bytes`,
-		);
-
-		// Update saved files count after saving
-		updateSavedFilesCount();
+		return items
+			.filter((item) => item instanceof File && item.name.endsWith(".bin"))
+			.map((file) => (file as File).name);
 	};
 
-	// Start the offline audio service
-	const start = (): void => {
+	const startSessionFile = (): void => {
 		if (isActive) return;
 
 		initAudioBufferDir();
 
-		// Start periodic saving
-		if (!saveInterval) {
-			saveInterval = setInterval(saveBufferToFileSystem, saveIntervalTime);
-		}
+		const timestamp = Date.now();
+		currentFileName = `recording_${timestamp}.bin`;
+		currentFile = new File(documentAudioDir, currentFileName);
+		currentFile.create();
 
 		isActive = true;
-		console.log("[offlineAudioService] Started offline audio service");
+		console.log(
+			"[offlineAudioService] Started with session file:",
+			currentFileName,
+		);
 	};
 
-	// Stop the offline audio service
-	const stop = (): void => {
+	const stopSessionFile = (): void => {
 		if (!isActive) return;
 
-		// Save any remaining data
-		saveBufferToFileSystem();
-
-		// Clear the interval
-		if (saveInterval) {
-			clearInterval(saveInterval);
-			saveInterval = null;
-		}
-
+		currentFile = null;
+		currentFileName = null;
 		isActive = false;
+
+		updateSavedFilesCount();
 		console.log("[offlineAudioService] Stopped offline audio service");
 	};
 
-	// Add audio data to offline buffer
-	const addAudioData = (audioData: AudioPacket): void => {
-		if (!isActive) return;
+	const appendAudioData = async (audioData: AudioPacket): Promise<void> => {
+		if (!isActive || !currentFile) return;
 
-		offlineBuffer.push(audioData);
+		// Check if file still exists before attempting to write
+		if (!currentFile.exists) {
+			console.log(
+				"[offlineAudioService] Cannot write to file - file no longer exists",
+			);
+			return;
+		}
+
+		const byteArray = new Uint8Array(audioData);
+		try {
+			const handle = await currentFile.open();
+			handle.offset = currentFile.size ?? 0;
+			await handle.writeBytes(byteArray);
+			await handle.close();
+		} catch (err) {
+			console.error("[offlineAudioService] Failed to write audio packet:", err);
+		}
 	};
 
-	// Check if the service is currently active
-	const isServiceActive = (): boolean => {
-		return isActive;
-	};
+	const isServiceActive = (): boolean => isActive;
 
-	// List saved audio files
-	const listSavedAudioFiles = (): string[] => {
-		const items = documentAudioDir.list();
+	const sendOfflineDataToServer = async (fileName: string): Promise<void> => {
+		if (isActive && fileName === currentFileName) {
+			console.log(
+				`[offlineAudioService] Skipping ${fileName} as it's currently active`,
+			);
+			return;
+		}
 
-		// Ensure items is not null before filtering and mapping
-		if (!items) return [];
-
-		return items
-			.filter((item) => item instanceof File && item.name.endsWith(".json"))
-			.map((file) => (file as File).name);
-	};
-
-	// Send data from a single file to the server and delete if successful
-	const sendOfflineDataToServer = async (
-		fileName: string, // Just the name of the file
-	): Promise<void> => {
 		const file = new File(documentAudioDir, fileName);
 
 		if (!file.exists) {
 			notifyError(
 				"offlineAudioService",
-				`File ${fileName} not found at ${documentAudioDir.uri} for upload.`,
+				`File ${fileName} not found at ${documentAudioDir.uri}`,
 			);
 			return;
 		}
@@ -145,87 +121,68 @@ export const offlineAudioService = (() => {
 		}
 
 		console.log(
-			`[offlineAudioService] Attempting to upload ${fileName} (size: ${blob.size} bytes)...`,
+			`[offlineAudioService] Uploading ${fileName} (size: ${blob.size} bytes)...`,
 		);
-
-		// Set isSending to true before starting the upload
 		isSending$.set(true);
 
-		// Create FormData and append the blob as a file
 		const formData = new FormData();
 		formData.append("file", blob, fileName);
 
 		const [response, fetchError] = await tryCatch(
 			fetch(`${backendUrl}/api/offline-audio`, {
 				method: "POST",
-				body: formData, // Use formData instead of blob directly
+				body: formData,
 				headers: {
 					Cookie: authClient.getCookie(),
-					// Don't set Content-Type header when using FormData,
-					// the browser will set it automatically with the correct boundary
 				},
 			}),
 		);
 
-		// Set isSending to false after the upload attempt completes
 		isSending$.set(false);
 
-		if (fetchError) {
+		if (fetchError || !response.ok) {
 			notifyError(
 				"offlineAudioService",
-				`Fetch error while uploading ${fileName}:`,
-				fetchError,
-			);
-			return;
-		}
-
-		if (!response.ok) {
-			notifyError(
-				"offlineAudioService",
-				`Failed to upload ${fileName}. Server responded with ${response.status}: ${response.statusText}`,
+				`Failed to upload ${fileName}: ${fetchError || response.statusText}`,
 			);
 			return;
 		}
 
 		file.delete();
-		console.log(
-			`[offlineAudioService] Successfully uploaded and deleted ${fileName}`,
-		);
-
-		// Update saved files count after deleting a file
+		console.log(`[offlineAudioService] Uploaded and deleted ${fileName}`);
 		updateSavedFilesCount();
 	};
 
-	// Process all saved audio files
 	const processSavedAudioFiles = async (): Promise<void> => {
-		console.log(
-			"[offlineAudioService] Checking for saved audio files to process...",
-		);
+		console.log("[offlineAudioService] Checking for saved audio files...");
 		const savedFiles = listSavedAudioFiles();
-
 		if (savedFiles.length === 0) {
-			console.log("[offlineAudioService] No saved audio files to process.");
+			console.log("[offlineAudioService] No files to process.");
 			return;
 		}
 
-		console.log(
-			`[offlineAudioService] Found ${savedFiles.length} saved audio files. Processing one by one...`,
-		);
+		// Filter out current active file if service is active
+		const filesToProcess =
+			isActive && currentFileName
+				? savedFiles.filter((file) => file !== currentFileName)
+				: savedFiles;
 
-		for (const fileName of savedFiles) {
+		console.log(
+			`[offlineAudioService] Processing ${filesToProcess.length} files...`,
+		);
+		for (const fileName of filesToProcess) {
 			await sendOfflineDataToServer(fileName);
 		}
-		console.log("[offlineAudioService] Finished processing saved audio files.");
 	};
 
 	return {
-		start,
-		stop,
-		addAudioData,
+		startSessionFile,
+		stopSessionFile,
+		appendAudioData,
 		isServiceActive,
 		listSavedAudioFiles,
 		processSavedAudioFiles,
-		nbSavedFiles$: nbSavedFiles$,
-		isSending$: isSending$,
+		nbSavedFiles$,
+		isSending$,
 	};
 })();
