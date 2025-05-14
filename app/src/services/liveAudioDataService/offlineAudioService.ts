@@ -1,13 +1,16 @@
 import { backendUrl } from "@app/src/constants/backendUrl";
+import { authClient } from "@app/src/services/authClient";
 import { notifyError } from "@app/src/utils/notifyError";
 import { tryCatch } from "@app/src/utils/tryCatch";
+import { observable } from "@legendapp/state";
 import type { AudioPacket } from "@shared/sharedTypes";
 import { Directory, File, Paths } from "expo-file-system/next";
 import { fetch } from "expo/fetch";
 
 export const offlineAudioService = (() => {
-	// Use Directory object from expo-file-system/next
 	const documentAudioDir = new Directory(Paths.document, "audio_buffer");
+	const nbSavedFiles$ = observable(0);
+	const isSending$ = observable(false);
 
 	let saveInterval: NodeJS.Timeout | null = null;
 	const saveIntervalTime = 10000; // Save every 10 seconds
@@ -23,6 +26,14 @@ export const offlineAudioService = (() => {
 				documentAudioDir.uri,
 			);
 		}
+		// Update nbSavedFiles with current count
+		updateSavedFilesCount();
+	};
+
+	// Update the saved files count
+	const updateSavedFilesCount = (): void => {
+		const files = listSavedAudioFiles();
+		nbSavedFiles$.set(files.length);
 	};
 
 	// Save current buffer to filesystem
@@ -49,6 +60,9 @@ export const offlineAudioService = (() => {
 			`[offlineAudioService] Saved ${packetsToSave.length} audio packets to ${file.uri}.
 				File size: ${new TextEncoder().encode(fileContent).length} bytes`,
 		);
+
+		// Update saved files count after saving
+		updateSavedFilesCount();
 	};
 
 	// Start the offline audio service
@@ -86,6 +100,7 @@ export const offlineAudioService = (() => {
 	// Add audio data to offline buffer
 	const addAudioData = (audioData: AudioPacket): void => {
 		if (!isActive) return;
+
 		offlineBuffer.push(audioData);
 	};
 
@@ -133,15 +148,27 @@ export const offlineAudioService = (() => {
 			`[offlineAudioService] Attempting to upload ${fileName} (size: ${blob.size} bytes)...`,
 		);
 
+		// Set isSending to true before starting the upload
+		isSending$.set(true);
+
+		// Create FormData and append the blob as a file
+		const formData = new FormData();
+		formData.append("file", blob, fileName);
+
 		const [response, fetchError] = await tryCatch(
 			fetch(`${backendUrl}/api/offline-audio`, {
 				method: "POST",
-				body: blob,
+				body: formData, // Use formData instead of blob directly
 				headers: {
-					"Content-Type": "application/json",
+					Cookie: authClient.getCookie(),
+					// Don't set Content-Type header when using FormData,
+					// the browser will set it automatically with the correct boundary
 				},
 			}),
 		);
+
+		// Set isSending to false after the upload attempt completes
+		isSending$.set(false);
 
 		if (fetchError) {
 			notifyError(
@@ -164,6 +191,9 @@ export const offlineAudioService = (() => {
 		console.log(
 			`[offlineAudioService] Successfully uploaded and deleted ${fileName}`,
 		);
+
+		// Update saved files count after deleting a file
+		updateSavedFilesCount();
 	};
 
 	// Process all saved audio files
@@ -195,5 +225,7 @@ export const offlineAudioService = (() => {
 		isServiceActive,
 		listSavedAudioFiles,
 		processSavedAudioFiles,
+		nbSavedFiles$: nbSavedFiles$,
+		isSending$: isSending$,
 	};
 })();
