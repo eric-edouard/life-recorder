@@ -6,6 +6,7 @@ import { monitorCharacteristic } from "@app/src/services/deviceService/utils/mon
 import { storage$ } from "@app/src/services/storage";
 import { alert } from "@app/src/utils/alert";
 import { defer } from "@app/src/utils/defer";
+import { notifyError } from "@app/src/utils/notifyError";
 import {
 	type SignalStrength,
 	rssiToSignalStrength,
@@ -172,7 +173,8 @@ export const deviceService = (() => {
 		onAudioBytesReceived: (processedBytes: AudioPacket) => void,
 	): Promise<Subscription | undefined> => {
 		if (!_connectedDevice) {
-			throw new Error("Device not connected");
+			notifyError("deviceService", "No device connected");
+			return;
 		}
 
 		const audioDataStreamCharacteristic = await getDeviceCharacteristic(
@@ -182,7 +184,8 @@ export const deviceService = (() => {
 		);
 
 		if (!audioDataStreamCharacteristic) {
-			throw new Error("[deviceService] No audioDataStreamCharacteristic");
+			notifyError("deviceService", "No audioDataStreamCharacteristic");
+			return;
 		}
 
 		return audioDataStreamCharacteristic.monitor((error, characteristic) => {
@@ -196,14 +199,15 @@ export const deviceService = (() => {
 					);
 					return;
 				}
-				throw new Error(
-					`[deviceService] Audio data stream notification error: ${error.message}`,
+				notifyError(
+					"deviceService",
+					`Audio data stream notification error: ${error.message}`,
 				);
+				return;
 			}
 			if (!characteristic?.value) {
-				throw new Error(
-					"[deviceService] Received notification but no characteristic value",
-				);
+				notifyError("deviceService", "No audioDataStreamCharacteristic value");
+				return;
 			}
 			const bytes = base64ToBytes(characteristic.value);
 			// Remove the first 3 bytes (header) added by the Omi device

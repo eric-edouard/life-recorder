@@ -1,3 +1,5 @@
+import { sendAudioPackets } from "@app/src/services/liveAudioDataService/sendAudioPackets";
+import { liveTranscriptionService } from "@app/src/services/liveTranscriptionService";
 import { socketService } from "@app/src/services/socketService";
 import { notifyError } from "@app/src/utils/notifyError";
 import type { AudioPacket } from "@shared/sharedTypes";
@@ -15,10 +17,7 @@ export const packetBufferService = (() => {
 		buffer = [];
 
 		try {
-			socketService.getSocket().emit("audioData", {
-				packets: packetsToSend,
-				timestamp: Date.now(),
-			});
+			sendAudioPackets(socketService.getSocket(), packetsToSend);
 		} catch (e) {
 			buffer = [...packetsToSend, ...buffer];
 			notifyError("packetBufferService", "Error sending packets", e);
@@ -27,19 +26,30 @@ export const packetBufferService = (() => {
 		}
 	};
 
+	const start = () => {
+		if (!interval) {
+			interval = setInterval(flush, sendInterval);
+		}
+	};
+
+	const stop = async () => {
+		if (interval) {
+			clearInterval(interval);
+			interval = null;
+		}
+		await flush();
+	};
+	liveTranscriptionService.isSpeechDetected$.onChange(
+		({ value: isSpeechDetected }) => {
+			if (isSpeechDetected) {
+				start();
+			} else {
+				stop();
+			}
+		},
+	);
+
 	return {
-		add: (packet: AudioPacket) => buffer.push(packet),
-		start: () => {
-			if (!interval) {
-				interval = setInterval(flush, sendInterval);
-			}
-		},
-		stop: async () => {
-			if (interval) {
-				clearInterval(interval);
-				interval = null;
-			}
-			await flush();
-		},
+		handlePacket: (packet: AudioPacket) => buffer.push(packet),
 	};
 })();

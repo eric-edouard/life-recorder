@@ -13,17 +13,17 @@ import { router } from "expo-router";
 
 export const HomeScreen = () => {
 	const connectedDeviceId = use$(deviceService.connectedDeviceId$);
-	const shouldListen = use$(liveAudioDataService.shouldListen$);
+	const shouldListen = use$(liveAudioDataService.shouldCollectAudio$);
 
 	useEffect(() => {
 		if (!connectedDeviceId) {
 			return;
 		}
-		liveAudioDataService.startAudioCollection();
+		liveAudioDataService.shouldCollectAudio$.set(true);
 	}, [connectedDeviceId]);
 
-	const handleToggleListening = () => {
-		liveAudioDataService.toggleListening();
+	const handletoggleShouldCollectAudio = () => {
+		liveAudioDataService.shouldCollectAudio$.set(!shouldListen);
 	};
 
 	return (
@@ -41,7 +41,7 @@ export const HomeScreen = () => {
 						</ScreenScrollView.Title>
 						<Button
 							title={shouldListen ? "Stop Listening" : "Start Listening"}
-							onPress={handleToggleListening}
+							onPress={handletoggleShouldCollectAudio}
 						/>
 					</View>
 					<TouchableOpacity

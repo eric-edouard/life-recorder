@@ -59,14 +59,8 @@ export const socketService = (() => {
 	 */
 	const getSocket = (): TypedSocket => {
 		if (!socket) {
-			initializeSocket();
+			throw new Error("[socketService] No socket instance found");
 		}
-
-		// Still null? Something went wrong, but try to recover
-		if (!socket) {
-			throw new Error("Failed to initialize socket");
-		}
-
 		return socket;
 	};
 
