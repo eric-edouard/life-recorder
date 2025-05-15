@@ -27,6 +27,7 @@ export const packetBufferService = (() => {
 	};
 
 	const start = () => {
+		flush();
 		if (!interval) {
 			interval = setInterval(flush, sendInterval);
 		}
@@ -37,8 +38,9 @@ export const packetBufferService = (() => {
 			clearInterval(interval);
 			interval = null;
 		}
-		await flush();
+		flush();
 	};
+
 	liveTranscriptionService.isSpeechDetected$.onChange(
 		({ value: isSpeechDetected }) => {
 			if (isSpeechDetected) {
@@ -49,7 +51,14 @@ export const packetBufferService = (() => {
 		},
 	);
 
+	const handlePacket = (packet: AudioPacket) => {
+		buffer.push(packet);
+		if (!interval) {
+			start();
+		}
+	};
+
 	return {
-		handlePacket: (packet: AudioPacket) => buffer.push(packet),
+		handlePacket,
 	};
 })();

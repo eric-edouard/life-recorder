@@ -12,10 +12,13 @@ import type { Subscription } from "react-native-ble-plx";
 
 const handlePacket = (packet: AudioPacket) => {
 	const socket = socketService.getSocket();
-	if (!socket || !socketService.isConnected) {
+
+	const isOffline = !socket || !socket.connected;
+	if (isOffline) {
 		offlineAudioService.handlePacket(packet);
 		return;
 	}
+
 	// TODO: this will be removed when VAD is done on the edge
 	if (liveTranscriptionService.isSpeechDetected$.peek()) {
 		sendAudioPackets(socket, [packet]);
@@ -29,7 +32,6 @@ export const liveAudioDataService = (() => {
 	const shouldCollectAudio$ = observable(true);
 
 	const startAudioCollection = async () => {
-		console.log("<>>>>>>>>> startAudioCollection");
 		if (!deviceService.connectedDeviceId$.peek()) {
 			notifyError("liveAudioDataService", "No device connected");
 			return;
@@ -43,16 +45,7 @@ export const liveAudioDataService = (() => {
 	};
 
 	when(
-		() => {
-			console.log("shouldCollectAudio$", shouldCollectAudio$.get());
-			console.log(
-				"deviceService.connectedDeviceId$",
-				deviceService.connectedDeviceId$.get(),
-			);
-			return (
-				shouldCollectAudio$.get() && !!deviceService.connectedDeviceId$.get()
-			);
-		},
+		() => shouldCollectAudio$.get() && !!deviceService.connectedDeviceId$.get(),
 		() => defer(() => startAudioCollection()),
 	);
 	when(
