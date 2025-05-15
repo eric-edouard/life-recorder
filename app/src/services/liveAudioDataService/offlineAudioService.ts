@@ -7,9 +7,10 @@ export const offlineAudioService = (() => {
 	let currentFile: File | null = null;
 	let currentFileHandle: FileHandle | null = null;
 
-	socketService.connectionState$.onChange(({ value, getPrevious }) => {
-		if (getPrevious() === "disconnected" && value === "connected") {
-			currentFileHandle?.close();
+	socketService.connectionState$.onChange(({ value }) => {
+		if (currentFile && currentFileHandle && value === "connected") {
+			console.log("[offlineAudioService] Closing file", currentFile.uri);
+			currentFileHandle.close();
 			currentFile = null;
 			currentFileHandle = null;
 		}
